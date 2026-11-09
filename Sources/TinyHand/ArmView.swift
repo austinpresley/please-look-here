@@ -15,12 +15,11 @@ final class ArmView: NSView {
     private let minRodFrac: CGFloat = 0.05
     private let gripLeanFrac: CGFloat = 0.30
     private let gripDepthFrac: CGFloat = 0.12
-    private let gripFollow: CGFloat = 0.08
     private let liftFrac: CGFloat = 0.06
 
     let ink = Ink()
     var held = false
-    var inkWidth: CGFloat { max(3, bounds.height * 0.0055) }
+    var inkWidth: CGFloat { Preferences.strokeWidth }
 
     private var pressAmount: CGFloat = 0
     private var gripX: CGFloat?
@@ -87,6 +86,9 @@ final class ArmView: NSView {
 
     func updateInkColor() {
         ink.color = Preferences.inkChoice.resolved(for: style)
+        ink.tool = Preferences.drawingTool
+        ink.opacity = Preferences.inkOpacity
+        ink.smoothing = Preferences.strokeSmoothing
     }
 
     func setStyle(_ newStyle: PointerStyle) {
@@ -121,7 +123,7 @@ final class ArmView: NSView {
     func aim(cursor: CGPoint) {
         let screenH = bounds.height
         let targetX = min(max(cursor.x + gripLeanFrac * bounds.width, bounds.width * 0.15), bounds.width * 1.05)
-        let gx = gripX.map { $0 + (targetX - $0) * gripFollow } ?? targetX
+        let gx = Preferences.pointerMotion.gripPosition(previous: gripX, target: targetX)
         gripX = gx
         gripTarget = targetX
         let grip = CGPoint(x: gx, y: -gripDepthFrac * screenH)

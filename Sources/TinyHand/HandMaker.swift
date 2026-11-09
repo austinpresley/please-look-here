@@ -324,7 +324,8 @@ enum CustomHands {
         }
         let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
             ?? URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent("Library/Application Support")
-        return base.appendingPathComponent("TinyHand/Hands", isDirectory: true)
+        let folder = Bundle.main.bundleIdentifier?.hasPrefix("com.austinpresley.pleaselookhere") == true ? "Please Look Here/Hands" : "TinyHand/Hands"
+        return base.appendingPathComponent(folder, isDirectory: true)
     }
 
     private static var listURL: URL {

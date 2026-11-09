@@ -80,7 +80,98 @@ enum InkChoice: String, CaseIterable {
 
 enum Preferences {
     static let changed = Notification.Name("TinyHandPreferencesChanged")
-    private static let defaults = UserDefaults.standard
+    private static let defaults = ProcessInfo.processInfo.environment["TINYHAND_DEFAULTS_SUITE"].flatMap(UserDefaults.init(suiteName:)) ?? .standard
+    static var storage: UserDefaults { defaults }
+    private static var batchDepth = 0
+
+    static func performBatch(_ changes: () -> Void) {
+        batchDepth += 1
+        changes()
+        batchDepth -= 1
+        if batchDepth == 0 { NotificationCenter.default.post(name: changed, object: nil) }
+    }
+
+    static var pointerMode: PointerMode {
+        get { defaults.string(forKey: "pointerMode").flatMap(PointerMode.init(rawValue:)) ?? .point }
+        set { set(newValue.rawValue, "pointerMode") }
+    }
+
+    static var drawingTool: DrawingTool {
+        get { defaults.string(forKey: "drawingTool").flatMap(DrawingTool.init(rawValue:)) ?? .pen }
+        set { set(newValue.rawValue, "drawingTool") }
+    }
+
+    static var strokeWidth: CGFloat {
+        get { CGFloat(min(20, max(2, defaults.object(forKey: "strokeWidth") as? Double ?? 6))) }
+        set { set(Double(min(20, max(2, newValue))), "strokeWidth") }
+    }
+
+    static var inkOpacity: CGFloat {
+        get { CGFloat(min(1, max(0.1, defaults.object(forKey: "inkOpacity") as? Double ?? 1))) }
+        set { set(Double(min(1, max(0.1, newValue))), "inkOpacity") }
+    }
+
+    static var strokeSmoothing: StrokeSmoothing {
+        get { StrokeSmoothing(rawValue: defaults.object(forKey: "strokeSmoothing") as? Int ?? 2) ?? .light }
+        set { set(newValue.rawValue, "strokeSmoothing") }
+    }
+
+    static var pointerMotion: PointerMotion {
+        get { defaults.string(forKey: "pointerMotion").flatMap(PointerMotion.init(rawValue:)) ?? .original }
+        set { set(newValue.rawValue, "pointerMotion") }
+    }
+
+    static var theme: AppTheme {
+        get { defaults.string(forKey: "theme").flatMap(AppTheme.init(rawValue:)) ?? .system }
+        set { set(newValue.rawValue, "theme") }
+    }
+
+    static var showToolbar: Bool {
+        get { defaults.object(forKey: "showToolbar") as? Bool ?? true }
+        set { set(newValue, "showToolbar") }
+    }
+
+    static var toolbarPosition: CGPoint? {
+        get {
+            guard let value = defaults.array(forKey: "toolbarPosition") as? [Double], value.count == 2 else { return nil }
+            return CGPoint(x: value[0], y: value[1])
+        }
+        set {
+            if let p = newValue { set([Double(p.x), Double(p.y)], "toolbarPosition") }
+            else { defaults.removeObject(forKey: "toolbarPosition"); NotificationCenter.default.post(name: changed, object: nil) }
+        }
+    }
+
+    static func recordToolbarPosition(_ point: CGPoint) {
+        // A drag already moved the panel. Saving it must not relayout that panel.
+        defaults.set([Double(point.x), Double(point.y)], forKey: "toolbarPosition")
+    }
+
+    static var captureCopies: Bool {
+        get { defaults.object(forKey: "capture.copy") as? Bool ?? true }
+        set { set(newValue, "capture.copy") }
+    }
+
+    static var captureSaves: Bool {
+        get { defaults.object(forKey: "capture.save") as? Bool ?? true }
+        set { set(newValue, "capture.save") }
+    }
+
+    static var captureFolder: URL {
+        get {
+            if let path = defaults.string(forKey: "capture.folder") { return URL(fileURLWithPath: path, isDirectory: true) }
+            return FileManager.default.urls(for: .desktopDirectory, in: .userDomainMask).first ?? FileManager.default.homeDirectoryForCurrentUser
+        }
+        set { set(newValue.path, "capture.folder") }
+    }
+
+    static func shortcut(for action: PresentationAction) -> Shortcut {
+        loadShortcut("shortcut.\(action.rawValue)") ?? action.defaultShortcut
+    }
+
+    static func setShortcut(_ shortcut: Shortcut, for action: PresentationAction) {
+        saveShortcut(shortcut, "shortcut.\(action.rawValue)")
+    }
 
     static var toggleShortcut: Shortcut {
         get { loadShortcut("shortcut.toggle") ?? .toggleDefault }
@@ -92,7 +183,7 @@ enum Preferences {
         set { saveShortcut(newValue, "shortcut.clear") }
     }
 
-    static let pointerSizeRange: ClosedRange<CGFloat> = 0.08...0.20
+    static let pointerSizeRange: ClosedRange<CGFloat> = 0.04...0.20
 
     static var pointerSize: CGFloat {
         get { (defaults.object(forKey: "pointerSize") as? Double).map { CGFloat($0) } ?? 0.13 }
@@ -177,15 +268,17 @@ enum Preferences {
     static func resetAll() {
         for key in ["shortcut.toggle", "shortcut.clear", "pointerSize", "showShadow", "fadeSeconds",
                     "sound.hands", "sound.laser", "interactKey", "interactKeepsHand", "pinnedStyles", "pointerStyle",
-                    "inkChoice", "showInkButton", "tapSound"] {
+                    "inkChoice", "showInkButton", "tapSound", "pointerMode", "drawingTool", "strokeWidth", "inkOpacity",
+                    "strokeSmoothing", "pointerMotion", "theme", "showToolbar", "toolbarPosition", "capture.copy", "capture.save", "capture.folder"]
+                    + PresentationAction.allCases.map({ "shortcut.\($0.rawValue)" }) {
             defaults.removeObject(forKey: key)
         }
-        NotificationCenter.default.post(name: changed, object: nil)
+        if batchDepth == 0 { NotificationCenter.default.post(name: changed, object: nil) }
     }
 
-        private static func set(_ value: Any, _ key: String) {
+    private static func set(_ value: Any, _ key: String) {
         defaults.set(value, forKey: key)
-        NotificationCenter.default.post(name: changed, object: nil)
+        if batchDepth == 0 { NotificationCenter.default.post(name: changed, object: nil) }
     }
 
     private static func loadShortcut(_ key: String) -> Shortcut? {

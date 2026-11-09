@@ -112,7 +112,7 @@ struct PointerStyle: Hashable {
 
     static var saved: PointerStyle {
         get {
-            let raw = UserDefaults.standard.string(forKey: defaultsKey)
+            let raw = Preferences.storage.string(forKey: defaultsKey)
             if raw == "dot" {
                 return .laser
             }
@@ -121,7 +121,7 @@ struct PointerStyle: Hashable {
             }
             return raw.flatMap(PointerStyle.init(rawValue:)) ?? .lavender
         }
-        set { UserDefaults.standard.set(newValue.rawValue, forKey: defaultsKey) }
+        set { Preferences.storage.set(newValue.rawValue, forKey: defaultsKey) }
     }
 }
 

@@ -1,511 +1,360 @@
 import AppKit
 
-final class Toolbar {
-    var onPick: ((PointerStyle) -> Void)?
-    var onToggleSound: (() -> Void)?
-    var onExit: (() -> Void)?
-    var onFixPermission: (() -> Void)?
-
+final class Toolbar: NSObject, NSWindowDelegate {
     private final class Panel: NSPanel {
         override var canBecomeKey: Bool { false }
         override var canBecomeMain: Bool { false }
     }
-
     private final class Button: NSButton {
+        var selected = false { didSet { refresh() } }
+        private var hovering = false
         override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+        override func updateTrackingAreas() {
+            super.updateTrackingAreas()
+            trackingAreas.forEach(removeTrackingArea)
+            addTrackingArea(NSTrackingArea(rect: bounds, options: [.mouseEnteredAndExited, .activeAlways, .inVisibleRect], owner: self))
+        }
+        override func mouseEntered(with event: NSEvent) { hovering = true; refresh() }
+        override func mouseExited(with event: NSEvent) { hovering = false; refresh() }
+        override func viewDidChangeEffectiveAppearance() { super.viewDidChangeEffectiveAppearance(); refresh() }
+        private func refresh() {
+            effectiveAppearance.performAsCurrentDrawingAppearance {
+                layer?.backgroundColor = NSColor.labelColor.withAlphaComponent(selected ? 0.16 : hovering ? 0.08 : 0).cgColor
+            }
+            setAccessibilityValue(selected ? "Selected" : "")
+        }
+    }
+    private final class DragHandle: NSView {
+        var moved: (() -> Void)?
+        var started: (() -> Void)?
+        var reset: (() -> Void)?
+        override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+        override func mouseDown(with event: NSEvent) { started?(); window?.performDrag(with: event); moved?() }
+        override func rightMouseDown(with event: NSEvent) { reset?() }
+        override func draw(_ dirtyRect: NSRect) {
+            NSColor.secondaryLabelColor.setFill()
+            for x: CGFloat in [6, 10] {
+                for y: CGFloat in [10, 14, 18, 22] {
+                    NSBezierPath(ovalIn: CGRect(x: x, y: y, width: 2, height: 2)).fill()
+                }
+            }
+        }
     }
 
-    private let panel: Panel
-    private let stack = NSStackView()
+    var onPick: ((PointerStyle) -> Void)?
+    var onMode: ((PointerMode) -> Void)?
+    var onTool: ((DrawingTool) -> Void)?
+    var onUndo: (() -> Void)?
+    var onClear: (() -> Void)?
+    var onCapture: (() -> Void)?
+    var onToggleSound: (() -> Void)?
+    var onExit: (() -> Void)?
+    var onFixPermission: (() -> Void)?
+    private let panel = Panel(contentRect: CGRect(x: 0, y: 0, width: 640, height: 48),
+                              styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
+    private let root = NSStackView()
+    private let row = NSStackView()
+    private let tools = NSStackView()
+    private let pointerStrip = NSStackView()
+    private let mode = NSSegmentedControl(labels: ["Point", "Draw"], trackingMode: .selectOne, target: nil, action: nil)
+    private var toolButtons: [DrawingTool: Button] = [:]
     private var styleButtons: [PointerStyle: Button] = [:]
+    private var colors: [InkChoice: Button] = [:]
+    private var actions: [Button: () -> Void] = [:]
     private var shownStyles: [PointerStyle] = []
     private var current: PointerStyle?
-    private var inkButton: Button?
-    private var swatches: [InkChoice: Button] = [:]
-    private var inkOpen = false
-    private let permissionButton = Button()
-    private var soundButton: Button?
-    private(set) var revealed = false
-
-    private let tray: Panel
-    private let trayStack = NSStackView()
+    private var undoButton: Button!
+    private var captureButton: Button!
+    private var soundButton: Button!
+    private var permissionButton: NSButton!
     private var hint: Panel?
+    private var hintWork: DispatchWorkItem?
+    private var screen: NSScreen?
+    private var remembersMoves = false
+    private var savingPosition = false
+    private var previousPreferencePosition = Preferences.toolbarPosition
+    private(set) var revealed = false
+    var frame: CGRect { panel.frame }
+    var windows: [NSWindow] { [panel] + (hint.map { [$0] } ?? []) }
 
-    var frame: CGRect { inkOpen ? panel.frame.union(tray.frame) : panel.frame }
-
-    init() {
-        panel = Panel(contentRect: CGRect(x: 0, y: 0, width: 300, height: 56),
-                      styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
+    override init() {
+        super.init()
         panel.isOpaque = false
         panel.backgroundColor = .clear
         panel.hasShadow = true
         panel.hidesOnDeactivate = false
         panel.isFloatingPanel = true
-        panel.becomesKeyOnlyIfNeeded = true
-        panel.level = NSWindow.Level(rawValue: NSWindow.Level.screenSaver.rawValue + 1)
+        panel.level = NSWindow.Level(rawValue: NSWindow.Level.screenSaver.rawValue + 4)
         panel.collectionBehavior = [.canJoinAllSpaces, .stationary, .ignoresCycle, .fullScreenAuxiliary]
-        panel.alphaValue = 0
-
-        let background = NSVisualEffectView.darkGlass(radius: 16)
+        panel.isReleasedWhenClosed = false
+        panel.delegate = self
+        let background = Self.surface()
         panel.contentView = background
-
-        stack.orientation = .horizontal
-        stack.spacing = 6
-        stack.edgeInsets = NSEdgeInsets(top: 8, left: 10, bottom: 8, right: 10)
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        background.addSubview(stack)
+        let container = Self.container(in: background)
+        root.orientation = .vertical
+        root.alignment = .centerX
+        root.spacing = 8
+        root.edgeInsets = NSEdgeInsets(top: 8, left: 8, bottom: 8, right: 8)
+        root.translatesAutoresizingMaskIntoConstraints = false
+        container.addSubview(root)
         NSLayoutConstraint.activate([
-            stack.leadingAnchor.constraint(equalTo: background.leadingAnchor),
-            stack.trailingAnchor.constraint(equalTo: background.trailingAnchor),
-            stack.topAnchor.constraint(equalTo: background.topAnchor),
-            stack.bottomAnchor.constraint(equalTo: background.bottomAnchor),
+            root.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+            root.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+            root.topAnchor.constraint(equalTo: container.topAnchor),
+            root.bottomAnchor.constraint(equalTo: container.bottomAnchor)
         ])
-
-        tray = Panel(contentRect: CGRect(x: 0, y: 0, width: 200, height: 40),
-                     styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
-        tray.isOpaque = false
-        tray.backgroundColor = .clear
-        tray.hasShadow = true
-        tray.hidesOnDeactivate = false
-        tray.isFloatingPanel = true
-        tray.becomesKeyOnlyIfNeeded = true
-        tray.level = panel.level
-        tray.collectionBehavior = panel.collectionBehavior
-        tray.alphaValue = 0
-        let trayBackground = NSVisualEffectView.darkGlass(radius: 14)
-        tray.contentView = trayBackground
-        trayStack.orientation = .horizontal
-        trayStack.spacing = 2
-        trayStack.edgeInsets = NSEdgeInsets(top: 5, left: 6, bottom: 5, right: 6)
-        trayStack.translatesAutoresizingMaskIntoConstraints = false
-        trayBackground.addSubview(trayStack)
-        NSLayoutConstraint.activate([
-            trayStack.leadingAnchor.constraint(equalTo: trayBackground.leadingAnchor),
-            trayStack.trailingAnchor.constraint(equalTo: trayBackground.trailingAnchor),
-            trayStack.topAnchor.constraint(equalTo: trayBackground.topAnchor),
-            trayStack.bottomAnchor.constraint(equalTo: trayBackground.bottomAnchor),
-        ])
-
-        stack.addArrangedSubview(Toolbar.divider())
-        let ink = makeButton(image: nil, tip: "Ink colour") { [weak self] in
-            self?.toggleInk()
+        for stack in [row, tools, pointerStrip] { stack.orientation = .horizontal; stack.spacing = 4; stack.alignment = .centerY }
+        root.addArrangedSubview(row)
+        root.addArrangedSubview(tools)
+        let handle = DragHandle(frame: .zero)
+        handle.widthAnchor.constraint(equalToConstant: 20).isActive = true
+        handle.heightAnchor.constraint(equalToConstant: 32).isActive = true
+        handle.toolTip = "Drag to move the toolbar. Right-click to reset its position."
+        handle.setAccessibilityLabel("Move toolbar")
+        handle.moved = { [weak self] in self?.savePosition() }
+        handle.started = { [weak self] in
+            self?.remembersMoves = true
         }
-        inkButton = ink
-        stack.addArrangedSubview(ink)
-        let sound = makeButton(symbol: "speaker.wave.2.fill", tip: "Tap sound") { [weak self] in
-            self?.onToggleSound?()
-        }
-        soundButton = sound
-        stack.addArrangedSubview(sound)
-        stack.addArrangedSubview(makeButton(symbol: "xmark", tip: "Exit  (Esc)") { [weak self] in
-            self?.onExit?()
-        })
-
+        handle.reset = { [weak self] in self?.resetPosition() }
+        row.addArrangedSubview(handle)
+        mode.selectedSegment = Preferences.pointerMode == .point ? 0 : 1
+        mode.target = self
+        mode.action = #selector(modeChanged)
+        mode.setAccessibilityLabel("Pointer mode")
+        mode.toolTip = "Point uses apps normally. Draw adds annotations."
+        row.addArrangedSubview(mode)
+        row.addArrangedSubview(Self.divider())
+        row.addArrangedSubview(pointerStrip)
+        row.addArrangedSubview(Self.divider())
+        undoButton = button(symbol: "arrow.uturn.backward", tip: "Undo annotation (⌘Z)") { [weak self] in self?.onUndo?() }
+        captureButton = button(symbol: "camera", tip: "Take Screenshot (\(Preferences.shortcut(for: .capture).display))") { [weak self] in self?.onCapture?() }
+        soundButton = button(symbol: "speaker.wave.2.fill", tip: "Toggle tap sound") { [weak self] in self?.onToggleSound?() }
+        row.addArrangedSubview(undoButton)
+        row.addArrangedSubview(captureButton)
+        row.addArrangedSubview(soundButton)
+        row.addArrangedSubview(button(symbol: "xmark", tip: "Turn pointer off (Esc)") { [weak self] in self?.onExit?() })
+        permissionButton = NSButton(title: "Allow Drawing…", target: self, action: #selector(fixPermission))
         permissionButton.bezelStyle = .rounded
-        permissionButton.isBordered = false
-        permissionButton.wantsLayer = true
-        permissionButton.layer?.cornerRadius = 10
-        permissionButton.layer?.backgroundColor = NSColor.systemOrange.withAlphaComponent(0.9).cgColor
-        permissionButton.attributedTitle = NSAttributedString(string: "  Allow clicks & drawing  ", attributes: [
-            .foregroundColor: NSColor.black,
-            .font: NSFont.systemFont(ofSize: 12, weight: .semibold),
-        ])
-        permissionButton.image = NSImage(systemSymbolName: "exclamationmark.triangle.fill", accessibilityDescription: nil)
-        permissionButton.imagePosition = .imageLeading
-        permissionButton.contentTintColor = .black
-        permissionButton.toolTip = "TinyHand needs Accessibility permission to intercept clicks and draw"
-        permissionButton.heightAnchor.constraint(equalToConstant: 32).isActive = true
-        permissionButton.target = self
-        permissionButton.action = #selector(fixPermission)
         permissionButton.isHidden = true
-        stack.addArrangedSubview(permissionButton)
+        permissionButton.toolTip = "Open Accessibility settings to allow drawing. Point mode still works."
+        root.addArrangedSubview(permissionButton)
+        for tool in DrawingTool.allCases {
+            let b = button(symbol: tool.symbol, tip: "\(tool.title) tool (\(Preferences.shortcut(for: PresentationAction(rawValue: tool.rawValue)!).display))") { [weak self] in self?.onTool?(tool) }
+            toolButtons[tool] = b
+            tools.addArrangedSubview(b)
+        }
+        tools.addArrangedSubview(Self.divider())
+        for color in InkChoice.allCases {
+            let b = button(image: Self.colorImage(color.resolved(for: PointerStyle.saved)), tip: color.title, side: 24) { Preferences.inkChoice = color }
+            colors[color] = b
+            tools.addArrangedSubview(b)
+        }
+        tools.addArrangedSubview(Self.divider())
+        tools.addArrangedSubview(button(symbol: "trash", tip: "Clear Drawing (\(Preferences.clearShortcut.display))") { [weak self] in self?.onClear?() })
+        NotificationCenter.default.addObserver(forName: Preferences.changed, object: nil, queue: .main) { [weak self] _ in self?.refresh() }
+        refresh()
+    }
 
-        rebuildStyles()
-        background.removeFocusRings()
+    static func surface() -> NSView {
+        if #available(macOS 26, *) {
+            let glass = NSGlassEffectView()
+            glass.style = .regular
+            glass.cornerRadius = 16
+            return glass
+        }
+        let effect = NSVisualEffectView()
+        effect.material = .hudWindow
+        effect.blendingMode = .behindWindow
+        effect.state = .active
+        effect.wantsLayer = true
+        effect.layer?.cornerRadius = 16
+        effect.layer?.masksToBounds = true
+        return effect
+    }
+
+    private static func container(in view: NSView) -> NSView {
+        if #available(macOS 26, *), let glass = view as? NSGlassEffectView {
+            let content = NSView()
+            glass.contentView = content
+            return content
+        }
+        return view
+    }
+
+    private func refresh() {
+        let styles = Preferences.pinnedStyles
+        if styles != shownStyles {
+            for b in styleButtons.values { actions[b] = nil; b.removeFromSuperview() }
+            shownStyles = styles
+            styleButtons.removeAll()
+            for style in styles {
+                let b = button(image: Self.icon(for: style), tip: style.title) { [weak self] in self?.onPick?(style) }
+                styleButtons[style] = b
+                pointerStrip.addArrangedSubview(b)
+            }
+        }
+        for (style, b) in styleButtons { b.selected = style == current }
+        for (tool, b) in toolButtons {
+            b.selected = tool == Preferences.drawingTool
+            b.toolTip = "\(tool.title) tool (\(Preferences.shortcut(for: PresentationAction(rawValue: tool.rawValue)!).display))"
+        }
+        for (color, b) in colors {
+            b.selected = color == Preferences.inkChoice
+            b.image = Self.colorImage(color.resolved(for: current ?? PointerStyle.saved))
+        }
+        mode.selectedSegment = Preferences.pointerMode == .point ? 0 : 1
+        tools.isHidden = Preferences.pointerMode == .point
+        captureButton.toolTip = "Take Screenshot (\(Preferences.shortcut(for: .capture).display))"
+        let position = Preferences.toolbarPosition
+        let resetPosition = previousPreferencePosition != nil && position == nil
+        if resetPosition { remembersMoves = false }
         resize()
-        refreshInk()
-        NotificationCenter.default.addObserver(forName: Preferences.changed, object: nil, queue: .main) { [weak self] _ in
-            self?.rebuildStyles()
-            self?.refreshInk()
-        }
+        if resetPosition, let screen = screen { place(on: screen) }
+        previousPreferencePosition = position
     }
-
-    private func toggleInk() {
-        setInkOpen(!inkOpen)
+    func select(_ style: PointerStyle) { current = style; refresh() }
+    func setMode(_ value: PointerMode) { mode.selectedSegment = value == .point ? 0 : 1; tools.isHidden = value == .point; resize() }
+    func setUndoEnabled(_ value: Bool) { undoButton.isEnabled = value }
+    func setCapturing(_ value: Bool) { captureButton.isEnabled = !value }
+    func setSoundOn(_ value: Bool) {
+        soundButton.image = NSImage(systemSymbolName: value ? "speaker.wave.2.fill" : "speaker.slash.fill", accessibilityDescription: "Tap sound")
+        soundButton.toolTip = value ? "Mute tap sound" : "Unmute tap sound"
     }
-
-    private func setInkOpen(_ open: Bool) {
-        guard open != inkOpen, let ink = inkButton else {
-            return
-        }
-        inkOpen = open
-        if open {
-            if swatches.isEmpty {
-                for choice in InkChoice.allCases {
-                    let b = makeButton(image: nil, tip: choice.title, side: 30) { [weak self] in
-                        Preferences.inkChoice = choice
-                        self?.setInkOpen(false)
-                    }
-                    b.layer?.cornerRadius = 15
-                    swatches[choice] = b
-                    trayStack.addArrangedSubview(b)
-                }
-                tray.contentView?.removeFocusRings()
-                trayStack.layoutSubtreeIfNeeded()
-                tray.setContentSize(trayStack.fittingSize)
-            }
-            refreshInk()
-            let r = panel.convertToScreen(ink.convert(ink.bounds, to: nil))
-            let size = tray.frame.size
-            tray.setFrameOrigin(CGPoint(x: r.midX - size.width / 2, y: panel.frame.maxY + 8))
-            tray.invalidateShadow()
-            tray.orderFrontRegardless()
-            NSAnimationContext.runAnimationGroup { ctx in
-                ctx.duration = 0.12
-                tray.animator().alphaValue = 1
-            }
-        } else {
-            NSAnimationContext.runAnimationGroup({ ctx in
-                ctx.duration = 0.12
-                tray.animator().alphaValue = 0
-            }, completionHandler: { [weak self] in
-                guard let self = self, !self.inkOpen else {
-                    return
-                }
-                self.tray.orderOut(nil)
-            })
-        }
-        refreshInk()
-    }
-
-    private func refreshInk() {
-        guard let ink = inkButton else {
-            return
-        }
-        let style = current ?? PointerStyle.saved
-        ink.image = Toolbar.inkDot(Preferences.inkChoice.resolved(for: style))
-        ink.layer?.backgroundColor = inkOpen ? NSColor(white: 1, alpha: 0.18).cgColor : NSColor.clear.cgColor
-        let hidden = !Preferences.showInkButton
-        if ink.isHidden != hidden {
-            ink.isHidden = hidden
-            if hidden {
-                setInkOpen(false)
-            }
-            resizeKeepingCenter()
-        }
-        for (choice, b) in swatches {
-            b.image = choice.color.map(Toolbar.inkDot) ?? Toolbar.rainbowDot()
-            b.layer?.backgroundColor = choice == Preferences.inkChoice ? NSColor(white: 1, alpha: 0.2).cgColor : NSColor.clear.cgColor
-        }
-    }
-
-    private func resizeKeepingCenter() {
-        let center = CGPoint(x: panel.frame.midX, y: panel.frame.minY)
-        resize()
-        panel.setFrameOrigin(CGPoint(x: center.x - panel.frame.width / 2, y: center.y))
-    }
-
-    private func rebuildStyles() {
-        var styles = Preferences.pinnedStyles
-        if let c = current, !styles.contains(c) {
-            styles.append(c)
-        }
-        if styles == shownStyles {
-            return
-        }
-        shownStyles = styles
-        for b in styleButtons.values {
-            actions[b] = nil
-            b.removeFromSuperview()
-        }
-        styleButtons = [:]
-        for (i, style) in styles.enumerated() {
-            let b = makeButton(image: Toolbar.icon(for: style), tip: style.title) { [weak self] in
-                self?.onPick?(style)
-            }
-            styleButtons[style] = b
-            stack.insertArrangedSubview(b, at: i)
-        }
-        if let c = current {
-            highlight(c)
-        }
-        resizeKeepingCenter()
-    }
-
-    func setSoundOn(_ on: Bool) {
-        let config = NSImage.SymbolConfiguration(pointSize: 15, weight: .medium)
-        let name = on ? "speaker.wave.2.fill" : "speaker.slash.fill"
-        let tip = on ? "Tap sound on — click to mute" : "Tap sound off — click to unmute"
-        soundButton?.image = NSImage(systemSymbolName: name, accessibilityDescription: tip)?.withSymbolConfiguration(config)
-        soundButton?.toolTip = tip
-        soundButton?.contentTintColor = NSColor(white: 1, alpha: on ? 0.85 : 0.45)
-    }
-
+    func setNeedsPermission(_ needed: Bool) { permissionButton.isHidden = !needed; resize() }
     func center(of style: PointerStyle) -> CGPoint? {
-        guard let b = styleButtons[style], let w = b.window else {
-            return nil
-        }
-        let r = w.convertToScreen(b.convert(b.bounds, to: nil))
+        guard let b = styleButtons[style] else { return nil }
+        let r = panel.convertToScreen(b.convert(b.bounds, to: nil))
         return CGPoint(x: r.midX, y: r.midY)
     }
-
-    func snapshot() -> NSBitmapImageRep? {
-        guard let view = panel.contentView else {
-            return nil
-        }
-        view.layer?.backgroundColor = NSColor(white: 0.16, alpha: 1).cgColor
-        view.layoutSubtreeIfNeeded()
-        guard let rep = view.bitmapImageRepForCachingDisplay(in: view.bounds) else {
-            return nil
-        }
-        view.cacheDisplay(in: view.bounds, to: rep)
-        view.layer?.backgroundColor = nil
-        return rep
-    }
-
-    func snapshotInkTray() -> NSBitmapImageRep? {
-        setInkOpen(true)
-        guard let view = tray.contentView else {
-            return nil
-        }
-        view.layer?.backgroundColor = NSColor(white: 0.16, alpha: 1).cgColor
-        view.layoutSubtreeIfNeeded()
-        guard let rep = view.bitmapImageRepForCachingDisplay(in: view.bounds) else {
-            return nil
-        }
-        view.cacheDisplay(in: view.bounds, to: rep)
-        return rep
-    }
-
-    func showHint(_ parts: [(key: String, text: String)]) {
-        hideHint()
-        let p = Panel(contentRect: CGRect(x: 0, y: 0, width: 300, height: 36),
-                      styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
-        p.isOpaque = false
-        p.backgroundColor = .clear
-        p.hasShadow = true
-        p.ignoresMouseEvents = true
-        p.level = panel.level
-        p.collectionBehavior = panel.collectionBehavior
-        p.alphaValue = 0
-        let bg = NSVisualEffectView.darkGlass(radius: 12)
-        p.contentView = bg
-        let row = NSStackView()
-        row.orientation = .horizontal
-        row.spacing = 14
-        row.edgeInsets = NSEdgeInsets(top: 9, left: 16, bottom: 9, right: 16)
-        row.translatesAutoresizingMaskIntoConstraints = false
-        for part in parts {
-            let text = NSMutableAttributedString(string: part.key, attributes: [
-                .font: NSFont.systemFont(ofSize: 12.5, weight: .semibold),
-                .foregroundColor: NSColor.white,
-            ])
-            text.append(NSAttributedString(string: " " + part.text, attributes: [
-                .font: NSFont.systemFont(ofSize: 12.5),
-                .foregroundColor: NSColor(white: 1, alpha: 0.7),
-            ]))
-            row.addArrangedSubview(NSTextField(labelWithAttributedString: text))
-        }
-        bg.addSubview(row)
-        NSLayoutConstraint.activate([
-            row.leadingAnchor.constraint(equalTo: bg.leadingAnchor),
-            row.trailingAnchor.constraint(equalTo: bg.trailingAnchor),
-            row.topAnchor.constraint(equalTo: bg.topAnchor),
-            row.bottomAnchor.constraint(equalTo: bg.bottomAnchor),
-        ])
-        row.layoutSubtreeIfNeeded()
-        p.setContentSize(row.fittingSize)
-        p.setFrameOrigin(CGPoint(x: panel.frame.midX - p.frame.width / 2, y: panel.frame.maxY + 12))
-        p.orderFrontRegardless()
-        NSAnimationContext.runAnimationGroup { ctx in
-            ctx.duration = 0.2
-            p.animator().alphaValue = 1
-        }
-        hint = p
-    }
-
-    func snapshotHint() -> NSBitmapImageRep? {
-        guard let view = hint?.contentView else {
-            return nil
-        }
-        view.layer?.backgroundColor = NSColor(white: 0.16, alpha: 1).cgColor
-        view.layoutSubtreeIfNeeded()
-        guard let rep = view.bitmapImageRepForCachingDisplay(in: view.bounds) else {
-            return nil
-        }
-        view.cacheDisplay(in: view.bounds, to: rep)
-        return rep
-    }
-
-    func hideHint() {
-        guard let p = hint else {
-            return
-        }
-        hint = nil
-        NSAnimationContext.runAnimationGroup({ ctx in
-            ctx.duration = 0.3
-            p.animator().alphaValue = 0
-        }, completionHandler: {
-            p.orderOut(nil)
-        })
-    }
-
-    func select(_ style: PointerStyle) {
-        current = style
-        rebuildStyles()
-        highlight(style)
-        refreshInk()
-    }
-
-    private func highlight(_ style: PointerStyle) {
-        for (s, b) in styleButtons {
-            b.layer?.backgroundColor = s == style ? NSColor(white: 1, alpha: 0.18).cgColor : NSColor.clear.cgColor
-        }
-    }
-
-    func setNeedsPermission(_ needed: Bool) {
-        guard permissionButton.isHidden == needed else {
-            return
-        }
-        permissionButton.isHidden = !needed
-        let center = CGPoint(x: panel.frame.midX, y: panel.frame.minY)
-        resize()
-        panel.setFrameOrigin(CGPoint(x: center.x - panel.frame.width / 2, y: center.y))
-    }
-
     func place(on screen: NSScreen) {
-        setInkOpen(false)
-        let f = panel.frame
-        panel.setFrameOrigin(CGPoint(x: screen.frame.midX - f.width / 2, y: screen.visibleFrame.minY + 14))
+        self.screen = screen
+        let origin = Preferences.toolbarPosition ?? CGPoint(x: screen.visibleFrame.midX - panel.frame.width / 2, y: screen.visibleFrame.minY + 16)
+        let wasSaving = savingPosition
+        savingPosition = true
+        panel.setFrameOrigin(clamped(origin, on: screen))
+        savingPosition = wasSaving
     }
-
-    func show() {
-        panel.orderFrontRegardless()
-        panel.invalidateShadow()
+    private func clamped(_ point: CGPoint, on screen: NSScreen) -> CGPoint {
+        let area = screen.visibleFrame.insetBy(dx: 8, dy: 8)
+        return CGPoint(x: min(max(point.x, area.minX), max(area.minX, area.maxX - panel.frame.width)).rounded(),
+                       y: min(max(point.y, area.minY), max(area.minY, area.maxY - panel.frame.height)).rounded())
     }
-
-    func hide() {
-        setInkOpen(false)
-        hideHint()
-        revealed = false
-        panel.alphaValue = 0
-        panel.orderOut(nil)
+    private func savePosition() {
+        var point = panel.frame.origin
+        if let items = CGWindowListCopyWindowInfo(.optionIncludingWindow, CGWindowID(panel.windowNumber)) as? [[String: Any]],
+           let bounds = items.first?[kCGWindowBounds as String] as? NSDictionary,
+           let rect = CGRect(dictionaryRepresentation: bounds as CFDictionary) {
+            // AppKit can deliver its final move notification after performDrag returns.
+            point = CGPoint(x: rect.minX, y: (NSScreen.screens.first?.frame.height ?? 0) - rect.maxY)
+        }
+        savingPosition = true
+        defer { savingPosition = false }
+        let position = (panel.screen ?? screen).map { clamped(point, on: $0) } ?? point
+        if position != point { panel.setFrameOrigin(position) }
+        Preferences.recordToolbarPosition(position)
+        previousPreferencePosition = position
     }
-
+    func windowDidMove(_ notification: Notification) {
+        guard remembersMoves, !savingPosition else { return }
+        Preferences.recordToolbarPosition(panel.frame.origin)
+        previousPreferencePosition = panel.frame.origin
+    }
+    func resetPosition() { Preferences.toolbarPosition = nil; if let screen = panel.screen ?? screen { place(on: screen) } }
+    func show() { panel.orderFrontRegardless() }
+    func hide() { hideHint(); revealed = false; panel.orderOut(nil) }
     func setRevealed(_ value: Bool) {
-        guard value != revealed else {
-            return
-        }
+        guard value != revealed else { return }
         revealed = value
-        if !value {
-            setInkOpen(false)
-        }
         panel.ignoresMouseEvents = !value
-        NSAnimationContext.runAnimationGroup { ctx in
-            ctx.duration = value ? 0.15 : 0.35
-            panel.animator().alphaValue = value ? 1 : 0
-        }
+        if value { panel.orderFrontRegardless() }
+        panel.alphaValue = value ? 1 : 0
     }
-
     private func resize() {
-        stack.layoutSubtreeIfNeeded()
-        let size = stack.fittingSize
-        panel.setContentSize(size)
-        panel.invalidateShadow()
+        let origin = panel.frame.origin
+        let wasSaving = savingPosition
+        savingPosition = true
+        defer { savingPosition = wasSaving }
+        root.layoutSubtreeIfNeeded()
+        panel.setContentSize(root.fittingSize)
+        panel.setFrameOrigin(screen.map { clamped(origin, on: $0) } ?? origin)
     }
+    func showHint(_ parts: [(key: String, text: String)]) {
+        showMessage(parts.map { $0.key + " " + $0.text }.joined(separator: "  ·  "))
+    }
+    func showMessage(_ text: String) {
+        hideHint()
+        let p = Panel(contentRect: CGRect(x: 0, y: 0, width: 320, height: 40), styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
+        p.isOpaque = false; p.backgroundColor = .clear; p.hasShadow = true
+        p.level = panel.level; p.collectionBehavior = panel.collectionBehavior; p.ignoresMouseEvents = true
+        let bg = Self.surface()
+        p.contentView = bg
+        let content = Self.container(in: bg)
+        let label = NSTextField(labelWithString: text)
+        label.font = .systemFont(ofSize: 12)
+        label.lineBreakMode = .byTruncatingMiddle
+        label.translatesAutoresizingMaskIntoConstraints = false
+        content.addSubview(label)
+        NSLayoutConstraint.activate([
+            label.leadingAnchor.constraint(equalTo: content.leadingAnchor, constant: 16),
+            label.trailingAnchor.constraint(equalTo: content.trailingAnchor, constant: -16),
+            label.topAnchor.constraint(equalTo: content.topAnchor, constant: 12),
+            label.bottomAnchor.constraint(equalTo: content.bottomAnchor, constant: -12)
+        ])
+        p.setContentSize(CGSize(width: min(640, label.fittingSize.width + 32), height: 40))
+        p.setFrameOrigin(CGPoint(x: panel.frame.midX - p.frame.width / 2, y: panel.frame.maxY + 8))
+        p.orderFrontRegardless()
+        hint = p
+        let work = DispatchWorkItem { [weak self] in self?.hideHint() }
+        hintWork = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3, execute: work)
+    }
+    func hideHint() { hintWork?.cancel(); hintWork = nil; hint?.orderOut(nil); hint = nil }
 
-    private var actions: [Button: () -> Void] = [:]
-
-    private func makeButton(image: NSImage? = nil, symbol: String? = nil, tip: String, side: CGFloat = 40, action: @escaping () -> Void) -> Button {
+    func snapshot() -> NSBitmapImageRep? { bitmap(panel) }
+    func snapshotHint() -> NSBitmapImageRep? { hint.flatMap(bitmap) }
+    func snapshotInkTray() -> NSBitmapImageRep? { bitmap(panel) }
+    private func bitmap(_ window: NSWindow) -> NSBitmapImageRep? {
+        guard let view = window.contentView else { return nil }
+        view.layoutSubtreeIfNeeded()
+        guard let bitmap = view.bitmapImageRepForCachingDisplay(in: view.bounds) else { return nil }
+        view.cacheDisplay(in: view.bounds, to: bitmap)
+        return bitmap
+    }
+    private func button(image: NSImage? = nil, symbol: String? = nil, tip: String, side: CGFloat = 32, action: @escaping () -> Void) -> Button {
         let b = Button()
-        b.isBordered = false
-        b.bezelStyle = .regularSquare
-        b.imageScaling = .scaleProportionallyUpOrDown
-        b.toolTip = tip
-        b.setAccessibilityLabel(tip)
-        b.wantsLayer = true
-        b.layer?.cornerRadius = 10
-        if let image = image {
-            b.image = image
-        }
-        if let symbol = symbol {
-            let config = NSImage.SymbolConfiguration(pointSize: 15, weight: .medium)
-            b.image = NSImage(systemSymbolName: symbol, accessibilityDescription: tip)?.withSymbolConfiguration(config)
-            b.contentTintColor = NSColor(white: 1, alpha: 0.85)
-            b.imageScaling = .scaleNone
-        }
+        b.isBordered = false; b.bezelStyle = .regularSquare; b.focusRingType = .none
+        b.wantsLayer = true; b.layer?.cornerRadius = 8
+        b.image = image ?? symbol.flatMap { NSImage(systemSymbolName: $0, accessibilityDescription: tip) }
+        b.imageScaling = image == nil ? .scaleNone : .scaleProportionallyUpOrDown
+        b.contentTintColor = .labelColor
+        b.toolTip = tip; b.setAccessibilityLabel(tip)
         b.widthAnchor.constraint(equalToConstant: side).isActive = true
         b.heightAnchor.constraint(equalToConstant: side).isActive = true
-        b.target = self
-        b.action = #selector(tapped(_:))
+        b.target = self; b.action = #selector(tapped(_:))
         actions[b] = action
         return b
     }
-
-    @objc private func tapped(_ sender: Button) {
-        actions[sender]?()
-    }
-
-    @objc private func fixPermission() {
-        onFixPermission?()
-    }
-
-    private static func inkDot(_ color: CGColor) -> NSImage {
-        NSImage(size: NSSize(width: 64, height: 64), flipped: false) { rect in
-            let c = CGPoint(x: rect.midX, y: rect.midY)
-            let r: CGFloat = 13
-            NSColor(white: 0, alpha: 0.35).setFill()
-            NSBezierPath(ovalIn: CGRect(x: c.x - r - 1.5, y: c.y - r - 2.5, width: 2 * r + 3, height: 2 * r + 3)).fill()
-            (NSColor(cgColor: color) ?? .white).setFill()
-            NSBezierPath(ovalIn: CGRect(x: c.x - r, y: c.y - r, width: 2 * r, height: 2 * r)).fill()
-            NSColor(white: 1, alpha: 0.35).setFill()
-            NSBezierPath(ovalIn: CGRect(x: c.x - r * 0.55, y: c.y + r * 0.15, width: r * 0.7, height: r * 0.5)).fill()
-            return true
-        }
-    }
-
-    private static func rainbowDot() -> NSImage {
-        NSImage(size: NSSize(width: 64, height: 64), flipped: false) { rect in
-            let c = CGPoint(x: rect.midX, y: rect.midY)
-            let r: CGFloat = 13
-            NSColor(white: 0, alpha: 0.35).setFill()
-            NSBezierPath(ovalIn: CGRect(x: c.x - r - 1.5, y: c.y - r - 2.5, width: 2 * r + 3, height: 2 * r + 3)).fill()
-            let colors: [NSColor] = [.systemRed, .systemOrange, .systemYellow, .systemGreen, .systemBlue, .systemPurple]
-            for (i, color) in colors.enumerated() {
-                let path = NSBezierPath()
-                path.move(to: c)
-                path.appendArc(withCenter: c, radius: r, startAngle: CGFloat(i) * 60 + 90, endAngle: CGFloat(i + 1) * 60 + 90)
-                path.close()
-                color.setFill()
-                path.fill()
-            }
-            return true
-        }
-    }
-
+    @objc private func tapped(_ sender: Button) { actions[sender]?() }
+    @objc private func modeChanged() { onMode?(mode.selectedSegment == 0 ? .point : .draw) }
+    @objc private func fixPermission() { onFixPermission?() }
     private static func divider() -> NSView {
-        let v = NSView()
-        v.wantsLayer = true
-        v.layer?.backgroundColor = NSColor(white: 1, alpha: 0.18).cgColor
-        v.widthAnchor.constraint(equalToConstant: 1).isActive = true
-        v.heightAnchor.constraint(equalToConstant: 24).isActive = true
-        return v
+        let line = NSBox()
+        line.boxType = .separator
+        line.widthAnchor.constraint(equalToConstant: 1).isActive = true
+        line.heightAnchor.constraint(equalToConstant: 24).isActive = true
+        return line
     }
-
-    static func icon(for style: PointerStyle) -> NSImage? {
-        if let name = style.assetName {
-            return HandAsset.thumbnail(name)
-        }
-        return NSImage(size: NSSize(width: 64, height: 64), flipped: false) { rect in
-            let c = CGPoint(x: rect.midX, y: rect.midY)
-            let red = NSColor(cgColor: Ink.red) ?? .systemRed
-            let glow = NSGradient(colors: [red.withAlphaComponent(0.55), red.withAlphaComponent(0)])
-            glow?.draw(in: NSBezierPath(ovalIn: rect.insetBy(dx: 14, dy: 14)), relativeCenterPosition: .zero)
-            red.setFill()
-            NSBezierPath(ovalIn: CGRect(x: c.x - 7, y: c.y - 7, width: 14, height: 14)).fill()
-            NSColor(srgbRed: 1, green: 0.86, blue: 0.82, alpha: 0.95).setFill()
-            NSBezierPath(ovalIn: CGRect(x: c.x - 3, y: c.y - 3, width: 6, height: 6)).fill()
+    private static func colorImage(_ color: CGColor) -> NSImage {
+        NSImage(size: CGSize(width: 24, height: 24), flipped: false) { rect in
+            NSColor(cgColor: color)?.setFill()
+            NSBezierPath(ovalIn: rect.insetBy(dx: 4, dy: 4)).fill()
+            NSColor.labelColor.withAlphaComponent(0.2).setStroke()
+            NSBezierPath(ovalIn: rect.insetBy(dx: 4, dy: 4)).stroke()
             return true
         }
+    }
+    static func icon(for style: PointerStyle) -> NSImage? {
+        if style == .laser { return colorImage(Ink.red) }
+        return style.assetName.flatMap(HandAsset.thumbnail)
     }
 }

@@ -7,7 +7,7 @@ swift build -c release
 quit_running_app
 
 APP="dist/$APP_NAME.app"
-make_bundle .build/release/$APP_NAME "$APP" "0"
+make_bundle ".build/release/$EXECUTABLE_NAME" "$APP" "0"
 
 IDENTITY="${CODESIGN_IDENTITY:-Developer ID Application}"
 sign_app "$APP" "$IDENTITY"

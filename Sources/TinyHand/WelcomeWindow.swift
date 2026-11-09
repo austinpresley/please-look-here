@@ -2,7 +2,8 @@ import AppKit
 import ApplicationServices
 
 final class WelcomeWindow: NSObject {
-    var onTryIt: (() -> Void)?
+    var onTryIt: ((PointerMode) -> Void)?
+    private var forDrawing = false
     var simulateUntrusted = false
 
     private final class Card: NSWindow {
@@ -22,7 +23,8 @@ final class WelcomeWindow: NSObject {
 
     static let shownKey = "welcomeShown"
 
-    func show() {
+    func show(forDrawing: Bool = false) {
+        self.forDrawing = forDrawing
         if window == nil {
             build()
         }
@@ -46,16 +48,16 @@ final class WelcomeWindow: NSObject {
     }
 
     private func refresh() {
-        title.stringValue = granted ? "You're all set" : "Allow Accessibility"
-        subtitle.stringValue = granted ? "Press \(Preferences.toggleShortcut.display) any time to start." : "So your clicks become taps, not real clicks."
-        button.title = granted ? "Start" : "Open Settings"
-        tip.isHidden = granted || askedAt.map { Date().timeIntervalSince($0) < 10 } ?? true
+        title.stringValue = forDrawing ? (granted ? "Drawing is ready" : "Allow drawing") : "Point while you work"
+        subtitle.stringValue = forDrawing ? "Draw adds annotations. Point stays available." : "Use apps normally with the hand visible.\nSwitch to Draw when you want to annotate."
+        button.title = forDrawing ? (granted ? "Start Drawing" : "Open Settings") : "Start Pointing"
+        tip.isHidden = !forDrawing || granted || askedAt.map { Date().timeIntervalSince($0) < 10 } ?? true
     }
 
     @objc private func buttonPressed() {
-        if granted {
+        if !forDrawing || granted {
             close()
-            onTryIt?()
+            onTryIt?(forDrawing ? .draw : .point)
             return
         }
         askedAt = Date()
@@ -100,6 +102,9 @@ final class WelcomeWindow: NSObject {
         subtitle.font = NSFont.systemFont(ofSize: 13)
         subtitle.textColor = .secondaryLabelColor
         subtitle.alignment = .center
+        subtitle.maximumNumberOfLines = 3
+        subtitle.preferredMaxLayoutWidth = 296
+        subtitle.widthAnchor.constraint(equalToConstant: 296).isActive = true
 
         button.target = self
         button.action = #selector(buttonPressed)

@@ -1,7 +1,8 @@
 #!/bin/bash
 
-APP_NAME="TinyHand"
-BUNDLE_ID="com.kamranahmed.tinyhand"
+APP_NAME="${TINYHAND_APP_NAME:-TinyHand}"
+EXECUTABLE_NAME="TinyHand"
+BUNDLE_ID="${TINYHAND_BUNDLE_ID:-com.kamranahmed.tinyhand}"
 REPO="nilbuild/tinyhand"
 FEED_URL="https://github.com/$REPO/releases/latest/download/appcast.xml"
 SPARKLE_PUBLIC_KEY="FWubybHeS/qieOQ9ITnuaIcIpFXz/TPEWPLA7P2C5Yw="
@@ -10,13 +11,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 VERSION="${TINYHAND_VERSION:-$(tr -d '[:space:]' < "$ROOT/VERSION")}"
 
 quit_running_app() {
-    if pgrep -x "$APP_NAME" >/dev/null; then
-        echo "Quitting the running $APP_NAME first..."
-        osascript -e "quit app id \"$BUNDLE_ID\"" >/dev/null 2>&1 || true
-        sleep 1
-        pkill -x "$APP_NAME" || true
-        sleep 0.5
-    fi
+    osascript -e "if application id \"$BUNDLE_ID\" is running then tell application id \"$BUNDLE_ID\" to quit" >/dev/null 2>&1 || true
 }
 
 make_bundle() {
@@ -32,10 +27,11 @@ make_bundle() {
     fi
     rm -rf "$app"
     mkdir -p "$app/Contents/MacOS" "$app/Contents/Resources"
-    cp "$binary" "$app/Contents/MacOS/$APP_NAME"
+    cp "$binary" "$app/Contents/MacOS/$EXECUTABLE_NAME"
     cp "$ROOT"/assets/hand_*.png "$app/Contents/Resources/"
     cp "$ROOT"/assets/sounds/tap_*.wav "$ROOT/assets/AppIcon.icns" "$ROOT/assets/Assets.car" "$app/Contents/Resources/"
     cp "$ROOT"/assets/menubar_*.png "$app/Contents/Resources/"
+    cp "$ROOT/LICENSE" "$app/Contents/Resources/LICENSE.txt"
 
     local fw
     fw="$(find "$ROOT/.build/artifacts" -path "*macos-arm64_x86_64/Sparkle.framework" -maxdepth 6 | head -1)"
@@ -54,7 +50,9 @@ make_bundle() {
     <key>CFBundleIdentifier</key>
     <string>$BUNDLE_ID</string>
     <key>CFBundleExecutable</key>
-    <string>$APP_NAME</string>
+    <string>$EXECUTABLE_NAME</string>
+    <key>TinyHandControlVersion</key>
+    <integer>1</integer>
     <key>CFBundleIconFile</key>
     <string>AppIcon</string>
     <key>CFBundleIconName</key>

@@ -1,6 +1,22 @@
 import AppKit
 import ApplicationServices
 
+if let index = CommandLine.arguments.firstIndex(of: "--input-probe") {
+    exit(InputProbe.run(Array(CommandLine.arguments.dropFirst(index + 1))))
+}
+
+if CommandLine.arguments.contains("--help") {
+    print("TinyHand --ctl '<JSON>'\nLocal control: {\"version\":1,\"operation\":\"status\"}\nOperations: \(ControlBridge.operations.joined(separator: ", "))\nUse the app bundle's executable. The compatible app must already be running.\nProtocol: docs/control-protocol.md")
+    exit(0)
+}
+if CommandLine.arguments.contains("--version") {
+    print(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "development")
+    exit(0)
+}
+if let index = CommandLine.arguments.firstIndex(of: "--ctl") {
+    exit(ControlTransport.runCLI(Array(CommandLine.arguments.dropFirst(index + 1))))
+}
+
 if let idx = CommandLine.arguments.firstIndex(of: "--render-test") {
     let out = CommandLine.arguments.count > idx + 1 ? CommandLine.arguments[idx + 1] : "/tmp/armtest.png"
     RenderTest.run(outPath: out)
@@ -48,11 +64,14 @@ if let idx = CommandLine.arguments.firstIndex(of: "--settings-test") {
     let out = CommandLine.arguments.count > idx + 1 ? CommandLine.arguments[idx + 1] : "/tmp/settings.png"
     let section = CommandLine.arguments.count > idx + 2 ? SettingsSection(rawValue: CommandLine.arguments[idx + 2]) ?? .general : .general
     let dark = ProcessInfo.processInfo.environment["TH_DARK"] != nil
-    if let image = SettingsWindow().snapshot(section, dark: dark),
+    let settings = SettingsWindow()
+    if let image = settings.snapshot(section, dark: dark),
        let data = NSBitmapImageRep(cgImage: image).representation(using: .png, properties: [:]) {
         try? data.write(to: URL(fileURLWithPath: out))
         print("rendered \(out)")
+        GridProbes.shared.write(to: out.replacingOccurrences(of: ".png", with: "-layout.json"), window: settings.snapshotSize)
     }
+    withExtendedLifetime(settings) {}
     exit(0)
 }
 
@@ -92,7 +111,7 @@ if CommandLine.arguments.contains("--e2e-test") {
 
 if CommandLine.arguments.contains("--click-test") {
     _ = NSApplication.shared
-    OverlayController().runClickTest()
+    E2ETest.run()
     exit(0)
 }
 

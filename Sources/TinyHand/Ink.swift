@@ -1,128 +1,181 @@
 import AppKit
 
+/// Keeps one undo entry per completed annotation gesture.
 final class Ink {
     let layer = CALayer()
-    var keep: Bool { Preferences.fadeSeconds <= 0 }
-
-    static let purple = CGColor(srgbRed: 0.53, green: 0.33, blue: 0.95, alpha: 1)
-    static let red = CGColor(srgbRed: 1.0, green: 0.16, blue: 0.12, alpha: 1)
-
-    static func hex(_ v: UInt32) -> CGColor {
-        CGColor(srgbRed: CGFloat((v >> 16) & 0xFF) / 255, green: CGFloat((v >> 8) & 0xFF) / 255,
-                blue: CGFloat(v & 0xFF) / 255, alpha: 1)
-    }
+    private(set) var document = AnnotationDocument()
+    private var draft: Annotation?
+    private var editingMarker: Annotation?
+    private var pressPoint: CGPoint?
+    private var markerOffset = CGPoint.zero
+    private var changedMarker = false
+    private var rendered: [UUID: (Annotation, CALayer)] = [:]
+    var onChanged: (() -> Void)?
     var color = Ink.purple
     var scale: CGFloat = 2
-    private var fadeDelay: CFTimeInterval { max(0.5, Preferences.fadeSeconds) }
-    private let fadeDuration: CFTimeInterval = 0.6
+    var tool: DrawingTool = .pen
+    var opacity: CGFloat = 1
+    var smoothing: StrokeSmoothing = .light
+    var keep: Bool { Preferences.fadeSeconds <= 0 }
+    var isDrawing: Bool { draft != nil || editingMarker != nil }
+    var canUndo: Bool { document.canUndo }
+    var canRedo: Bool { document.canRedo }
+    var count: Int { document.annotations.count }
 
-    private var stroke: CAShapeLayer?
-    private var points: [CGPoint] = []
-
-    var isDrawing: Bool { stroke != nil }
-
-    init() {
-        layer.masksToBounds = false
+    static let purple = CGColor(srgbRed: 0.53, green: 0.33, blue: 0.95, alpha: 1)
+    static let red = CGColor(srgbRed: 1, green: 0.16, blue: 0.12, alpha: 1)
+    static func hex(_ v: UInt32) -> CGColor {
+        CGColor(srgbRed: CGFloat((v >> 16) & 255) / 255, green: CGFloat((v >> 8) & 255) / 255,
+                blue: CGFloat(v & 255) / 255, alpha: 1)
     }
 
     func begin(at point: CGPoint, width: CGFloat) {
-        let s = CAShapeLayer()
-        s.strokeColor = color
-        s.fillColor = nil
-        s.lineWidth = width
-        s.lineCap = .round
-        s.lineJoin = .round
-        s.shadowColor = NSColor.black.cgColor
-        s.shadowOpacity = 0.18
-        s.shadowRadius = 1.5
-        s.shadowOffset = CGSize(width: 1, height: -1.5)
-        layer.addSublayer(s)
-        stroke = s
-        points = [point]
-        redraw()
+        cancel()
+        pressPoint = point
+        let style = AnnotationStyle(color: AnnotationColor(color), width: width, opacity: opacity, smoothing: smoothing)
+        if tool == .number, let marker = document.marker(at: point), case .number(_, let center) = marker.shape {
+            editingMarker = marker
+            markerOffset = CGPoint(x: center.x - point.x, y: center.y - point.y)
+            changedMarker = false
+            return
+        }
+        let shape: Annotation.Shape
+        switch tool {
+        case .pen: shape = .pen([point])
+        case .rectangle: shape = .rectangle(point, point)
+        case .arrow: shape = .arrow(point, point)
+        case .number: shape = .number(document.nextNumber, point)
+        case .text: return
+        }
+        draft = Annotation(shape: shape, style: style)
+        render()
     }
 
     func extend(to point: CGPoint) {
-        guard stroke != nil, let last = points.last else {
+        if var marker = editingMarker, case .number(let n, _) = marker.shape {
+            if let start = pressPoint, hypot(point.x - start.x, point.y - start.y) > 3 { changedMarker = true }
+            if changedMarker {
+                marker.shape = .number(n, CGPoint(x: point.x + markerOffset.x, y: point.y + markerOffset.y))
+                editingMarker = marker
+                render()
+            }
             return
         }
-        if hypot(point.x - last.x, point.y - last.y) < 1.5 {
-            return
+        guard var annotation = draft else { return }
+        switch annotation.shape {
+        case .pen(var points):
+            guard let last = points.last, hypot(point.x - last.x, point.y - last.y) >= 1.5 else { return }
+            points.append(point)
+            annotation.shape = .pen(points)
+        case .rectangle(let a, _): annotation.shape = .rectangle(a, point)
+        case .arrow(let a, _): annotation.shape = .arrow(a, point)
+        case .number(let n, _): annotation.shape = .number(n, point)
+        case .text: break
         }
-        points.append(point)
-        redraw()
+        draft = annotation
+        render()
     }
 
     func end() {
-        guard let s = stroke else {
-            return
+        var committed: UUID?
+        if let marker = editingMarker {
+            if changedMarker { document.replace(marker) } else { document.remove(marker.id) }
+        } else if let annotation = draft, annotation.isMeaningful {
+            document.append(annotation)
+            committed = annotation.id
         }
-        stroke = nil
-        points = []
-        freeze(s)
-        if keep {
-            return
+        draft = nil
+        editingMarker = nil
+        pressPoint = nil
+        render()
+        if let id = committed, !keep, let visible = rendered[id]?.1 {
+            let animation = CABasicAnimation(keyPath: "opacity")
+            animation.fromValue = 1
+            animation.toValue = 0
+            animation.beginTime = CACurrentMediaTime() + max(0.5, Preferences.fadeSeconds)
+            animation.duration = 0.6
+            animation.fillMode = .forwards
+            animation.isRemovedOnCompletion = false
+            visible.add(animation, forKey: "fade")
         }
-        fade(s, after: fadeDelay, over: fadeDuration)
+        onChanged?()
     }
 
-    func clear() {
-        stroke = nil
-        points = []
-        layer.sublayers?.forEach { $0.removeFromSuperlayer() }
+    func addText(_ text: String, at point: CGPoint, width: CGFloat) {
+        let style = AnnotationStyle(color: AnnotationColor(color), width: width, opacity: opacity, smoothing: smoothing)
+        document.append(Annotation(shape: .text(text, point), style: style))
+        render()
+        onChanged?()
     }
-
-    private func freeze(_ s: CAShapeLayer) {
-        guard let path = s.path else {
-            return
-        }
-        let pad = s.lineWidth / 2 + s.shadowRadius * 3 + max(abs(s.shadowOffset.width), abs(s.shadowOffset.height)) + 2
-        let box = path.boundingBoxOfPath.insetBy(dx: -pad, dy: -pad).integral
-        CATransaction.begin()
-        CATransaction.setDisableActions(true)
-        s.bounds = box
-        s.position = CGPoint(x: box.midX, y: box.midY)
-        s.rasterizationScale = scale
-        s.shouldRasterize = true
-        CATransaction.commit()
+    func cancel() {
+        draft = nil
+        editingMarker = nil
+        pressPoint = nil
+        render()
     }
+    func undo() { cancel(); document.undo(); render(); onChanged?() }
+    func redo() { cancel(); document.redo(); render(); onChanged?() }
+    func clear() { cancel(); document.clear(); render(); onChanged?() }
+    func reset() { cancel(); document.reset(); render(); onChanged?() }
 
-    private func fade(_ s: CAShapeLayer, after delay: CFTimeInterval, over duration: CFTimeInterval) {
-        let anim = CABasicAnimation(keyPath: "opacity")
-        anim.fromValue = 1
-        anim.toValue = 0
-        anim.beginTime = CACurrentMediaTime() + delay
-        anim.duration = duration
-        anim.timingFunction = CAMediaTimingFunction(name: .easeIn)
-        anim.fillMode = .forwards
-        anim.isRemovedOnCompletion = false
-        s.add(anim, forKey: "fade")
-        DispatchQueue.main.asyncAfter(deadline: .now() + delay + duration) { [weak s] in
-            s?.removeFromSuperlayer()
-        }
-    }
-
-    private func redraw() {
-        guard let s = stroke, let first = points.first else {
-            return
-        }
-        let path = CGMutablePath()
-        path.move(to: first)
-        if points.count == 1 {
-            path.addLine(to: first)
-        }
-        for i in 1..<max(1, points.count) {
-            let p = points[i]
-            let prev = points[i - 1]
-            let mid = CGPoint(x: (prev.x + p.x) / 2, y: (prev.y + p.y) / 2)
-            path.addQuadCurve(to: mid, control: prev)
-        }
-        if points.count > 1, let last = points.last {
-            path.addLine(to: last)
+    private func render() {
+        var items = document.annotations
+        if let marker = editingMarker, let i = items.firstIndex(where: { $0.id == marker.id }) { items[i] = marker }
+        if let draft = draft { items.append(draft) }
+        let ids = Set(items.map(\.id))
+        for id in rendered.keys.filter({ !ids.contains($0) }) {
+            rendered.removeValue(forKey: id)?.1.removeFromSuperlayer()
         }
         CATransaction.begin()
         CATransaction.setDisableActions(true)
-        s.path = path
+        for item in items {
+            if let existing = rendered[item.id], existing.0 == item { continue }
+            let replacement = makeLayer(item)
+            if let previous = rendered[item.id]?.1 {
+                layer.replaceSublayer(previous, with: replacement)
+            } else { layer.addSublayer(replacement) }
+            rendered[item.id] = (item, replacement)
+        }
         CATransaction.commit()
+    }
+
+    private func makeLayer(_ annotation: Annotation) -> CALayer {
+        let style = annotation.style
+        if case .text(let text, let point) = annotation.shape {
+            return textLayer(text, point: point, fontSize: max(16, style.width * 3), color: style.color.cgColor(opacity: style.opacity))
+        }
+        let shape = CAShapeLayer()
+        shape.path = AnnotationGeometry.path(annotation)
+        shape.strokeColor = style.color.cgColor(opacity: style.opacity)
+        shape.fillColor = nil
+        shape.lineWidth = style.width
+        shape.lineCap = .round
+        shape.lineJoin = .round
+        shape.contentsScale = scale
+        if case .number(let n, let center) = annotation.shape {
+            shape.fillColor = style.color.cgColor(opacity: style.opacity)
+            shape.strokeColor = NSColor.black.withAlphaComponent(0.15 * style.opacity).cgColor
+            shape.lineWidth = 1
+            let fontSize = annotation.markerRadius * 1.1
+            let label = textLayer(String(n), point: center, fontSize: fontSize, color: style.color.contrastingText)
+            label.opacity = Float(style.opacity)
+            label.position = CGPoint(x: center.x - label.bounds.width / 2, y: center.y - label.bounds.height / 2)
+            shape.addSublayer(label)
+        }
+        return shape
+    }
+
+    private func textLayer(_ text: String, point: CGPoint, fontSize: CGFloat, color: CGColor) -> CATextLayer {
+        let label = CATextLayer()
+        let font = NSFont.systemFont(ofSize: fontSize, weight: .semibold)
+        let size = (text as NSString).size(withAttributes: [.font: font])
+        label.string = text
+        label.font = font
+        label.fontSize = fontSize
+        label.foregroundColor = color
+        label.contentsScale = scale
+        label.anchorPoint = .zero
+        label.frame = CGRect(x: point.x, y: point.y - ceil(size.height), width: ceil(size.width) + 4, height: ceil(size.height) + 2)
+        return label
     }
 }

@@ -12,12 +12,40 @@ final class SettingsWindow: NSObject, NSWindowDelegate {
     var onRecording: ((Bool) -> Void)? {
         didSet { model.onRecording = onRecording }
     }
+    var applyPresentationShortcut: ((PresentationAction, Shortcut) -> Bool)? {
+        didSet { model.applyPresentationShortcut = applyPresentationShortcut }
+    }
+    var applyMode: ((PointerMode) -> Bool)? {
+        didSet { model.applyMode = applyMode }
+    }
+    var onVisibilityChanged: ((Bool) -> Void)?
+    private var permissionTimer: Timer?
     var updater: Updater? {
         didSet { model.updater = updater }
     }
 
     private var window: NSWindow?
     private let model = SettingsModel()
+
+    override init() {
+        super.init()
+        model.onContentHeightChanged = { [weak self] height in
+            DispatchQueue.main.async { self?.fitHeight(height) }
+        }
+    }
+
+    private func fitHeight(_ height: CGFloat) {
+        guard height > 0, ProcessInfo.processInfo.environment["TH_SETTINGS_HEIGHT"] == nil, let w = window else { return }
+        let visible = (w.screen ?? NSScreen.main)?.visibleFrame ?? CGRect(x: 0, y: 0, width: 1200, height: 900)
+        let maximum = visible.height
+        let target = min(maximum - 64, max(440, (height / 4).rounded(.up) * 4))
+        guard abs((w.contentView?.bounds.height ?? 0) - target) > 2 else { return }
+        let top = w.frame.maxY
+        w.setContentSize(CGSize(width: 784, height: target))
+        let x = min(max(w.frame.minX, visible.minX + 8), max(visible.minX + 8, visible.maxX - w.frame.width - 8))
+        let y = min(max(top - w.frame.height, visible.minY + 8), max(visible.minY + 8, visible.maxY - w.frame.height - 8))
+        w.setFrameOrigin(CGPoint(x: x, y: y))
+    }
 
     func show(_ section: SettingsSection? = nil) {
         if window == nil {
@@ -34,6 +62,16 @@ final class SettingsWindow: NSObject, NSWindowDelegate {
         }
         window?.makeKeyAndOrderFront(nil)
         window?.makeFirstResponder(nil)
+        onVisibilityChanged?(true)
+        permissionTimer?.invalidate()
+        let timer = Timer(timeInterval: 1, repeats: true) { [weak self] _ in self?.model.refresh() }
+        RunLoop.main.add(timer, forMode: .common)
+        permissionTimer = timer
+    }
+
+    func showHandCreator() {
+        show(.pointers)
+        model.startMakingHand()
     }
 
     func snapshot(_ section: SettingsSection = .general, dark: Bool = false) -> CGImage? {
@@ -43,6 +81,7 @@ final class SettingsWindow: NSObject, NSWindowDelegate {
         guard let w = window else {
             return nil
         }
+        GridProbes.shared.probes.removeAll()
         model.section = section
         let env = ProcessInfo.processInfo.environment
         if env["TH_MAKE_HAND"] != nil {
@@ -57,21 +96,38 @@ final class SettingsWindow: NSObject, NSWindowDelegate {
             w.setContentSize(NSSize(width: 780, height: tall))
         }
         w.center()
-        w.orderFrontRegardless()
+        NSApp.activate(ignoringOtherApps: true)
+        w.makeKeyAndOrderFront(nil)
+        w.makeFirstResponder(nil)
         RunLoop.current.run(until: Date().addingTimeInterval(ProcessInfo.processInfo.environment["TH_SETTINGS_HEIGHT"] == nil ? 0.8 : 4))
         let image = CGWindowListCreateImage(.null, .optionIncludingWindow, CGWindowID(w.windowNumber), [.boundsIgnoreFraming, .bestResolution])
+        print("SNAPSHOT section=\(section.rawValue) dark=\(dark) key=\(w.isKeyWindow) size=\(Int(w.frame.width))x\(Int(w.frame.height))")
         w.orderOut(nil)
         return image
     }
 
+    var snapshotSize: CGSize { window?.frame.size ?? .zero }
+
+    func exportVerificationSnapshot(to path: String) -> Bool {
+        guard let w = window, w.isVisible, w.isKeyWindow, NSApp.isActive,
+              let image = CGWindowListCreateImage(.null, .optionIncludingWindow, CGWindowID(w.windowNumber), [.boundsIgnoreFraming, .bestResolution]),
+              let png = NSBitmapImageRep(cgImage: image).representation(using: .png, properties: [:]) else { return false }
+        do {
+            try png.write(to: URL(fileURLWithPath: path), options: .atomic)
+            GridProbes.shared.write(to: path.replacingOccurrences(of: ".png", with: "-layout.json"), window: w.frame.size)
+            return true
+        } catch { Log.write("verification snapshot failed: \(error)"); return false }
+    }
+
     private func build() {
-        let w = NSWindow(contentRect: CGRect(x: 0, y: 0, width: 780, height: 560),
-                         styleMask: [.titled, .closable, .miniaturizable, .fullSizeContentView],
+        let w = NSWindow(contentRect: CGRect(x: 0, y: 0, width: 784, height: 640),
+                         styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
                          backing: .buffered, defer: false)
         w.title = "TinyHand Settings"
         w.titleVisibility = .hidden
         w.titlebarAppearsTransparent = true
         w.isReleasedWhenClosed = false
+        w.minSize = CGSize(width: 784, height: 440)
         w.delegate = self
         let host = NSHostingView(rootView: SettingsView(model: model))
         host.focusRingType = .none
@@ -80,11 +136,15 @@ final class SettingsWindow: NSObject, NSWindowDelegate {
     }
 
     func windowWillClose(_ notification: Notification) {
+        permissionTimer?.invalidate()
+        permissionTimer = nil
         onRecording?(false)
+        onVisibilityChanged?(false)
     }
 }
 
 final class ShortcutRecorder: NSButton {
+    var allowsPlainKeys = false
     var onChange: ((Shortcut) -> Bool)?
     var onRecording: ((Bool) -> Void)?
 
@@ -130,6 +190,7 @@ final class ShortcutRecorder: NSButton {
     private static let modifierSymbols: Set<Character> = ["⌃", "⌥", "⇧", "⌘"]
 
     private func setLabel(_ text: String, dim: Bool = false) {
+        setAccessibilityValue(text)
         keys.arrangedSubviews.forEach { $0.removeFromSuperview() }
         var rest = Substring(text)
         var caps: [String] = []
@@ -280,7 +341,7 @@ final class ShortcutRecorder: NSButton {
             return
         }
         let flags = event.modifierFlags.intersection([.control, .option, .command, .shift])
-        guard !flags.intersection([.control, .option, .command]).isEmpty else {
+        guard !flags.intersection([.control, .option, .command]).isEmpty || (allowsPlainKeys && event.charactersIgnoringModifiers?.rangeOfCharacter(from: .letters) != nil) else {
             setLabel("Add ⌃, ⌥ or ⌘", dim: true)
             return
         }
