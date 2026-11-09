@@ -1,0 +1,1082 @@
+{
+  "date": "2026-11-09",
+  "upstream": "c5fb36b7c4d7c87480958872a724b30a52427a47",
+  "donors": {
+    "tp": {
+      "name": "TinyPointer",
+      "repo": "esreverse/tinypointer",
+      "sha": "bdf5bacf9b8dda9c7aac7687c21fc8fff0f63c2e",
+      "root": "Sources/TinyPointer/"
+    },
+    "ai": {
+      "name": "AiHand",
+      "repo": "rjiang-bb/aihand",
+      "sha": "7b58e976d81031456ecf2e54cfc2269fa77d172e",
+      "root": "Sources/AiHand/"
+    },
+    "pl": {
+      "name": "PlayPointer",
+      "repo": "omiusgm/playpointer",
+      "sha": "d35254829b0a7411182272b2a81760c47261bbe5",
+      "root": "Sources/TinyHand/"
+    },
+    "ca": {
+      "name": "charlesanim",
+      "repo": "charlesanim/tinyhand",
+      "sha": "8c9a83b1143a823282ea4f5c9bab6c22e4f3c995",
+      "root": "Sources/TinyHand/"
+    },
+    "mx": {
+      "name": "maxnetdigital",
+      "repo": "maxnetdigital/tinyhand",
+      "sha": "01b845c321ea77a4622f6b78dab86514adc21435",
+      "root": "Sources/TinyHand/"
+    },
+    "al": {
+      "name": "alcibiadesc",
+      "repo": "alcibiadesc/tinyhand",
+      "sha": "a222e24d78bd4c39253f4fa96f654308192961db",
+      "root": "Sources/TinyHand/"
+    },
+    "sg": {
+      "name": "sergvax",
+      "repo": "sergvax/tinyhand",
+      "sha": "05ade042c6d77d534505dbd6c269909d90befd9f",
+      "root": "Sources/TinyHand/"
+    },
+    "ctl": {
+      "name": "0xdhrv",
+      "repo": "0xdhrv/tinyhand",
+      "sha": "602e3f4ad3c0436bd06fa7a97b318246e3bdff2a",
+      "root": "Sources/TinyHand/"
+    },
+    "tr": {
+      "name": "tran-huy-phuc",
+      "repo": "tran-huy-phuc/tinyhand",
+      "sha": "0f2614e83118bf2754ce2cb1de23cb21beb9b4cd",
+      "root": "desktop/"
+    }
+  },
+  "changes": [
+    {
+      "id": "C01",
+      "score": 10,
+      "title": "Use the Mac normally with the hand visible",
+      "category": "Interaction",
+      "decision": "Take",
+      "effort": "Medium",
+      "what": "Make normal clicks, double-clicks, right-clicks and drags reach the app underneath. Switch explicitly into Draw when you want annotations.",
+      "why": "This fixes the biggest everyday limitation: turning the hand on currently takes over your clicks. It makes the app useful for live demos as well as pointing.",
+      "caveat": "Choose one shared Point/Draw model. The three forks are alternative implementations, so combining their input handlers would create unnecessary conflicts.",
+      "sources": [
+        [
+          "ca",
+          "InputTap.swift"
+        ],
+        [
+          "sg",
+          "InputTap.swift"
+        ],
+        [
+          "pl",
+          "OverlayController.swift"
+        ]
+      ]
+    },
+    {
+      "id": "C02",
+      "score": 9,
+      "title": "Undo the last annotation",
+      "category": "Drawing",
+      "decision": "Take",
+      "effort": "Medium",
+      "what": "Remove the most recent ink stroke with Command-Z instead of clearing everything.",
+      "why": "A drawing tool needs a cheap way to fix a mistake. This matters more than adding more pointer artwork.",
+      "caveat": "AiHand provides undo. A complete redo stack is not established by this audit.",
+      "sources": [
+        [
+          "ai",
+          "Ink.swift"
+        ],
+        [
+          "ai",
+          "OverlayController.swift"
+        ]
+      ]
+    },
+    {
+      "id": "C03",
+      "score": 9,
+      "title": "Arrows, rectangles and text labels",
+      "category": "Drawing",
+      "decision": "Take",
+      "effort": "Large",
+      "what": "Add explicit freehand, rectangle, arrow and text tools, with a small drawing tool strip and thickness choices. TinyPointer also draws an arrowhead when a modifier is held.",
+      "why": "These tools communicate steps and UI feedback much more clearly than freehand scribbles alone.",
+      "caveat": "AiHand's tool palette is tied to its annotation flow. Extract the drawing tools without requiring an agent session.",
+      "sources": [
+        [
+          "ai",
+          "DrawingToolsPanel.swift"
+        ],
+        [
+          "ai",
+          "Ink.swift"
+        ],
+        [
+          "ai",
+          "InkTextEditor.swift"
+        ],
+        [
+          "tp",
+          "Ink.swift"
+        ]
+      ]
+    },
+    {
+      "id": "C04",
+      "score": 9,
+      "title": "Hold a key to magnify part of the screen",
+      "category": "Presenting",
+      "decision": "Take",
+      "effort": "Large",
+      "what": "A circular loupe follows the pointer, with adjustable diameter, 1.5x to 6x zoom and optional animation. It excludes the app's own windows from its capture.",
+      "why": "Small text and controls become readable during teaching, screen sharing and recorded demos.",
+      "caveat": "Requires Screen Recording permission and a live capture stream. Keep it opt-in and check display changes, performance and full-screen behavior locally before shipping.",
+      "sources": [
+        [
+          "tp",
+          "Magnifier.swift"
+        ],
+        [
+          "tp",
+          "Preferences.swift"
+        ]
+      ]
+    },
+    {
+      "id": "C05",
+      "score": 9,
+      "title": "Capture a screenshot with the hand and ink",
+      "category": "Capture",
+      "decision": "Take",
+      "effort": "Large",
+      "what": "Take a screenshot that includes the pointer and drawing, omits the toolbar and hints, and can copy to the clipboard and save to a chosen folder.",
+      "why": "Turns a temporary explanation into something you can send immediately.",
+      "caveat": "maxnetdigital's capture defaults to secondary click. Keep that gesture configurable because another fork uses right-click to exit and Point mode needs native right-click. Shots initiated from the toolbar temporarily hide the hand so it does not point at the hidden camera button.",
+      "sources": [
+        [
+          "mx",
+          "Capture.swift"
+        ],
+        [
+          "mx",
+          "OverlayController.swift"
+        ],
+        [
+          "mx",
+          "Preferences.swift"
+        ]
+      ]
+    },
+    {
+      "id": "C06",
+      "score": 9,
+      "title": "Hide or move the toolbar",
+      "category": "Presenting",
+      "decision": "Take",
+      "effort": "Small to medium",
+      "what": "Add a persistent show/hide option and keyboard toggle. Let the toolbar move above the Dock, remember its position and reset it from its drag handle.",
+      "why": "A presentation overlay should not cover the content you are explaining or keep appearing at the bottom of the screen.",
+      "caveat": "alcibiadesc's small patch deliberately keeps the permission repair control reachable. TinyPointer adds the movable toolbar. Preserve both behaviors.",
+      "sources": [
+        [
+          "al",
+          "OverlayController.swift",
+          "c161c8b4bbda56990972e6f3032a3639ddae3028"
+        ],
+        [
+          "tp",
+          "Toolbar.swift"
+        ],
+        [
+          "tp",
+          "OverlayController.swift"
+        ]
+      ]
+    },
+    {
+      "id": "C07",
+      "score": 8,
+      "title": "Numbered step markers",
+      "category": "Drawing",
+      "decision": "Take",
+      "effort": "Medium",
+      "what": "Place numbered circles with a modifier-click, drag them to reposition and click an existing marker to remove it. Text color adapts to the marker background.",
+      "why": "Useful for explaining an ordered process without writing numbers by hand.",
+      "caveat": "TinyPointer bundles Playpen Sans under the OFL. Preserve its license if reusing the font.",
+      "sources": [
+        [
+          "tp",
+          "Ink.swift"
+        ]
+      ]
+    },
+    {
+      "id": "C08",
+      "score": 8,
+      "title": "Control line width and opacity separately",
+      "category": "Drawing",
+      "decision": "Take",
+      "effort": "Small to medium",
+      "what": "Choose stroke size independently of the hand size, plus ink opacity. AiHand supplies five thickness levels; TinyPointer exposes size and opacity sliders. The Rust/Tauri branch also separates pen thickness from pointer size.",
+      "why": "A large visible hand should not force a thick line, and translucent ink can mark text without obscuring it.",
+      "caveat": "Pick one set of controls rather than importing two competing thickness systems.",
+      "sources": [
+        [
+          "tp",
+          "Preferences.swift"
+        ],
+        [
+          "tp",
+          "Ink.swift"
+        ],
+        [
+          "ai",
+          "Preferences.swift"
+        ],
+        [
+          "tr",
+          "core/src/engine.rs"
+        ]
+      ]
+    },
+    {
+      "id": "C09",
+      "score": 8,
+      "title": "Keep drawing silent while taps still make sound",
+      "category": "Polish",
+      "decision": "Take",
+      "effort": "Small",
+      "what": "Play the sound only when a press ends as a tap. TinyPointer also offers an option to keep sound on drawing if desired.",
+      "why": "Removes the click sound at the start of every line. A small change with an obvious benefit.",
+      "caveat": "Sound moves from mouse-down to mouse-up, so the tap sound arrives slightly later.",
+      "sources": [
+        [
+          "al",
+          "OverlayController.swift",
+          "d8ce59056b2bf65899c5c38d24aaebca0134a2f6"
+        ],
+        [
+          "tp",
+          "OverlayController.swift"
+        ],
+        [
+          "tp",
+          "Preferences.swift"
+        ]
+      ]
+    },
+    {
+      "id": "C10",
+      "score": 8,
+      "title": "Tap a key to switch back to normal mouse use",
+      "category": "Interaction",
+      "decision": "Adapt",
+      "effort": "Medium",
+      "what": "A quick lone Shift tap latches mouse mode on or off. The key is configurable, with an orange menu icon and optional mode hint.",
+      "why": "Avoids holding Option for a long sequence of normal clicks, typing and dragging.",
+      "caveat": "Use it as a shortcut for the same Point/Draw state from C01. Avoid adding a separate third interaction mode. The implementation rejects modifier taps combined with typing or clicks.",
+      "sources": [
+        [
+          "al",
+          "InputTap.swift"
+        ],
+        [
+          "al",
+          "OverlayController.swift"
+        ],
+        [
+          "al",
+          "Preferences.swift"
+        ]
+      ]
+    },
+    {
+      "id": "C11",
+      "score": 8,
+      "title": "Export just the drawing as a transparent PNG",
+      "category": "Capture",
+      "decision": "Take",
+      "effort": "Medium",
+      "what": "Save all strokes since the last clear as a tightly cropped transparent image. Strokes remain exportable even after they fade from the screen.",
+      "why": "Lets you reuse arrows, diagrams or handwritten notes without the desktop behind them.",
+      "caveat": "Keep retained stroke data separate from visible layers and define when the retained drawing is cleared.",
+      "sources": [
+        [
+          "ca",
+          "Ink.swift"
+        ],
+        [
+          "ca",
+          "Capture.swift"
+        ],
+        [
+          "ca",
+          "OverlayController.swift"
+        ]
+      ]
+    },
+    {
+      "id": "C40",
+      "score": 8,
+      "title": "Keep a separate drawing on each monitor",
+      "category": "Drawing",
+      "decision": "Take",
+      "effort": "Medium",
+      "what": "Park each display's ink when the pointer moves to another display, then restore it when you return. The Rust Mac backend calls the shared engine's monitor switching implementation.",
+      "why": "Moving the hand between displays should not erase the explanation you just drew. This matters on a Mac with an external monitor.",
+      "caveat": "Only the active monitor's drawing is shown in this fork. Borrow the storage idea into the native app; decide separately whether inactive displays should keep showing their annotations.",
+      "sources": [
+        [
+          "tr",
+          "core/src/engine.rs"
+        ],
+        [
+          "tr",
+          "app/src/platform/macos/overlay.rs"
+        ]
+      ]
+    },
+    {
+      "id": "C12",
+      "score": 8,
+      "title": "Record a short demo or selected screen region",
+      "category": "Capture",
+      "decision": "Adapt",
+      "effort": "Large",
+      "what": "maxnetdigital records a display with the hand and ink. AiHand adds right-drag region selection, a recording toolbar, playback and a save/comment/send flow. The display recorder has toolbar and menu actions, a configurable capture shortcut and a double secondary-click gesture, with a click or Esc to stop.",
+      "why": "A short annotated recording often explains motion or a bug better than a still image.",
+      "caveat": "maxnetdigital includes the hand and ink; AiHand's region recorder excludes the app overlays and shows the real cursor. They also use different frame-rate settings. Passing a video path to an agent does not establish video understanding. Both implementations are video-only, with no audio track in the reviewed code.",
+      "sources": [
+        [
+          "mx",
+          "Capture.swift"
+        ],
+        [
+          "ai",
+          "RegionRecorder.swift"
+        ],
+        [
+          "ai",
+          "VideoAnnotatePreview.swift"
+        ]
+      ]
+    },
+    {
+      "id": "C13",
+      "score": 8,
+      "title": "Local commands for launchers and automation",
+      "category": "Automation",
+      "decision": "Take",
+      "effort": "Medium",
+      "what": "A versioned --ctl JSON interface reports state, turns the pointer on or off, chooses styles or laser, clears ink, changes pins and sound, opens settings, and validates settings batches.",
+      "why": "Makes reliable integrations possible for Raycast, scripts and other local tools. Explicit on/off is better than blindly toggling.",
+      "caveat": "The fork adds a private Unix socket with same-user checks and limits. It is the control foundation, not a completed Raycast extension. The app must already be running.",
+      "sources": [
+        [
+          "ctl",
+          "ControlBridge.swift"
+        ],
+        [
+          "ctl",
+          "ControlTransport.swift"
+        ]
+      ]
+    },
+    {
+      "id": "C14",
+      "score": 8,
+      "title": "Capture only the focused window",
+      "category": "Capture",
+      "decision": "Take",
+      "effort": "Medium",
+      "what": "Choose the whole screen or the focused window for annotated screenshots.",
+      "why": "Keeps feedback focused and reduces the amount of unrelated desktop content in a capture.",
+      "caveat": "AiHand crops the visible display to the frontmost ordinary window's bounds. It does not recover hidden parts of an occluded window. Check coordinates across multiple monitors and Retina scales.",
+      "sources": [
+        [
+          "ai",
+          "WindowCapture.swift"
+        ],
+        [
+          "ai",
+          "Preferences.swift"
+        ]
+      ]
+    },
+    {
+      "id": "C15",
+      "score": 8,
+      "title": "More keyboard controls while presenting",
+      "category": "Interaction",
+      "decision": "Adapt",
+      "effort": "Medium",
+      "what": "Add shortcuts for toolbar visibility, sound, automatic or rainbow ink, next/previous pointer and Settings. Single-key shortcuts are registered only while the pointer is on, with keyboard-layout-aware letter lookup for several defaults.",
+      "why": "Keeps common changes one key away without opening Settings or moving onto the toolbar.",
+      "caveat": "Use configurable shortcuts and suspend them during text entry. TinyPointer changes several defaults; those particular bindings are not a reason to adopt the feature.",
+      "sources": [
+        [
+          "tp",
+          "AppDelegate.swift"
+        ],
+        [
+          "tp",
+          "Preferences.swift"
+        ]
+      ]
+    },
+    {
+      "id": "C16",
+      "score": 8,
+      "title": "A visible ring where you click",
+      "category": "Presenting",
+      "decision": "Take",
+      "effort": "Small to medium",
+      "what": "Briefly highlight the click location. TinyPointer uses a tap circle; PlayPointer uses a small reusable pool of pulse rings and respects Reduce Motion.",
+      "why": "Viewers can see exactly where an action happened even if the hand partially covers the control.",
+      "caveat": "Keep it optional and carry over the Reduce Motion handling.",
+      "sources": [
+        [
+          "tp",
+          "ArmView.swift"
+        ],
+        [
+          "pl",
+          "ClickPulse.swift"
+        ]
+      ]
+    },
+    {
+      "id": "C17",
+      "score": 8,
+      "title": "Smoother drawn lines",
+      "category": "Drawing",
+      "decision": "Take",
+      "effort": "Medium",
+      "what": "Resample and smooth strokes with four smoothing strengths while keeping the endpoint at the pointer. Arrow strokes use stronger smoothing.",
+      "why": "Trackpad annotations look cleaner without making the hand visibly lag behind.",
+      "caveat": "This is source-level behavior, not a measured latency result. Check responsiveness with a mouse and trackpad before choosing the default strength.",
+      "sources": [
+        [
+          "tp",
+          "Ink.swift"
+        ],
+        [
+          "tp",
+          "Preferences.swift"
+        ]
+      ]
+    },
+    {
+      "id": "C18",
+      "score": 8,
+      "title": "Reach Settings even when the menu icon is hidden",
+      "category": "Polish",
+      "decision": "Take",
+      "effort": "Small",
+      "what": "Opening the app again brings up Settings, and the overlay toolbar has a Settings button.",
+      "why": "MacBook notches and crowded menu bars can hide the app's only obvious way into Settings.",
+      "caveat": "A small, independent change from maxnetdigital's larger capture feature.",
+      "sources": [
+        [
+          "mx",
+          "AppDelegate.swift"
+        ],
+        [
+          "mx",
+          "Toolbar.swift"
+        ]
+      ]
+    },
+    {
+      "id": "C19",
+      "score": 7,
+      "title": "Better recovery when drawing permission fails",
+      "category": "Reliability",
+      "decision": "Adapt",
+      "effort": "Medium",
+      "what": "PlayPointer can run its control mode without first starting the drawing interception tap, gates Draw on permission, falls back to Control, and explains how to repair drawing access.",
+      "why": "A broken permission state should still leave the app understandable and usable for pointing.",
+      "caveat": "This changes onboarding and input setup together. Test permission denied, revoked and re-granted states locally.",
+      "sources": [
+        [
+          "pl",
+          "OverlayController.swift"
+        ],
+        [
+          "pl",
+          "WelcomeWindow.swift"
+        ]
+      ]
+    },
+    {
+      "id": "C20",
+      "score": 7,
+      "title": "Keep mouse presses routed consistently",
+      "category": "Reliability",
+      "decision": "Adapt",
+      "effort": "Medium",
+      "what": "charlesanim and PlayPointer track the route of each mouse button from press through release. PlayPointer also guards callbacks with a generation value when activity changes. PlayPointer also checks hardware button state to recover a missed left-button release.",
+      "why": "This is useful groundwork for mode changes without mismatched mouse-down and mouse-up handling.",
+      "caveat": "It supports C01 rather than adding a visible feature. The source changes do not prove every stuck-button case is fixed.",
+      "sources": [
+        [
+          "ca",
+          "InputTap.swift"
+        ],
+        [
+          "pl",
+          "InputTap.swift"
+        ]
+      ]
+    },
+    {
+      "id": "C21",
+      "score": 7,
+      "title": "Pick pointers from a toolbar catalog with recents",
+      "category": "Polish",
+      "decision": "Adapt",
+      "effort": "Medium",
+      "what": "PlayPointer exposes the full pointer catalog above a horizontally scrollable toolbar and moves recently used styles to the front. It loads thumbnails for visible items.",
+      "why": "Useful once the pointer collection grows beyond the existing eight pinned slots.",
+      "caveat": "Keep a compact favorites path so a large catalog does not make routine switching slower.",
+      "sources": [
+        [
+          "pl",
+          "Toolbar.swift"
+        ],
+        [
+          "pl",
+          "Preferences.swift"
+        ]
+      ]
+    },
+    {
+      "id": "C22",
+      "score": 7,
+      "title": "A plain dot that matches the ink",
+      "category": "Presenting",
+      "decision": "Take",
+      "effort": "Small to medium",
+      "what": "TinyPointer adds a color pointer whose dot uses the line's size, color and opacity. Ink swatches are directly visible in its toolbar. It also corrects automatic ink for the white glove to white.",
+      "why": "A simple pointer can suit a formal presentation better than a novelty hand, while keeping annotation color consistent.",
+      "caveat": "The original already has a laser. The new value is an ink-matched dot and faster color access.",
+      "sources": [
+        [
+          "tp",
+          "PointerStyle.swift"
+        ],
+        [
+          "tp",
+          "ArmView.swift"
+        ],
+        [
+          "tp",
+          "Toolbar.swift"
+        ]
+      ]
+    },
+    {
+      "id": "C23",
+      "score": 7,
+      "title": "Preview, copy and drag captured images",
+      "category": "Capture",
+      "decision": "Adapt",
+      "effort": "Medium",
+      "what": "AiHand adds a screenshot preview with save/drag behavior, a Command-Shift-C copy action, and full-size open/copy actions for images in chats. It also posts native screenshot saved/copied notifications, with an image attachment for saved shots.",
+      "why": "Reduces the steps between making an annotation and using it in another app.",
+      "caveat": "The capture preview is useful independently. Chat-specific image actions only matter if chat becomes part of this app.",
+      "sources": [
+        [
+          "ai",
+          "ScreenshotSavePreview.swift"
+        ],
+        [
+          "ai",
+          "ChatImageActions.swift"
+        ],
+        [
+          "ai",
+          "OverlayController.swift"
+        ],
+        [
+          "ai",
+          "ScreenshotNotifier.swift"
+        ]
+      ]
+    },
+    {
+      "id": "C24",
+      "score": 7,
+      "title": "Local Mac builds without requiring full Xcode",
+      "category": "Development",
+      "decision": "Adapt",
+      "effort": "Medium",
+      "what": "TinyPointer adds an external build directory, SDK selection, local signing/install support and a DMG fallback. sergvax adds a TINYHAND_SDK override, date-based build numbers and ad-hoc signing. AiHand expands local release and debug scripts.",
+      "why": "Useful for developing this fork on your Mac and keeping packaging local.",
+      "caveat": "Reuse the local workflow ideas with your own app identity and updater configuration. The forks' hosted workflow changes are outside your requested setup.",
+      "sources": [
+        [
+          "tp",
+          "/scripts/build-local.sh"
+        ],
+        [
+          "tp",
+          "/scripts/lib.sh"
+        ],
+        [
+          "sg",
+          "/scripts/build-app.sh"
+        ],
+        [
+          "ai",
+          "/scripts/release.sh"
+        ]
+      ]
+    },
+    {
+      "id": "C25",
+      "score": 7,
+      "title": "Draw on the screen and send it to a coding agent",
+      "category": "Agents",
+      "decision": "Later",
+      "effort": "Large",
+      "what": "AiHand captures the annotation, opens a shared prompt composer, and sends it through Cursor Agent, Claude Code or Codex CLI. Enter opens a comment; Command-Enter can send.",
+      "why": "A strong direction for visual bug reports and UI work if you want this to become a developer tool.",
+      "caveat": "This adds a second product to maintain. Its Claude adapter uses --dangerously-skip-permissions and Cursor uses --force/--trust. Reconsider those defaults before reusing the integration.",
+      "sources": [
+        [
+          "ai",
+          "OverlayController.swift"
+        ],
+        [
+          "ai",
+          "AnnotatePromptPanel.swift"
+        ],
+        [
+          "ai",
+          "AgentCLI.swift"
+        ]
+      ]
+    },
+    {
+      "id": "C26",
+      "score": 7,
+      "title": "Saved agent sessions and project folders",
+      "category": "Agents",
+      "decision": "Later",
+      "effort": "Large",
+      "what": "Persist conversations across restarts, archive sessions, queue or steer follow-ups, resize and remember the chat panel, and restore the selected chat per workspace. A workspace picker exposes paths, session indicators and Option-1 through Option-9 shortcuts. Completion notifications can bring you back to the relevant session, and the menu bar shows workspace session counts.",
+      "why": "Useful if draw-to-agent becomes a core workflow rather than a one-shot handoff.",
+      "caveat": "The sessions panel alone is over 2,000 source lines. Borrow the behavior selectively instead of taking the whole subsystem by default.",
+      "sources": [
+        [
+          "ai",
+          "SessionStore.swift"
+        ],
+        [
+          "ai",
+          "SessionsSidePanel.swift"
+        ],
+        [
+          "ai",
+          "AgentSessionRunner.swift"
+        ],
+        [
+          "ai",
+          "SessionNotifier.swift"
+        ]
+      ]
+    },
+    {
+      "id": "C27",
+      "score": 7,
+      "title": "Try display-linked pointer updates",
+      "category": "Reliability",
+      "decision": "Adapt",
+      "effort": "Medium",
+      "what": "AiHand changes tracking to use a display link and mouse events, with different grip-follow behavior.",
+      "why": "Worth investigating if pointer latency becomes noticeable during real use.",
+      "caveat": "No comparative performance measurements were run. Preserve upstream's idle throttling benefits and measure before choosing this implementation.",
+      "sources": [
+        [
+          "ai",
+          "OverlayController.swift"
+        ],
+        [
+          "ai",
+          "ArmView.swift"
+        ]
+      ]
+    },
+    {
+      "id": "C28",
+      "score": 6,
+      "title": "Freeform screenshot cutouts",
+      "category": "Capture",
+      "decision": "Later",
+      "effort": "Medium to large",
+      "what": "Trace a closed freehand shape, then save only the screen pixels inside it. The outside is transparent and the pointer, toolbar and ink are omitted.",
+      "why": "Handy for irregular cutouts, though ordinary screen or window capture will cover more daily needs.",
+      "caveat": "charlesanim's upstream PR was closed without merging, but the code is present in that fork's main branch. Cancellation preserves the selection.",
+      "sources": [
+        [
+          "ca",
+          "Capture.swift"
+        ],
+        [
+          "ca",
+          "OverlayController.swift"
+        ]
+      ]
+    },
+    {
+      "id": "C29",
+      "score": 6,
+      "title": "Animated cats, rockets and other playful pointers",
+      "category": "Appearance",
+      "decision": "Later",
+      "effort": "Medium to large",
+      "what": "PlayPointer adds a larger catalog, including cats, a rocket, squeaky toy, Nyan Cat and bongo cat. Several have pressed poses, following or pouncing behavior, trails, and style-specific sounds.",
+      "why": "Can give the app personality, especially for teaching, but does less for its core usefulness than better interaction and annotation.",
+      "caveat": "Choose a small original collection and review third-party character/art rights before reuse. Respect Reduce Motion as the animation code does in several paths.",
+      "sources": [
+        [
+          "pl",
+          "PointerStyle.swift"
+        ],
+        [
+          "pl",
+          "ArmView.swift"
+        ],
+        [
+          "pl",
+          "TapSound.swift"
+        ]
+      ]
+    },
+    {
+      "id": "C30",
+      "score": 6,
+      "title": "Rainbow ink",
+      "category": "Appearance",
+      "decision": "Later",
+      "effort": "Medium",
+      "what": "Cycle color along a line with adjustable speed and hue shift between strokes. TinyPointer can continue from the previous line's ending color and resets its sequence when cleared.",
+      "why": "A recognizable presentation effect, but a lower priority than clear shapes, undo and line control.",
+      "caveat": "Adds segmented drawing and smoothing work. A simple solid-color path should remain cheap.",
+      "sources": [
+        [
+          "tp",
+          "Ink.swift"
+        ],
+        [
+          "tp",
+          "Preferences.swift"
+        ]
+      ]
+    },
+    {
+      "id": "C31",
+      "score": 6,
+      "title": "Theme override and smaller pointer sizes",
+      "category": "Appearance",
+      "decision": "Adapt",
+      "effort": "Small",
+      "what": "AiHand adds System/Light/Dark appearance choices and lowers the minimum pointer size from 0.08 to 0.04.",
+      "why": "Useful preferences for a larger annotation workspace, with modest benefit for the tiny original app.",
+      "caveat": "The original already supports native appearance. A theme override is an extra choice, not the introduction of dark mode.",
+      "sources": [
+        [
+          "ai",
+          "Preferences.swift"
+        ],
+        [
+          "ai",
+          "SettingsView.swift"
+        ]
+      ]
+    },
+    {
+      "id": "C32",
+      "score": 6,
+      "title": "Model favorites and skill autocomplete",
+      "category": "Agents",
+      "decision": "Later",
+      "effort": "Large",
+      "what": "AiHand stores favorites per agent CLI, exposes model and effort choices, supports Command-/ model cycling, and autocompletes installed skills in the composer.",
+      "why": "Helpful inside an established agent workflow. Little value for a presentation-only app.",
+      "caveat": "Depends on CLI formats and catalogs that can change. Keep the adapters separate if adopting this direction.",
+      "sources": [
+        [
+          "ai",
+          "AgentModelCatalog.swift"
+        ],
+        [
+          "ai",
+          "SkillCatalog.swift"
+        ],
+        [
+          "ai",
+          "SkillAutocomplete.swift"
+        ]
+      ]
+    },
+    {
+      "id": "C33",
+      "score": 6,
+      "title": "Reorganize settings and polish the toolbar",
+      "category": "Polish",
+      "decision": "Adapt",
+      "effort": "Medium",
+      "what": "TinyPointer separates Shortcuts, Draw and Zoom pages, adds native right-aligned menu shortcut labels, larger toolbar spacing, custom hover/help states and macOS 26 glass with fallbacks. Ink renders below the toolbar. PlayPointer adds mode-specific drawing hints. The Tauri branch adds a toolbar tools row, clear action and optional hover hints.",
+      "why": "Useful when adding more controls, especially making mode and keyboard help easier to find.",
+      "caveat": "Design the final settings around the features you actually keep. Do not import every new page or purely visual choice automatically.",
+      "sources": [
+        [
+          "tp",
+          "SettingsView.swift"
+        ],
+        [
+          "tp",
+          "Toolbar.swift"
+        ],
+        [
+          "tp",
+          "AppKitHelpers.swift"
+        ],
+        [
+          "pl",
+          "Toolbar.swift"
+        ],
+        [
+          "tr",
+          "ui/toolbar.html"
+        ]
+      ]
+    },
+    {
+      "id": "C34",
+      "score": 5,
+      "title": "Right-click to end the pointer session",
+      "category": "Interaction",
+      "decision": "Adapt",
+      "effort": "Small",
+      "what": "TinyPointer optionally makes a secondary click exit; right-click on the toolbar drag handle instead resets its position.",
+      "why": "Convenient for a presentation-only mode, but a specialized gesture.",
+      "caveat": "Conflicts with right-click capture and ordinary context menus. Pick one explicit secondary-click policy per mode.",
+      "sources": [
+        [
+          "tp",
+          "InputTap.swift"
+        ],
+        [
+          "tp",
+          "OverlayController.swift"
+        ]
+      ]
+    },
+    {
+      "id": "C41",
+      "score": 5,
+      "title": "A real language choice for English and Vietnamese",
+      "category": "Appearance",
+      "decision": "Later",
+      "effort": "Medium",
+      "what": "The Rust/Tauri branch has a saved English/Vietnamese language choice, with localized menus and UI strings. The same UI is used by its Mac implementation.",
+      "why": "This is a more reusable localization approach than replacing all English text with one other language. Its priority depends on your intended audience.",
+      "caveat": "The dictionaries live in a web UI and Rust menu layer. A Swift app should use native localization rather than inherit that architecture just to gain translations.",
+      "sources": [
+        [
+          "tr",
+          "app/src/i18n.rs"
+        ],
+        [
+          "tr",
+          "ui/i18n.js"
+        ],
+        [
+          "tr",
+          "ui/settings.html"
+        ]
+      ]
+    },
+    {
+      "id": "C35",
+      "score": 4,
+      "title": "More documentation, demos and verification helpers",
+      "category": "Development",
+      "decision": "Adapt",
+      "effort": "Small to medium",
+      "what": "Forks add feature documentation, screenshots, changelogs, demo clips, input/capture tests and evidence helpers. 0xdhrv documents its control protocol and adds handler/socket regression checks. AiHand fixes SettingsWindow lifetime for its screenshot verification mode.",
+      "why": "Useful supporting work for whichever features are selected. It is not an additional app capability.",
+      "caveat": "This audit inspected source without running fork builds or their tests. Documentation and claimed validation are not proof of runtime readiness.",
+      "sources": [
+        [
+          "tp",
+          "/README.md"
+        ],
+        [
+          "mx",
+          "/README.md"
+        ],
+        [
+          "ca",
+          "/Tests/TinyHandTests/InputTapTests.swift"
+        ],
+        [
+          "ctl",
+          "/docs/control-protocol.md"
+        ],
+        [
+          "ai",
+          "SettingsWindow.swift"
+        ]
+      ]
+    },
+    {
+      "id": "C36",
+      "score": 3,
+      "title": "Replace the interface copy with Russian",
+      "category": "Appearance",
+      "decision": "Skip",
+      "effort": "Medium",
+      "what": "PlayPointer replaces many English interface strings and instructions with Russian.",
+      "why": "Valuable for that fork's audience, but there is no reason to replace the English UI in your app.",
+      "caveat": "This is hardcoded copy replacement rather than a full language picker. If localization matters later, use a proper localized string system.",
+      "sources": [
+        [
+          "pl",
+          "SettingsView.swift"
+        ],
+        [
+          "pl",
+          "WelcomeWindow.swift"
+        ]
+      ]
+    },
+    {
+      "id": "C37",
+      "score": 3,
+      "title": "Change defaults and make ink persistent",
+      "category": "Interaction",
+      "decision": "Adapt",
+      "effort": "Small",
+      "what": "Forks change initial shortcuts, selected styles, colors and sounds. AiHand keeps drawings until clear and removes the fade setting from its annotation workflow.",
+      "why": "These choices fit their authors' workflows. They are not new capabilities in themselves; upstream already supports keeping ink indefinitely.",
+      "caveat": "Choose defaults after the combined interaction model is designed. Keep fading as an option unless your product direction clearly benefits from removing it.",
+      "sources": [
+        [
+          "tp",
+          "Preferences.swift"
+        ],
+        [
+          "ai",
+          "Ink.swift"
+        ],
+        [
+          "ai",
+          "Preferences.swift"
+        ],
+        [
+          "pl",
+          "Preferences.swift"
+        ]
+      ]
+    },
+    {
+      "id": "C38",
+      "score": 2,
+      "title": "Remove automatic updates",
+      "category": "Development",
+      "decision": "Skip",
+      "effort": "Small",
+      "what": "PlayPointer removes Sparkle and makes update checks open its releases page. TinyPointer briefly removes Sparkle in its first commit, then restores it with its own update feed and key.",
+      "why": "Losing automatic updates would be a step backward for a distributed Mac app.",
+      "caveat": "Your fork will need its own bundle identity, feed and signing configuration. Adapt that configuration without discarding the existing update capability.",
+      "sources": [
+        [
+          "pl",
+          "Updater.swift"
+        ],
+        [
+          "pl",
+          "/Package.swift"
+        ],
+        [
+          "tp",
+          "Updater.swift"
+        ],
+        [
+          "tp",
+          "/scripts/lib.sh"
+        ]
+      ]
+    },
+    {
+      "id": "C42",
+      "score": 2,
+      "title": "Rewrite the Mac app in Rust and Tauri",
+      "category": "Development",
+      "decision": "Skip",
+      "effort": "Large",
+      "what": "The windows-tauri branch also adds a real Mac backend with CGEventTap, AppKit windows, IOSurface double buffering, private cursor hooks, and a worker-thread renderer shared with the port. It renders changed rectangles and uses refresh-rate pacing with a slower idle loop.",
+      "why": "For a Mac-only app, this adds substantial migration work without a clear advantage over improving the existing Swift version. Take the useful behaviors independently.",
+      "caveat": "Its own notes list missing custom hands, editable shortcuts, onboarding hints and automatic updates, plus an Esc/menu behavior gap. A README sentence still calls the overlay a stub even though the source contains a Mac implementation. Performance claims were not independently measured.",
+      "sources": [
+        [
+          "tr",
+          "app/src/platform/macos/mod.rs"
+        ],
+        [
+          "tr",
+          "app/src/platform/macos/overlay.rs"
+        ],
+        [
+          "tr",
+          "README.md"
+        ]
+      ]
+    },
+    {
+      "id": "C39",
+      "score": 1,
+      "title": "Rebrands, release versions and promotional edits",
+      "category": "Development",
+      "decision": "Skip",
+      "effort": "Small",
+      "what": "Forks rename the app, targets, bundle IDs, support links, websites and release destinations, bump versions, revise banners and add their own author credits. TinyPointer migrates existing TinyHand settings into its new identity and updates skeleton artwork.",
+      "why": "Branding and release ownership must match your own app. The donors' names, endpoints and banner revisions are not improvements to carry over.",
+      "caveat": "Settings migration is useful when changing identity, and artwork fixes can be checked separately. Preserve original MIT attribution when reusing code.",
+      "sources": [
+        [
+          "tp",
+          "main.swift"
+        ],
+        [
+          "tp",
+          "/LICENSE"
+        ],
+        [
+          "pl",
+          "/scripts/lib.sh"
+        ],
+        [
+          "ai",
+          "/scripts/lib.sh"
+        ]
+      ]
+    }
+  ]
+}
