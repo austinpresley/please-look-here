@@ -1,38 +1,27 @@
-<img src="./.github/logo.png" width="80" />
+![Look Here Please. Point it out. By Austin Presley.](.github/banner.jpg)
 
-# TinyHand
+# Look Here Please
 
-[![Latest release](https://img.shields.io/github/v/release/nilbuild/tinyhand?display_name=tag&sort=semver&cacheSeconds=3600)](https://github.com/nilbuild/tinyhand/releases/latest)
-[![Platform: macOS](https://img.shields.io/badge/platform-macOS-lightgrey)](https://tinyhand.app)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+Point it out. A playful native Mac pointer utility by Austin Presley.
 
-A tiny hand on a stick that points at things on your Mac screen.
+The local review app pairs enabled hand and laser choices with screen annotations,
+quick radial and menu bar controls, and Stream Deck automation. Keep presenting
+with a pointer, draw on screen, or turn Interact on to use the app underneath.
 
-<img src="./.github/banner.jpg" alt="TinyHand: a tiny hand for your Mac" />
+## Project status
 
-[![Download for macOS](https://img.shields.io/badge/Download_for_macOS-000000?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/nilbuild/tinyhand/releases/latest/download/TinyHand.dmg)
-[![Visit website](https://img.shields.io/badge/Visit_website-ffffff?style=for-the-badge&logo=safari&logoColor=black)](https://tinyhand.app)
+This is an MIT-licensed fork of TinyHand. The expanded app is in local review on
+Austin's Mac. This GitHub update publishes branding and presentation only.
+**The default main branch does not yet contain the expanded functional code.**
+There is no public Look Here Please app release or verified product website.
 
-macOS 13 or later, Apple Silicon and Intel.
+See [project status](docs/project-status.md) for the current scope and review gaps.
+Local review checkout instructions are kept in `docs/LOCAL-REVIEW.md`.
+All testing, building and packaging happen locally. Hosted CI stays disabled.
 
-## Install
+## Credits and license
 
-Open `TinyHand.dmg`, drag TinyHand to Applications and allow **Accessibility** when asked. It needs that to turn your clicks into taps. TinyHand updates itself.
-
-## Use
-
-| | |
-|---|---|
-| Click the menu bar icon, or **⌃⌥H** | Turn the pointer on or off |
-| Right-click the menu bar icon | Menu and Settings |
-| Click | Tap (nothing underneath gets clicked) |
-| Hold and drag | Draw on the screen |
-| **⌃⌥X** | Clear the drawing |
-| **Esc** | Clear everything and turn the pointer off |
-
-While the pointer is on, a small toolbar at the bottom of the screen lets you pick one of
-36 hands or a laser dot, mute the tap sound, or exit.
-
-## License
-
-MIT. See [LICENSE](LICENSE).
+Based on [TinyHand by Kamran Ahmed](https://github.com/nilbuild/tinyhand).
+Look Here Please's name, direction and new pointing-glove identity belong to
+Austin Presley's product. The original MIT notice is preserved in
+[LICENSE](LICENSE).
