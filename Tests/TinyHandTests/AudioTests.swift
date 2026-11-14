@@ -129,4 +129,28 @@ private final class ProbeAudioDriver: TapAudioDriver {
             overlay.deactivate()
         }
     }
+    @Test func permissionDrivenModeFallbackCancelsQueuedDrawingAudio() async {
+        _ = NSApplication.shared
+        PointerStyle.saved = .glove
+        Preferences.pointerMode = .point; Preferences.handSound = true; Preferences.tapSwing = 0
+        let probe = AudioProbe(), release = DispatchSemaphore(value: 0)
+        let sound = TapSound(driverFactory: { _, change in ProbeAudioDriver(probe, changed: change) })
+        var allowed = true
+        let overlay = OverlayController(accessibility: { allowed }, tapSound: sound)
+        await withCheckedContinuation { (started: CheckedContinuation<Void, Never>) in
+            probe.blockStart = { started.resume(); release.wait() }
+            sound.enabled = true; sound.warm()
+        }
+        PointerStyle.saved = .glove; Preferences.handSound = true; Preferences.pointerMode = .point
+        #expect(overlay.activate())
+        Preferences.pointerMode = .draw
+        sound.play()
+        allowed = false
+        overlay.checkPermissionForVerification()
+        #expect(overlay.mode == .point)
+        release.signal()
+        await sound.drain()
+        #expect(!probe.recorded.contains("background:play"))
+        overlay.deactivate()
+    }
 }

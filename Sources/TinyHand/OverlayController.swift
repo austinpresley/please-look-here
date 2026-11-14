@@ -19,6 +19,7 @@ final class OverlayController {
     private let tapSound: TapSound
     private let contactFeedback = TapContactFeedback()
     private var previousTapSwing = Preferences.tapSwing
+    private var previousPointerMode = Preferences.pointerMode
     private var gestures = HandGestureSession()
     private let gesturePreview = TapContactFeedback()
     private var pendingGesturePreview: HandGestureSlot?
@@ -331,6 +332,10 @@ final class OverlayController {
     func toolbarButtonCenter(_ style: PointerStyle) -> CGPoint? { toolbar.center(of: style) }
 
     private func syncPreferences() {
+        if previousPointerMode != mode {
+            previousPointerMode = mode
+            cancelTapFeedback()
+        }
         cancelHandGestures(notify: false)
         previousGestureSignature = HandGestureCatalog.signature(for: PointerStyle.saved)
         if previousTapSwing != Preferences.tapSwing {
@@ -640,6 +645,7 @@ final class OverlayController {
     }
     #if DEBUG
     func observeForVerification(_ event: NSEvent, own: Bool) { observed(event, own: own) }
+    func checkPermissionForVerification() { lastPermissionCheck = .distantPast; checkPermission() }
     #endif
     private func wake() {
         guard isActive else { return }
