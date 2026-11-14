@@ -59,6 +59,27 @@ case "press":
         }
     }
     emit(["ok": false, "error": "No matching app-owned press action"]); exit(1)
+case "pick-public-file":
+    guard args.count == 2, let directory = env["APP_SNAPSHOT"],
+          URL(fileURLWithPath: args[1]).standardizedFileURL.path.hasPrefix(URL(fileURLWithPath: directory).standardizedFileURL.path + "/"),
+          FileManager.default.fileExists(atPath: args[1]),
+          NSWorkspace.shared.frontmostApplication?.processIdentifier == app.processIdentifier else { exit(2) }
+    let source = CGEventSource(stateID: .hidSystemState)
+    func key(_ code: CGKeyCode, flags: CGEventFlags = [], text: String? = nil) {
+        guard NSWorkspace.shared.frontmostApplication?.processIdentifier == app.processIdentifier else { exit(3) }
+        for down in [true, false] {
+            let event = CGEvent(keyboardEventSource: source, virtualKey: code, keyDown: down)
+            event?.flags = flags
+            if let text { let units = Array(text.utf16); units.withUnsafeBufferPointer { event?.keyboardSetUnicodeString(stringLength: units.count, unicodeString: $0.baseAddress) } }
+            event?.post(tap: .cghidEventTap); usleep(40_000)
+        }
+    }
+    key(5, flags: [.maskCommand, .maskShift]); usleep(200_000)
+    if let focus = read(root, kAXFocusedUIElementAttribute) {
+        _ = AXUIElementSetAttributeValue(focus as! AXUIElement, kAXValueAttribute as CFString, args[1] as CFString)
+    }
+    key(36); usleep(250_000); key(36); usleep(250_000)
+    emit(["ok": true])
 case "fixture-front":
     guard let fixture = NSRunningApplication.runningApplications(withBundleIdentifier: "com.austinpresley.tinyhand.fixture").first else { exit(2) }
     emit(["ok": fixture.activate(options: [])])

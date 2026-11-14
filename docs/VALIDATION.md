@@ -2612,3 +2612,107 @@ coverage and a full VoiceOver audit were not performed. The pre-existing radial
 reopen issue and physical Stream Deck acceptance gaps remain open. These changes
 were kept local in the existing modified checkout; no prior work was staged, no
 public release or Git push was made, and hosted CI stayed disabled.
+
+## S-026 through S-035 selected fork upgrades, 14 November 2026
+
+Austin selected shortlist items 1, 2, 3, 4, 7, 9, 10, 12, 13 and 14 and authorized
+routine decisions while sleeping. Completed in native Look Here Please 1.1.0,
+build **20261114081700**, source **a96036c**, on local branch
+`feature/fork-upgrades-20261114`. The earlier local app is preserved in checkpoint
+`8451227`, a recovery archive and an installed-app backup under
+`/Users/apresley/Library/Caches/look-here-please-fork-upgrades-20261114`.
+
+### Local verification
+
+- `full-tests-certified.log` passed **149 tests in 22 suites** with no compiler
+  warnings, plus the Stream Deck packaging unit check and **12 grid lints**.
+  These logs are in the recovery/cache directory. New tests cover blocked audio
+  startup and configuration recovery; mute, context and permission-mode
+  cancellation; system notifications and complete owned input pairs; own-window
+  Point release; trail visibility/history; magnifier layout, late-frame
+  cancellation and coalescing; custom pose composition/corruption; swing timing;
+  and strict control batches. Regression logs retain each failing-before and
+  passing-after review correction.
+- `scripts/fork-upgrades-smoke.py` passed **11 native runtime groups** on the
+  exact certified build. It verifies idle sleep and real movement wakeup, hidden
+  toolbar recovery, shutdown signals, native Interact clicks, captured trail
+  drags and Undo/Redo, both pose previews, real overlapping gesture hotkeys and
+  modifier release, exclusive-key release/re-registration for corrupt/restored
+  artwork, live magnification over changing public-fixture content, rapid
+  capture cancellation and immediate native dragging with swing enabled.
+- `scripts/fork-upgrades-fullscreen.py` passed **four actual full-screen Space
+  checks**. A controlled fixture enters/exits temporary full-screen Spaces with
+  the pointer off and on. The overlay reports real active-Space membership;
+  Window Server confirms the toolbar is on screen when enabled. Its hidden
+  preference survives the other transitions. The temporary fixture/Space is
+  closed afterward; no user Space or system preference is changed.
+- Actual native controls start magnification after closing the popover, and the
+  toolbar button stops it. Both controls are captured and reviewed in light and
+  dark. The native Hand Gestures menu starts a temporary pose and restores it
+  after two seconds. All nine new native sound tiles were pressed and selected;
+  their real background AVAudioEngine path ran without a UI crash.
+
+Evidence is under `dist/verification/fork-upgrades-20261114/`: `native-checks.json`,
+`fullscreen-checks.json`, `controls-certified-checks.json`, `sound-ui-checks.json`,
+`certified-build.json` and `packaged-resources.json`. Native PNGs capture only the
+app's own window over public fixture content. The magnifier shows a correctly
+oriented 3x grid and colored squares, with one hand and no feedback recursion.
+Trail images show visible red ink becoming fully transparent while annotation
+history remains; the measured first-run red pixel count drops from 2,126 to zero.
+
+### Active window review
+
+Every Settings page was captured as an active key window in both appearances.
+The final General permission label and final controls were captured again from
+the certified build. All associated layout reports pass.
+
+| Surface | Visual result |
+| --- | --- |
+| General | Native switches, permission status and installer controls fit. The permission row now names screenshots and magnification; the final light/dark captures are `settings-general-certified-*.png`. |
+| Shortcuts | Gesture hold rows display real assignments or Unassigned, with aligned Clear controls. The long command list scrolls normally; no factory keys are introduced. |
+| Drawing | Trail mode, delay and speed fit alongside width/opacity/color. Light and dark labels remain readable, with no overlapping controls. |
+| Pointers | Both gesture thumbnails, per-hand import buttons and the existing library remain distinct. Existing pins and enabled choices keep their layout. |
+| Appearance | Follow behavior, optional tap swing, zoom and lens size align. Extra bottom captures show the complete toolbar/Reset Position controls through normal scrolling. |
+| Sound | All 15 choices plus Off fit in four columns. Typewriter and other labels fit; Off and Chirp selected states are readable in both themes. Laser sound is clearly independent. |
+| About | Version 1.1.0, existing project credit and the packaged notice button fit, with no extra blank band or unwanted focus. |
+| Hand creator | The three steps explain copy/paste, real PNG transparency and preview/add. A public PNG was chosen through the real native file panel; active light/dark draft captures show its checkerboard transparency, name field and complete Add Hand controls without clipping. |
+| Controls and toolbar | The new magnifier button fits without clipping and shows selection. The native popover and floating toolbar remain legible in both appearances. |
+
+### Packaging and preservation
+
+`build-certified.log` passed local universal arm64/x86_64 compilation, stable
+Developer ID requirement comparison, secure timestamp/hardened-runtime signing,
+Accepted Apple notarization, stapling, Gatekeeper, ZIP integrity and extracted-app
+verification. The exact archive is `dist/Look Here Please-review.zip`. The
+embedded plugin remains 1.0.3.2; its archive/hash receipt is verified. It was not
+installed or reassigned in the Stream Deck host. Packaged WAV/pose bytes and full
+donor MIT notices match their source files. No upstream update feed is present.
+
+The normal installed app was relaunched through LaunchServices after the test
+instance quit. `normal-final.json` confirms original Pointer Off, selected
+Lavender toy, Interact, old settings, enabled choices, pins and assignments, with
+Accessibility and Screen Recording both retained. The exported normal preferences
+are exactly identical to the initial export. All **2,892 protected files** still
+exist; hands and Stream Deck profiles/key settings match their initial hashes.
+Only the host's runtime `Data/COEvents` file changed and was left intact. New
+shortcuts are null; swing is zero and magnification/poses are off.
+The file-panel check changed three app navigation preferences; after the test
+instance quit, only those three keys were restored to their captured values.
+The final normal export is again exactly identical. Rejected inactive standalone
+preview attempts are retained outside the accepted evidence in the recovery
+cache; only the real active-window preview captures count as reviewed.
+
+Review findings and resolutions are preserved separately in
+`fork-upgrades-code-review-2026-11-14.md`. No material finding remains open. Source
+and packaging work stayed local; no Git push, PR, public release, hosted workflow
+creation, dispatch or rerun occurred.
+
+### Limits
+
+Lock, screensaver and sleep behavior uses controlled signals and raw router
+regressions; the unattended Mac was not actually locked or slept. Audio failure
+and permission loss are injected through real interfaces, rather than changing
+normal OS grants or starting a live screen-sharing service. Real sound previews
+and live screen capture were exercised. Physical multiple-display/mixed-scale,
+Intel/older macOS runtime and a full VoiceOver audit remain unperformed. The
+preexisting radial reopen and physical Stream Deck acceptance gaps stay open.

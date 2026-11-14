@@ -128,3 +128,53 @@ eligibility on the existing service tick. Native controls/material and disabled
 popover animation respect appearance and accessibility display preferences.
 Verification-only anchors/narrow width/snapshots require test mode and an S-023
 suite. They do not move the real status item, displays or saved toolbar position.
+
+## Selected fork upgrades, 14 November 2026
+
+`TapSound` is a small caller interface over a serial audio queue. Its production
+driver owns AVAudioEngine and player nodes; blocked/failing test drivers cross the
+same interface. A locked cancellation gate is checked before and after engine
+startup. Presentation context and reconciled PointerMode changes invalidate queued
+audio independently of the main-thread contact-sound scheduler. Audio engine work
+never runs on the UI thread. Swift 5 language mode is retained.
+
+`PresentationLifecycle` owns workspace, session and display notification tokens.
+OverlayController deactivates through one normal shutdown path and separately
+reasserts overlay/control membership on Space changes and activation. InputTap's
+locked-session backstop forwards fresh system presses, preserves unrelated owned
+pairs and drains already-owned Escape repeats through release. MotionPacing stops
+the motion timer after three still seconds; one-second catalog/environment work
+continues with timer tolerance, and real input wakes rendering.
+
+`InkTrail` is pure timestamp/distance geometry. Ink's temporary layer visibility
+uses it at 60 Hz only while trails are active. AnnotationDocument keeps full
+geometry and normal undo/redo, so erasing a visible trail does not destroy history.
+
+`MagnifierController` owns lens geometry, the displayed buffer and capture-session
+identity. `ScreenMagnifierCapture` hides ScreenCaptureKit behind the same driver
+interface as the delayed test implementation. It excludes this entire app,
+captures one display at up to 30 fps and retains only a displayed frame and a
+coalesced pending replacement. Startup and stop have bounded UI deadlines; stale
+callbacks cannot restore a stopped session. The lens is a layer in the existing
+overlay, not another independently routed window. Pure MagnifierLayout handles
+display-local crop math without mixing origins or backing scales.
+
+`HandGestureCatalog` owns two per-hand artwork slots and a small decoded-image
+cache. Canonical composition preserves the base hand's geometry and stick;
+poses do not enter PointerCatalog IDs, pins or cycle order. HandGestureSession
+orders held owners, while HotKeyCenter supplies exclusive press/release callbacks
+and ignores held-key repeats. Registration signatures include command and hand
+identity. File signature changes reconcile availability and registrations while
+preserving saved assignments. Unreadable artwork cannot keep an exclusive key.
+
+`TapSwing` is optional pose timing, separate from Original/Responsive following.
+`TapContactFeedback` owns at most one delayed contact action. Drag contact is
+immediate, context changes cancel queued feedback, and Reduce Motion suppresses
+the decorative swing. The native controls, menu, shortcut and JSON paths reuse
+the same app-owned actions.
+
+The new review fixture supports controlled actual full-screen Spaces. The
+fork-upgrades smoke script operates only over its public canvas and an isolated
+settings/hand domain. `test-presentation` is absent from normal capabilities and
+requires that isolated suite; snapshot paths stay inside APP_SNAPSHOT and capture
+only an app-owned window. The observed-event/permission helpers are DEBUG-only.

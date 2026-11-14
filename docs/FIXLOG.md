@@ -1,5 +1,52 @@
 # Integration fixes
 
+## S-026 queued audio and context cancellation
+
+Audio engine/device calls could block the main thread during screen sharing.
+They now run on a serial audio queue, recreate the engine after configuration or
+render failure, and use multiple player nodes. Review also reproduced cancellation
+during first engine startup and after a tap had already entered the audio queue.
+Recheck the ticket after startup, invalidate it on presentation context changes,
+and reconcile direct mode changes such as permission-driven Draw-to-Point fallback.
+Blocked-driver regressions fail before and pass after each correction.
+
+Rule: cancellation belongs to the queued operation as well as its UI scheduler;
+recheck it after any blocking call and reconcile every state-change route.
+
+## S-027 lock fallback keeps complete owned pairs
+
+The first lock backstop discarded every stored owner. Review regressions showed
+an unrelated captured mouse/key release leaking after a forwarded unlock press.
+An owned Escape autorepeat could also delete its owner before the matching up.
+Forward fresh system presses, relinquish only their matching old owner and retain
+unrelated pairs and already-owned repeats through release. Controls close without
+committing a canceled status click. Drawing, controls and radial regressions pass.
+
+Rule: a lock transition does not turn an owned autorepeat into a fresh press or
+end an unrelated pair's release ownership.
+
+## Native press ends over app controls
+
+A Point press starting in another app could end over our toolbar or Settings.
+The local mouse-up was filtered out with other own-window input, leaving the hand
+held and blocking gesture eligibility and idle motion sleep. Own-window Point
+releases now finish the visual press too. The DEBUG observation regression failed
+before the fix and passes afterward; annotation routing remains separate.
+
+Rule: an owned surface boundary cannot erase the release of a visual press that
+started outside that surface.
+
+## S-032 unusable gesture artwork releases its shortcut
+
+An external corrupt or incompatible pose image could leave its exclusive shortcut
+registered while every pose attempt was rejected. Registration now requires a
+decodable pose; image signature changes reconcile registrations even without an
+active pose. Stored assignments survive, and restoring artwork re-registers them.
+The native corruption/restoration check verifies both registration counts.
+
+Rule: an unavailable optional action must not retain an exclusive key merely
+because a saved assignment exists.
+
 ## S-013 reopen diagnosis, unresolved
 
 The prior full native run failed when reopening for the other-button case after a

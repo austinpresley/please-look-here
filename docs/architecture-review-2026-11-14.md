@@ -23,3 +23,13 @@ The existing screenshot implementation occupies about 85 lines of OverlayControl
 - Migrating the entire app to Swift 6 is unrelated to the selected changes.
 - A new app target, generic event bus or second event tap would add coordination without solving a current problem.
 - Splitting OverlayController into extensions solely to reduce line count would preserve its coupling while hiding it.
+
+## Milestone result
+
+The new capture, audio, trail, pose-session and tap-feedback modules are in place.
+Production and delayed/blocked test adapters use the same driver interfaces.
+The complete local suite, native input checks and actual full-screen transitions
+pass. Code review found and closed audio ticket, context reconciliation, artwork
+availability and input-pair cancellation gaps. No additional Strong refactor is
+needed before handoff. Extracting existing screenshot orchestration remains the
+next Worth exploring cleanup, outside this feature milestone.

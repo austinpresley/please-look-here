@@ -34,6 +34,8 @@ operations, enum values and invalid numeric/boolean values are rejected.
 | cycle-tool | None | Select the next drawing tool and wrap; turn Interact off and preserve pointer activation/selection |
 | clear / undo / redo | None | Use the same annotation history as the toolbar |
 | capture | None | Start a screenshot asynchronously |
+| magnifier | enabled boolean | Start or stop live magnification independently of the selected pointer; Screen Recording is required |
+| gesture | slot: first, second or none | Show a hand pose for two seconds, or cancel it; invalid/unavailable non-hand targets reject before activation |
 | style | style ID; optional activate boolean | Select a pointer, optionally activate |
 | cycle-pointer | None | Advance once through all enabled, available pointers and wrap; preserve activation and Interact |
 | laser | None | Activate and select the laser |
@@ -55,7 +57,11 @@ until `capturing` is false, then inspect `lastCaptureError`, `lastCapture` and
 
 - style: an enabled, available pointer ID; discover IDs and eligibility with styles.
 - ink: match, red, orange, yellow, green, blue, purple, white or black.
-- fade: 0, 3, 6 or 10 seconds.
+- fade: 0, 3, 6 or 10 seconds. Chooses legacy permanent/whole-line fading unless the batch supplies inkFadeStyle.
+- inkFadeStyle: wholeLine, trail or permanent. Trail animates pen visibility while keeping complete annotation history.
+- trailDelay: 0.2 through 3 seconds; trailSpeed: 40 through 600 points per second.
+- magnifierZoom: 1.5 through 6; magnifierDiameter: 160 through 480 points.
+- tapSwing: 0 through 2. Zero preserves the existing tap; Reduce Motion suppresses swing.
 - size: 0.04 through 0.20.
 - lineWidth: 2 through 20 points.
 - opacity: 0.1 through 1.
@@ -64,7 +70,7 @@ until `capturing` is false, then inspect `lastCaptureError`, `lastCapture` and
 - theme: system, light or dark.
 - shadow, handSound, laserSound, showToolbar, interactKeepsHand, captureCopies, captureSaves: booleans.
 - shadowStyle: `original` or `contact`. The separate `shadow` boolean controls visibility without losing this choice.
-- tapSound: thock, click, pop, wood, boop or squeak.
+- tapSound: thock, click, tock, clack, typewriter, snap, wood, pop, boop, blip, coin, pew, squeak, quack or chirp.
 - captureFolder: absolute directory path. A file path is rejected.
 
 At least one capture output must remain enabled. Omitted values remain unchanged.
@@ -76,6 +82,11 @@ preferences notification. This is not a crash-durable database transaction.
 A response is one JSON object with version, ok and acknowledged state. State includes
 active mode/tool, the Interact boolean, pointerVisible, annotation count and undo availability, motion method and clock,
 permissions, capture progress, settings, pins, and visible app window IDs.
+It also reports magnifying, magnifier lifecycle/frame diagnostics, current gesture slot,
+contactSoundPending and onActiveSpace. Magnification is off after pointer shutdown;
+gesture slots do not become pointer IDs or change pointer cycling. Gesture hold
+shortcuts are `gesture1` and `gesture2`; `magnifier` is the optional toggle shortcut.
+All three begin Unassigned, including after Reset All.
 `shortcuts` maps each command ID to either `null` for Unassigned or an object with
 `keyCode`, Carbon `modifiers` and `display`. Fresh preferences have all values null.
 Use Settings → Shortcuts to assign or clear commands. `configure` does not accept
@@ -136,7 +147,7 @@ its disabled choice. Assets and customization are never deleted by disabling.
 Every acknowledged `state` adds these arrays:
 
 - `enabledPointers`: ALL enabled AND available IDs in built-in library order,
-  followed by custom manifest order, followed by `laser`. This is the shared
+  followed by custom manifest order, then `laser`, `spotlight` and `presentation`. This is the shared
   source for Stream Deck cycling and future radial pointer choices. It includes
   unpinned choices. Use it directly; do not derive a cycle from `pinned`.
 - `quickPointers`: enabled, available saved pins in pin order. If none are usable,
