@@ -194,6 +194,34 @@ enum Preferences {
         set { set(newValue, "fadeSeconds") }
     }
 
+    static var inkFadeStyle: InkFadeStyle {
+        get { defaults.string(forKey: "inkFadeStyle").flatMap(InkFadeStyle.init(rawValue:)) ?? (fadeSeconds <= 0 ? .permanent : .wholeLine) }
+        set { performBatch {
+            set(newValue.rawValue, "inkFadeStyle")
+            if newValue != .permanent && fadeSeconds <= 0 { fadeSeconds = 3 }
+        } }
+    }
+    static var trailDelay: Double {
+        get { min(3, max(0.2, defaults.object(forKey: "trailDelay") as? Double ?? 1)) }
+        set { set(min(3, max(0.2, newValue)), "trailDelay") }
+    }
+    static var trailSpeed: Double {
+        get { min(600, max(40, defaults.object(forKey: "trailSpeed") as? Double ?? 240)) }
+        set { set(min(600, max(40, newValue)), "trailSpeed") }
+    }
+    static var magnifierZoom: Double {
+        get { min(6, max(1.5, defaults.object(forKey: "magnifierZoom") as? Double ?? 3)) }
+        set { set(min(6, max(1.5, newValue)), "magnifierZoom") }
+    }
+    static var magnifierDiameter: Double {
+        get { min(480, max(160, defaults.object(forKey: "magnifierDiameter") as? Double ?? 240)) }
+        set { set(min(480, max(160, newValue)), "magnifierDiameter") }
+    }
+    static var tapSwing: Double {
+        get { min(2, max(0, defaults.object(forKey: "tapSwing") as? Double ?? 0)) }
+        set { set(min(2, max(0, newValue)), "tapSwing") }
+    }
+
     static var handSound: Bool {
         get { defaults.object(forKey: "sound.hands") as? Bool ?? true }
         set { set(newValue, "sound.hands") }
@@ -263,7 +291,8 @@ enum Preferences {
         for key in ["radialTrigger", "shortcut.toggle", "shortcut.clear", "pointerSize", "showShadow", "shadowStyle", "fadeSeconds",
                     "sound.hands", "sound.laser", "interactKey", "interactKeepsHand", "pinnedStyles", "pointerStyle", "disabledPointerIDs",
                     "inkChoice", "showInkButton", "tapSound", "pointerMode", "drawingTool", "strokeWidth", "inkOpacity",
-                    "strokeSmoothing", "pointerMotion", "theme", "showToolbar", "toolbarPosition", "capture.copy", "capture.save", "capture.folder"]
+                    "strokeSmoothing", "pointerMotion", "theme", "showToolbar", "toolbarPosition", "capture.copy", "capture.save", "capture.folder",
+                    "inkFadeStyle", "trailDelay", "trailSpeed", "magnifierZoom", "magnifierDiameter", "tapSwing"]
                     + PresentationAction.allCases.map({ "shortcut.\($0.rawValue)" }) {
             defaults.removeObject(forKey: key)
         }

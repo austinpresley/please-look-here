@@ -92,7 +92,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         settings.applyPresentationShortcut = { [weak self] action, value in self?.apply(value, action: action, toggle: false) ?? false }
         settings.applyMode = { [weak self] in self?.overlay.setMode($0) ?? false }
         settings.onRecording = { [weak self] value in self?.recordingShortcut = value; _ = self?.registerHotKeys() }
-        settings.onVisibilityChanged = { [weak self] _ in _ = self?.registerHotKeys() }
+        settings.onVisibilityChanged = { [weak self] _ in self?.overlay.presentationContextChanged(); _ = self?.registerHotKeys() }
         settings.updater = Updater.isAvailable ? updater : nil
     }
     @objc private func settingsAction() { openSettings() }
@@ -110,6 +110,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         switch action {
         case .mode: overlay.toggleMode()
         case .capture: overlay.captureScreenshot()
+        case .magnifier: _ = overlay.setMagnification(!overlay.isMagnifying)
         case .toolbar: overlay.toggleToolbar()
         case .nextPointer: overlay.cyclePointer(by: 1)
         case .previousPointer: overlay.cyclePointer(by: -1)
@@ -187,6 +188,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func unregisterHotKeys() {
+        overlay.cancelHandGestures(notify: false)
         hotKeys.forEach(HotKeyCenter.shared.unregister)
         hotKeys.removeAll()
         keySignature = ""
@@ -194,25 +196,30 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @discardableResult
     private func registerHotKeys() -> Bool {
         if recordingShortcut { unregisterHotKeys(); return true }
-        var bindings: [(Shortcut, () -> Void)] = []
+        var bindings: [(String, Shortcut, () -> Void, (() -> Void)?)] = []
         if let shortcut = Preferences.toggleShortcut {
-            bindings.append((shortcut, { [weak self] in self?.overlay.toggle() }))
+            bindings.append(("toggle", shortcut, { [weak self] in self?.overlay.toggle() }, nil))
         }
         if let shortcut = Preferences.clearShortcut {
-            bindings.append((shortcut, { [weak self] in self?.overlay.clearInk() }))
+            bindings.append(("clear", shortcut, { [weak self] in self?.overlay.clearInk() }, nil))
         }
         if overlay.canUsePresentationShortcuts {
             for action in PresentationAction.allCases where !action.drawOnly || overlay.canUseDrawingShortcuts {
                 if let shortcut = Preferences.shortcut(for: action) {
-                    bindings.append((shortcut, { [weak self] in self?.perform(action) }))
+                    if let slot = action.gesture {
+                        guard overlay.style.assetName != nil else { continue }
+                        bindings.append(("\(action.rawValue):\(overlay.style.rawValue)", shortcut,
+                            { [weak self] in _ = self?.overlay.beginGesture(slot, owner: action.rawValue, shortcut: shortcut) },
+                            { [weak self] in self?.overlay.endGesture(action.rawValue) }))
+                    } else { bindings.append((action.rawValue, shortcut, { [weak self] in self?.perform(action) }, nil)) }
                 }
             }
         }
-        let signature = bindings.map { "\($0.0.keyCode):\($0.0.modifiers)" }.joined(separator: "|")
+        let signature = bindings.map { "\($0.0):\($0.1.keyCode):\($0.1.modifiers)" }.joined(separator: "|")
         if signature == keySignature { return true }
         unregisterHotKeys()
-        for (shortcut, action) in bindings {
-            guard let id = HotKeyCenter.shared.register(keyCode: shortcut.keyCode, modifiers: shortcut.modifiers, action: action) else {
+        for (_, shortcut, action, release) in bindings {
+            guard let id = HotKeyCenter.shared.register(keyCode: shortcut.keyCode, modifiers: shortcut.modifiers, action: action, onRelease: release) else {
                 unregisterHotKeys()
                 settings.shortcutError = "\(shortcut.display) could not be registered. Another app or macOS may be using it. Review Shortcuts in Settings."
                 Log.write("shortcut unavailable: \(shortcut.display)")

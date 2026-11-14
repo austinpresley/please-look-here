@@ -9,7 +9,23 @@ final class FixtureCanvas: NSView {
     let counter = NSTextField(labelWithString: "Button clicks: 0 · Canvas down: 0 · Canvas up: 0 · Drags: 0")
     private var buttonClicks = 0, downs = 0, ups = 0, drags = 0
     override var isFlipped: Bool { true }
-    override func draw(_ dirtyRect: NSRect) { NSColor.white.setFill(); dirtyRect.fill() }
+    override func draw(_ dirtyRect: NSRect) {
+        NSColor.white.setFill(); dirtyRect.fill()
+        if ProcessInfo.processInfo.environment["TINYHAND_FIXTURE_MAGNIFIER"] == "1" {
+            let path = NSBezierPath()
+            for x in stride(from: CGFloat(240), through: bounds.width - 80, by: 40) {
+                path.move(to: CGPoint(x: x, y: 280)); path.line(to: CGPoint(x: x, y: bounds.height - 80))
+            }
+            for y in stride(from: CGFloat(280), through: bounds.height - 80, by: 40) {
+                path.move(to: CGPoint(x: 240, y: y)); path.line(to: CGPoint(x: bounds.width - 80, y: y))
+            }
+            NSColor.lightGray.setStroke(); path.lineWidth = 1; path.stroke()
+            let text = "Magnifier fixture: small text, 0123456789, upright ABC" as NSString
+            text.draw(at: CGPoint(x: 320, y: 380), withAttributes: [.font: NSFont.monospacedSystemFont(ofSize: 12, weight: .regular), .foregroundColor: NSColor.black])
+            NSColor.systemRed.setFill(); CGRect(x: 480, y: 440, width: 16, height: 16).fill()
+            NSColor.systemBlue.setFill(); CGRect(x: 520, y: 440, width: 16, height: 16).fill()
+        }
+    }
     override func mouseDown(with event: NSEvent) { downs += 1; refresh() }
     override func mouseUp(with event: NSEvent) { ups += 1; refresh() }
     override func mouseDragged(with event: NSEvent) { drags += 1; refresh() }

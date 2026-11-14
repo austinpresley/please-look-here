@@ -11,8 +11,8 @@ final class ControlBridge {
     var verifyShortcuts: (([String: Any]) -> [String: Any])?
     private let snapshotSettings: ((String) -> Bool)?
     static var operations: [String] {
-        let normal = ["status", "styles", "cycle-pointer", "cycle-tool", "enable-pointer", "on", "off", "toggle", "clear", "undo", "redo", "interact", "mode", "tool", "capture", "style", "laser", "configure", "toggle-sound", "toggle-current-sound", "pin", "settings", "custom-hands"]
-        return ProcessInfo.processInfo.environment["TINYHAND_TEST_MODE"] == "1" ? normal + ["snapshot-settings", "run-applescript", "test-shortcuts", "test-radial", "test-menu-bar"] : normal
+        let normal = ["status", "styles", "cycle-pointer", "cycle-tool", "enable-pointer", "on", "off", "toggle", "clear", "undo", "redo", "interact", "mode", "tool", "capture", "magnifier", "gesture", "style", "laser", "configure", "toggle-sound", "toggle-current-sound", "pin", "settings", "custom-hands"]
+        return ProcessInfo.processInfo.environment["TINYHAND_TEST_MODE"] == "1" ? normal + ["snapshot-settings", "run-applescript", "test-shortcuts", "test-radial", "test-menu-bar", "test-presentation"] : normal
     }
 
     init(overlay: OverlayController, accessibility: @escaping () -> Bool = { AXIsProcessTrusted() }, openSettings: @escaping (String?) -> Void, openHandCreator: @escaping () -> Void, snapshotSettings: ((String) -> Bool)? = nil) {
@@ -47,11 +47,14 @@ final class ControlBridge {
             if op == "enable-pointer" { allowed.formUnion(["style", "enabled"]) }
             if op == "mode" { allowed.insert("mode") }
             if op == "interact" { allowed.insert("enabled") }
+            if op == "magnifier" { allowed.insert("enabled") }
+            if op == "gesture" { allowed.insert("slot") }
             if op == "tool" { allowed.insert("tool") }
             if op == "settings" { allowed.insert("section") }
             if op == "snapshot-settings" { allowed.insert("path") }
             if op == "run-applescript" { allowed.insert("source") }
             if op == "test-shortcuts" || op == "test-radial" || op == "test-menu-bar" { allowed.insert("request") }
+            if op == "test-presentation" { allowed.insert("request") }
             guard Set(request.keys).isSubset(of: allowed) else { throw reject("Unexpected request fields") }
             switch op {
             case "on": try activate()
@@ -79,6 +82,18 @@ final class ControlBridge {
                 // current tool here, never from a plugin's earlier observation.
                 try selectTool(Preferences.drawingTool.next)
             case "capture": overlay.captureScreenshot()
+            case "magnifier":
+                let enabled = try readBool(request["enabled"])
+                if enabled && overlay.isCapturing { throw reject("Magnification is unavailable while a screenshot is pending.", code: "unavailable") }
+                guard overlay.setMagnification(enabled) else {
+                    throw reject(overlay.lastMagnifierError ?? "Magnification is unavailable while a screenshot is pending.", code: overlay.lastMagnifierError == nil ? "unavailable" : "screen-recording")
+                }
+            case "gesture":
+                if request["slot"] as? String == "none" { overlay.cancelHandGestures() }
+                else {
+                    guard let raw = request["slot"] as? String, let slot = HandGestureSlot(rawValue: raw) else { throw reject("Gesture slot must be first, second or none") }
+                    guard overlay.previewGesture(slot) else { throw reject("Choose an available hand and close Settings or capture before showing a gesture.", code: "unavailable") }
+                }
             case "style":
                 let style = try readStyle(request["style"])
                 let shouldActivate = try readBool(request["activate"] ?? false)
@@ -142,6 +157,22 @@ final class ControlBridge {
             case "test-shortcuts":
                 guard let request = request["request"] as? [String: Any], let verifyShortcuts else { throw reject("Shortcut test request is required") }
                 response["shortcuts"] = verifyShortcuts(request)
+            case "test-presentation":
+                guard ProcessInfo.processInfo.environment["TINYHAND_DEFAULTS_SUITE"]?.hasPrefix("com.austinpresley.tinyhand.fork-upgrades.") == true,
+                      let request = request["request"] as? [String: Any], let event = request["event"] as? String else { throw reject("Use an isolated fork-upgrades suite") }
+                switch event {
+                case "sleep": NSWorkspace.shared.notificationCenter.post(name: NSWorkspace.willSleepNotification, object: nil)
+                case "screenSleep": NSWorkspace.shared.notificationCenter.post(name: NSWorkspace.screensDidSleepNotification, object: nil)
+                case "session": NSWorkspace.shared.notificationCenter.post(name: NSWorkspace.sessionDidResignActiveNotification, object: nil)
+                case "space": NSWorkspace.shared.notificationCenter.post(name: NSWorkspace.activeSpaceDidChangeNotification, object: nil)
+                case "display": NotificationCenter.default.post(name: NSApplication.didChangeScreenParametersNotification, object: nil)
+                case "lock", "screensaver": overlay.stopForSystem("simulated \(event)")
+                case "snapshot":
+                    guard let path = request["path"] as? String, let root = ProcessInfo.processInfo.environment["APP_SNAPSHOT"],
+                          path.hasSuffix(".png"), URL(fileURLWithPath: path).standardizedFileURL.path.hasPrefix(URL(fileURLWithPath: root).standardizedFileURL.path + "/") else { throw reject("Use a PNG inside the test snapshot directory") }
+                    overlay.snapshotPresentation(to: URL(fileURLWithPath: path))
+                default: throw reject("Unknown presentation test event")
+                }
             case "run-applescript":
                 // Test mode only. A process addressing itself needs no Automation consent.
                 guard let source = request["source"] as? String, let script = NSAppleScript(source: source) else { throw reject("Script source is required") }
@@ -207,7 +238,7 @@ final class ControlBridge {
 
     /// Validate every field before writing anything; deliver one native settings notification.
     private func configure(_ patch: [String: Any]) throws {
-        let allowed: Set<String> = ["style", "ink", "fade", "size", "shadow", "shadowStyle", "handSound", "laserSound", "tapSound", "lineWidth", "opacity", "smoothing", "motion", "theme", "showToolbar", "interactKeepsHand", "captureCopies", "captureSaves", "captureFolder", "radialTrigger"]
+        let allowed: Set<String> = ["style", "ink", "fade", "size", "shadow", "shadowStyle", "handSound", "laserSound", "tapSound", "lineWidth", "opacity", "smoothing", "motion", "theme", "showToolbar", "interactKeepsHand", "captureCopies", "captureSaves", "captureFolder", "radialTrigger", "inkFadeStyle", "trailDelay", "trailSpeed", "magnifierZoom", "magnifierDiameter", "tapSwing"]
         guard Set(patch.keys).isSubset(of: allowed) else { throw reject("Unsupported setting") }
         var trigger: RadialTrigger?
         if let value = patch["radialTrigger"] {
@@ -222,6 +253,18 @@ final class ControlBridge {
         if patch["tapSound"] != nil && sound == nil { throw reject("Unknown tap sound") }
         let fade = try patch["fade"].map { try readNumber($0) }
         if let fade = fade, ![0.0, 3, 6, 10].contains(fade) { throw reject("Fade must be 0, 3, 6, or 10 seconds") }
+        let fadeStyle = patch["inkFadeStyle"].flatMap { ($0 as? String).flatMap(InkFadeStyle.init(rawValue:)) }
+        if patch["inkFadeStyle"] != nil && fadeStyle == nil { throw reject("Ink fading must be wholeLine, trail or permanent") }
+        let trailDelay = try patch["trailDelay"].map { try readNumber($0) }
+        if let trailDelay, !(0.2...3).contains(trailDelay) { throw reject("Trail delay must be between 0.2 and 3 seconds") }
+        let trailSpeed = try patch["trailSpeed"].map { try readNumber($0) }
+        if let trailSpeed, !(40...600).contains(trailSpeed) { throw reject("Trail speed must be between 40 and 600 points per second") }
+        let zoom = try patch["magnifierZoom"].map { try readNumber($0) }
+        if let zoom, !(1.5...6).contains(zoom) { throw reject("Magnification zoom must be between 1.5 and 6") }
+        let diameter = try patch["magnifierDiameter"].map { try readNumber($0) }
+        if let diameter, !(160...480).contains(diameter) { throw reject("Magnification lens size must be between 160 and 480 points") }
+        let tapSwing = try patch["tapSwing"].map { try readNumber($0) }
+        if let tapSwing, !(0...2).contains(tapSwing) { throw reject("Tap swing must be between 0 and 2") }
         let size = try patch["size"].map { try readNumber($0) }
         if let size = size, !Preferences.pointerSizeRange.contains(CGFloat(size)) { throw reject("Pointer size is outside the native range") }
         let shadow = try patch["shadow"].map { try readBool($0) }
@@ -254,7 +297,16 @@ final class ControlBridge {
             if patch["radialTrigger"] != nil { Preferences.radialTrigger = trigger }
             if let style = style { PointerStyle.saved = style }
             if let ink = ink { Preferences.inkChoice = ink }
-            if let fade = fade { Preferences.fadeSeconds = fade }
+            if let fade = fade {
+                Preferences.fadeSeconds = fade
+                if fadeStyle == nil { Preferences.inkFadeStyle = fade <= 0 ? .permanent : .wholeLine }
+            }
+            if let fadeStyle { Preferences.inkFadeStyle = fadeStyle }
+            if let trailDelay { Preferences.trailDelay = trailDelay }
+            if let trailSpeed { Preferences.trailSpeed = trailSpeed }
+            if let zoom { Preferences.magnifierZoom = zoom }
+            if let diameter { Preferences.magnifierDiameter = diameter }
+            if let tapSwing { Preferences.tapSwing = tapSwing }
             if let size = size { Preferences.pointerSize = CGFloat(size) }
             if let shadow = shadow { Preferences.showShadow = shadow }
             if let shadowStyle { Preferences.shadowStyle = shadowStyle }
@@ -282,6 +334,9 @@ final class ControlBridge {
          "toolbarVisible": overlay.toolbarVisible, "toolbarFrame": [overlay.toolbarFrame.minX, overlay.toolbarFrame.minY, overlay.toolbarFrame.width, overlay.toolbarFrame.height],
          "annotations": overlay.inkStrokes, "capturing": overlay.isCapturing, "motionClock": overlay.motionClock,
          "shadowRendering": overlay.shadowDiagnostics,
+         "magnifying": overlay.isMagnifying, "magnifier": overlay.magnifierDiagnostics, "lastMagnifierError": overlay.lastMagnifierError ?? "",
+         "gesture": overlay.activeGesture?.rawValue ?? "",
+         "contactSoundPending": overlay.contactSoundPending,
          "lastCapture": overlay.lastCaptureURL?.path ?? "", "lastCaptureError": overlay.lastCaptureError ?? "", "captureSize": overlay.lastCaptureSize,
          "accessibility": accessibility(), "appVersion": Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "development",
          "screenRecording": ScreenCapture.hasPermission,
@@ -289,6 +344,9 @@ final class ControlBridge {
          "capabilities": Self.operations,
          "radial": overlay.radial.diagnostics,
          "settings": ["radialTrigger": Preferences.radialTrigger?.rawValue ?? "", "ink": Preferences.inkChoice.rawValue, "fade": Preferences.fadeSeconds,
+                      "inkFadeStyle": Preferences.inkFadeStyle.rawValue, "trailDelay": Preferences.trailDelay, "trailSpeed": Preferences.trailSpeed,
+                      "magnifierZoom": Preferences.magnifierZoom, "magnifierDiameter": Preferences.magnifierDiameter,
+                      "tapSwing": Preferences.tapSwing,
                       "size": Double(Preferences.pointerSize), "shadow": Preferences.showShadow,
                       "shadowStyle": Preferences.shadowStyle.rawValue,
                       "handSound": Preferences.handSound, "laserSound": Preferences.laserSound, "tapSound": Preferences.tapSound.rawValue,

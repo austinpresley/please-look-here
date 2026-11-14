@@ -47,6 +47,7 @@ final class Toolbar: NSObject, NSWindowDelegate {
     var onUndo: (() -> Void)?
     var onClear: (() -> Void)?
     var onCapture: (() -> Void)?
+    var onMagnifier: (() -> Void)?
     var onToggleSound: (() -> Void)?
     var onExit: (() -> Void)?
     var onFixPermission: (() -> Void)?
@@ -65,6 +66,7 @@ final class Toolbar: NSObject, NSWindowDelegate {
     private var current: PointerStyle?
     private var undoButton: Button!
     private var captureButton: Button!
+    private var magnifierButton: Button!
     private var clearButton: Button!
     private var exitButton: Button!
     private var soundButton: Button!
@@ -136,9 +138,11 @@ final class Toolbar: NSObject, NSWindowDelegate {
         row.addArrangedSubview(Self.divider())
         undoButton = button(symbol: "arrow.uturn.backward", tip: Preferences.shortcut(for: .undo).help("Undo annotation")) { [weak self] in self?.onUndo?() }
         captureButton = button(symbol: "camera", tip: Preferences.shortcut(for: .capture).help("Take Screenshot")) { [weak self] in self?.onCapture?() }
+        magnifierButton = button(symbol: "plus.magnifyingglass", tip: Preferences.shortcut(for: .magnifier).help("Toggle Magnification")) { [weak self] in self?.onMagnifier?() }
         soundButton = button(symbol: "speaker.wave.2.fill", tip: "Toggle tap sound") { [weak self] in self?.onToggleSound?() }
         row.addArrangedSubview(undoButton)
         row.addArrangedSubview(captureButton)
+        row.addArrangedSubview(magnifierButton)
         row.addArrangedSubview(soundButton)
         exitButton = button(symbol: "xmark", tip: Preferences.shortcut(for: .exitPointer).help("Turn pointer off")) { [weak self] in self?.onExit?() }
         row.addArrangedSubview(exitButton)
@@ -275,6 +279,7 @@ final class Toolbar: NSObject, NSWindowDelegate {
     }
     func resetPosition() { Preferences.toolbarPosition = nil; if let screen = panel.screen ?? screen { place(on: screen) } }
     func hide() { hideHint(); setRevealed(false) }
+    func setMagnifying(_ enabled: Bool) { magnifierButton.selected = enabled }
     func setRevealed(_ value: Bool) {
         // Reconcile the native panel, including after deactivate/reactivate.
         // A cached flag can say hidden while an ordered panel is still opaque.

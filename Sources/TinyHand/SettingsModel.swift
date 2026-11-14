@@ -23,6 +23,7 @@ final class SettingsModel: ObservableObject {
     private var observer: Any?
     private var handsObserver: Any?
     @Published var handMessage: String?
+    @Published var gestureMessage: String?
 
     init() {
         observer = NotificationCenter.default.addObserver(forName: Preferences.changed, object: nil, queue: .main) { [weak self] _ in
@@ -69,11 +70,26 @@ final class SettingsModel: ObservableObject {
     }
 
     func openChatGPT() {
-        var parts = URLComponents(string: "https://chatgpt.com/")
-        parts?.queryItems = [URLQueryItem(name: "q", value: HandMaker.prompt(for: handIdea))]
-        if let url = parts?.url {
+        copyPrompt()
+        if let url = URL(string: "https://chatgpt.com/") {
             NSWorkspace.shared.open(url)
         }
+    }
+    func chooseGestureFile(_ slot: HandGestureSlot, for style: PointerStyle) {
+        let panel = NSOpenPanel()
+        panel.allowedContentTypes = [.png, .webP, .image]
+        panel.allowsMultipleSelection = false
+        panel.message = "Choose one upright hand in the pose you want, with a flat wrist and transparent background. Do not include a stick, shadow or checkerboard."
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        do { try HandGestureCatalog.add(from: url, slot: slot, style: style); gestureMessage = "\(slot.title) artwork saved for \(style.title)." }
+        catch let problem as HandMaker.Problem { gestureMessage = problem.message }
+        catch { gestureMessage = "The artwork could not be saved. Try another image." }
+        refresh()
+    }
+    func restoreGesture(_ slot: HandGestureSlot, for style: PointerStyle) {
+        do { try HandGestureCatalog.restore(slot, style: style); gestureMessage = "\(slot.stockTitle) restored for \(style.title)." }
+        catch { gestureMessage = "The starter artwork could not be restored. Try again." }
+        refresh()
     }
 
     func chooseHandFile() {
@@ -200,6 +216,7 @@ final class SettingsModel: ObservableObject {
         previewSound?.load(choice)
         previewSound?.play()
     }
+    func stopPreview() { previewSound?.silence() }
 
     @Published var dragging: PointerStyle?
     @Published private var draftOrder: [PointerStyle]?

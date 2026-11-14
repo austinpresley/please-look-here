@@ -16,6 +16,10 @@ final class ControlInput {
         self.open = open; self.nativeMenu = nativeMenu; self.regions = regions
         if !open { statusButtons.removeAll() }
     }
+    func resetForSystem() {
+        open = false; nativeMenu = false; regions = []
+        buttons.removeAll(); keys.removeAll(); statusButtons.removeAll()
+    }
     func needsMenuRegions(_ type: CGEventType) -> Bool {
         open && nativeMenu && [.leftMouseDown, .rightMouseDown, .otherMouseDown].contains(type)
     }

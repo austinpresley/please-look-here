@@ -25,6 +25,45 @@ import Testing
         ] { #expect(try request(api, value)["ok"] as? Bool == false) }
     }
 
+    @Test func presentationConfigurationRejectsInvalidBatchesWithoutPartialWrites() throws {
+        let api = bridge()
+        Preferences.strokeWidth = 7
+        for field: [String: Any] in [["magnifierZoom": 0], ["magnifierDiameter": 900], ["trailDelay": -1],
+                                     ["trailSpeed": 5000], ["tapSwing": -1], ["inkFadeStyle": "unknown"]] {
+            let patch = field.merging(["lineWidth": 18]) { _, b in b }
+            #expect(try request(api, ["version": 1, "operation": "configure", "settings": patch])["ok"] as? Bool == false)
+            #expect(Preferences.strokeWidth == 7)
+        }
+    }
+
+    @Test func magnificationPermissionFailureDoesNotActivateAndCaptureReportsItsOwnReason() throws {
+        _ = NSApplication.shared
+        Preferences.pointerMode = .point
+        let overlay = OverlayController(accessibility: { false }, screenRecording: { false }, requestRecording: {})
+        defer { overlay.deactivate() }
+        let api = ControlBridge(overlay: overlay, accessibility: { false }, openSettings: { _ in }, openHandCreator: {})
+        let denied = try request(api, ["version": 1, "operation": "magnifier", "enabled": true])
+        #expect((denied["error"] as? [String: Any])?["code"] as? String == "screen-recording")
+        #expect(!overlay.isActive && !overlay.isMagnifying)
+        overlay.captureScreenshot()
+        #expect(overlay.isCapturing)
+        let busy = try request(api, ["version": 1, "operation": "magnifier", "enabled": true])
+        #expect((busy["error"] as? [String: Any])?["code"] as? String == "unavailable")
+        #expect(try request(api, ["version": 1, "operation": "magnifier", "enabled": 1])["ok"] as? Bool == false)
+    }
+
+    @Test func invalidGesturesAndNonHandTargetsNeverActivateThePointer() throws {
+        _ = NSApplication.shared
+        Preferences.pointerMode = .point
+        let overlay = OverlayController()
+        let api = ControlBridge(overlay: overlay, openSettings: { _ in }, openHandCreator: {})
+        _ = overlay.pick(.laser)
+        for slot: Any in ["unknown", 1, NSNull(), "first"] {
+            #expect(try request(api, ["version": 1, "operation": "gesture", "slot": slot])["ok"] as? Bool == false)
+            #expect(!overlay.isActive)
+        }
+    }
+
     @Test func newSettingsAreAcknowledgedInOneBatch() throws {
         let api = bridge()
         var notifications = 0

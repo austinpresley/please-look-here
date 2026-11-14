@@ -117,6 +117,9 @@ final class MenuBarControls: NSObject, NSPopoverDelegate, NSMenuDelegate {
         addRow(history)
         addDivider()
         let capture = button("capture", "Take Screenshot", "camera", title: "Screenshot") { [weak self] in self?.send("capture") }
+        let magnifier = button("magnifier", "Magnification", "plus.magnifyingglass") { [weak self] in
+            guard let self else { return }; self.send("magnifier", ["enabled": !self.overlay.isMagnifying])
+        }
         let sound = button("sound", "Tap Sound", "speaker.wave.2") { [weak self] in self?.send("toggle-current-sound") }
         // A native pull-down supplies a complete AX Press reply before tracking.
         // NSButton + synchronous NSMenu.popUp can strand that reply until close.
@@ -132,7 +135,7 @@ final class MenuBarControls: NSObject, NSPopoverDelegate, NSMenuDelegate {
         more.setAccessibilityLabel("More Commands"); more.toolTip = "Open grouped Pointer, Drawing and Presentation commands"
         more.widthAnchor.constraint(equalToConstant: 32).isActive = true
         buttons["more"] = more
-        addRow(horizontal([capture, flex(), sound, more]))
+        addRow(horizontal([capture, flex(), magnifier, sound, more]))
         let settings = button("settings", "Settings…", "gearshape", title: "Settings…") { [weak self] in self?.send("settings") }
         settings.isBordered = false
         let footer = horizontal([settings, flex(), button("close", "Close Controls", "xmark") { [weak self] in self?.close() }])
@@ -218,6 +221,10 @@ final class MenuBarControls: NSObject, NSPopoverDelegate, NSMenuDelegate {
         buttons["clear"]?.toolTip = Preferences.clearShortcut.help("Clear drawing")
         buttons["capture"]?.isEnabled = !overlay.isCapturing
         buttons["capture"]?.toolTip = Preferences.shortcut(for: .capture).help("Take screenshot")
+        buttons["magnifier"]?.state = overlay.isMagnifying ? .on : .off
+        buttons["magnifier"]?.isEnabled = !overlay.isCapturing
+        buttons["magnifier"]?.setAccessibilityValue(overlay.isMagnifying ? "On" : "Off")
+        buttons["magnifier"]?.toolTip = Preferences.shortcut(for: .magnifier).help("Toggle magnification")
         buttons["sound"]?.image = NSImage(systemSymbolName: overlay.soundOn ? "speaker.wave.2" : "speaker.slash", accessibilityDescription: "Tap Sound")
         buttons["sound"]?.toolTip = Preferences.shortcut(for: .sound).help(overlay.soundOn ? "Mute current pointer tap sound" : "Unmute current pointer tap sound")
         buttons["sound"]?.setAccessibilityValue(overlay.soundOn ? "On" : "Off")
@@ -229,7 +236,7 @@ final class MenuBarControls: NSObject, NSPopoverDelegate, NSMenuDelegate {
     }
     private func send(_ request: [String: Any]) {
         actionCounts[request["operation"] as? String ?? "", default: 0] += 1
-        let leavesControls = ["capture", "settings"].contains(request["operation"] as? String ?? "")
+        let leavesControls = ["capture", "settings", "magnifier", "gesture"].contains(request["operation"] as? String ?? "")
         if leavesControls { close() }
         let result = perform(request)
         message.stringValue = result; message.isHidden = result.isEmpty

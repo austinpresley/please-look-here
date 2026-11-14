@@ -24,6 +24,12 @@ enum InputProbe {
         }
         guard let command = arguments.first else { return 2 }
         switch command {
+        case "move":
+            let numbers = arguments.dropFirst().compactMap(Double.init)
+            guard numbers.count == 2, numbers.allSatisfy(\.isFinite) else { return 2 }
+            let point = CGPoint(x: numbers[0], y: numbers[1])
+            guard fixtureBounds.contains(where: { $0.contains(point) }) else { return 2 }
+            mouse(.mouseMoved, point)
         case "drag", "click", "control-click", "hold":
             let numbers = arguments.dropFirst().compactMap(Double.init)
             let count = command == "drag" ? 4 : command == "hold" ? 3 : 2
@@ -46,27 +52,61 @@ enum InputProbe {
                 if command == "hold" { usleep(useconds_t(numbers[2] * 1_000_000)) }
                 mouse(.leftMouseUp, start, flags: flags)
             }
-        case "key":
-            guard arguments.count == 2,
+        case "key", "key-hold", "key-release-modifiers", "gesture-overlap", "release-keys":
+            guard (command != "key" || arguments.count == 2),
                   NSWorkspace.shared.frontmostApplication?.processIdentifier == fixture.processIdentifier else {
                 print("Fixture is not frontmost; no key was posted")
                 return 2
             }
-            let name = arguments[1]
+            let name = arguments.count > 1 ? arguments[1] : "gesture1"
             guard let action = PresentationAction(rawValue: name), let shortcut = Preferences.shortcut(for: action) else {
                 print("Shortcut is unassigned; no key was posted")
                 return 2
             }
             let modifiers: [(Int, UInt32, CGEventFlags)] = [(kVK_Control, UInt32(controlKey), .maskControl), (kVK_Option, UInt32(optionKey), .maskAlternate), (kVK_Shift, UInt32(shiftKey), .maskShift), (kVK_Command, UInt32(cmdKey), .maskCommand)]
+            let duration = arguments.count > 2 ? Double(arguments[2]) ?? -1 : 1
+            guard (0.1...5).contains(duration) else { return 2 }
+            let overlap = Preferences.shortcut(for: .gesture2)
+            if command == "gesture-overlap", overlap == nil || overlap?.modifiers != shortcut.modifiers { return 2 }
+            func key(_ code: UInt32, down: Bool, flags: CGEventFlags) {
+                let event = CGEvent(keyboardEventSource: source, virtualKey: CGKeyCode(code), keyDown: down)
+                event?.flags = flags; event?.post(tap: .cghidEventTap); usleep(30_000)
+            }
+            func stage(_ text: String) { FileHandle.standardOutput.write(Data("STAGE \(text)\n".utf8)) }
             var held: CGEventFlags = []
+            if command == "release-keys" {
+                for slot in HandGestureSlot.allCases {
+                    if let value = Preferences.shortcut(for: slot.action) { key(value.keyCode, down: false, flags: []) }
+                }
+                for (code, _, _) in modifiers {
+                    let event = CGEvent(keyboardEventSource: source, virtualKey: CGKeyCode(code), keyDown: false)
+                    event?.type = .flagsChanged; event?.flags = []; event?.post(tap: .cghidEventTap)
+                }
+                return 0
+            }
             for (code, mask, flag) in modifiers where shortcut.modifiers & mask != 0 {
                 held.insert(flag)
                 let event = CGEvent(keyboardEventSource: source, virtualKey: CGKeyCode(code), keyDown: true)
                 event?.type = .flagsChanged; event?.flags = held; event?.post(tap: .cghidEventTap)
             }
-            for down in [true, false] {
-                let event = CGEvent(keyboardEventSource: source, virtualKey: CGKeyCode(shortcut.keyCode), keyDown: down)
-                event?.flags = held; event?.post(tap: .cghidEventTap); usleep(30_000)
+            key(shortcut.keyCode, down: true, flags: held)
+            stage("down")
+            if command == "gesture-overlap", let other = overlap {
+                usleep(400_000); key(other.keyCode, down: true, flags: held); stage("second")
+                usleep(400_000); key(shortcut.keyCode, down: false, flags: held); stage("second-after-first-release")
+                usleep(400_000); key(other.keyCode, down: false, flags: held); stage("released")
+            } else {
+                if command == "key-hold" || command == "key-release-modifiers" { usleep(useconds_t(duration * 1_000_000)) }
+                if command == "key-release-modifiers" {
+                    for (code, mask, flag) in modifiers.reversed() where shortcut.modifiers & mask != 0 {
+                        held.remove(flag)
+                        let event = CGEvent(keyboardEventSource: source, virtualKey: CGKeyCode(code), keyDown: false)
+                        event?.type = .flagsChanged; event?.flags = held; event?.post(tap: .cghidEventTap)
+                    }
+                    stage("modifiers-up"); usleep(400_000)
+                }
+                key(shortcut.keyCode, down: false, flags: held)
+                stage("released")
             }
             for (code, mask, flag) in modifiers.reversed() where shortcut.modifiers & mask != 0 {
                 held.remove(flag)

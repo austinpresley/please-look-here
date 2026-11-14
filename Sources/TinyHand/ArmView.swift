@@ -7,11 +7,14 @@ final class ArmView: NSView {
     private let handLayer = CALayer()
     private let dotLayer = CAShapeLayer()
     private let dotCore = CAShapeLayer()
+    private let gestureMarker = CAShapeLayer()
     private let spotlight = SpotlightLayer()
     private let presentation = PresentationPointerLayer()
 
     private(set) var style: PointerStyle = .lavender
     private var asset: HandAsset?
+    private var baseAsset: HandAsset?
+    private(set) var activeGesture: HandGestureSlot?
 
     private var handLenFrac: CGFloat = Preferences.pointerSize
     private var showShadow = Preferences.showShadow
@@ -23,10 +26,12 @@ final class ArmView: NSView {
     private let liftFrac: CGFloat = 0.06
 
     let ink = Ink()
-    var held = false
+    var held = false { didSet { if oldValue && !held { swing.release(at: CACurrentMediaTime()) } } }
     var inkWidth: CGFloat { Preferences.strokeWidth }
 
     private var pressAmount: CGFloat = 0
+    private var swing = TapSwing()
+    var tapSoundDelay: TimeInterval { swing.contactDelay }
     private var shadowResponse = ContactShadowResponse()
     private var gripX: CGFloat?
     private var lastPose: [CGFloat] = []
@@ -35,7 +40,7 @@ final class ArmView: NSView {
     private var displayImageHeight = 0
 
     var isSettling: Bool {
-        if pressAmount > 0.002 || shadowResponse.amount > 0 {
+        if pressAmount > 0.002 || shadowResponse.amount > 0 || swing.active {
             return true
         }
         guard let gx = gripX, let target = gripTarget else {
@@ -54,6 +59,7 @@ final class ArmView: NSView {
             dotLayer.isHidden = pointerHidden || style != .laser
             spotlight.layer.isHidden = pointerHidden || style != .spotlight
             presentation.layer.isHidden = pointerHidden || style != .presentation
+            gestureMarker.isHidden = pointerHidden || activeGesture == nil
             CATransaction.commit()
         }
     }
@@ -70,6 +76,10 @@ final class ArmView: NSView {
         root.addSublayer(presentation.layer)
 
         root.addSublayer(dotLayer)
+        root.addSublayer(gestureMarker)
+        gestureMarker.path = CGPath(ellipseIn: CGRect(x: -4, y: -4, width: 8, height: 8), transform: nil)
+        gestureMarker.fillColor = NSColor.black.cgColor; gestureMarker.strokeColor = NSColor.white.cgColor
+        gestureMarker.lineWidth = 2; gestureMarker.isHidden = true
 
         group.masksToBounds = false
         group.addSublayer(contactShadow.layer)
@@ -110,12 +120,15 @@ final class ArmView: NSView {
         ink.opacity = Preferences.inkOpacity
         ink.smoothing = Preferences.strokeSmoothing
     }
+    func installMagnifier(_ lens: CALayer) { layer?.insertSublayer(lens, below: group) }
 
     func setStyle(_ newStyle: PointerStyle) {
+        cancelTapAnimation()
         contactShadow.reset()
         lastPose = []
         style = newStyle
         asset = newStyle.assetName.flatMap(HandAsset.load)
+        baseAsset = asset; activeGesture = nil
         if newStyle.assetName != nil && asset == nil {
             style = .laser
         }
@@ -133,6 +146,18 @@ final class ArmView: NSView {
         let hidden = pointerHidden
         pointerHidden = hidden
     }
+    @discardableResult func setGesture(_ slot: HandGestureSlot?) -> Bool {
+        guard activeGesture != slot else { return true }
+        if let slot {
+            guard let baseAsset, let image = HandGestureCatalog.image(slot, style: style) else { return false }
+            asset = baseAsset.replacingImage(image)
+        } else { asset = baseAsset }
+        activeGesture = slot
+        displayImageHeight = 0; lastPose = []; contactShadow.reset()
+        if let asset { updateDisplayImage(asset) }
+        gestureMarker.isHidden = pointerHidden || slot == nil
+        return true
+    }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) not used")
@@ -140,22 +165,31 @@ final class ArmView: NSView {
 
     func press() {
         pressAmount = 1
+        swing.begin(at: CACurrentMediaTime(), range: CGFloat(Preferences.tapSwing),
+                    reduceMotion: NSWorkspace.shared.accessibilityDisplayShouldReduceMotion || style.assetName == nil)
         shadowResponse.press(at: CACurrentMediaTime())
     }
+    func reachTapContact() { swing.reachContact(at: CACurrentMediaTime()) }
+    func cancelTapAnimation() { swing.cancel(); pressAmount = 0; lastPose = [] }
 
     func aim(cursor: CGPoint) {
         lastCursor = cursor
+        gestureMarker.position = cursor
         let screenH = bounds.height
         let targetX = min(max(cursor.x + gripLeanFrac * bounds.width, bounds.width * 0.15), bounds.width * 1.05)
         let gx = Preferences.pointerMotion.gripPosition(previous: gripX, target: targetX)
         gripX = gx
         gripTarget = targetX
-        let grip = CGPoint(x: gx, y: -gripDepthFrac * screenH)
+        if NSWorkspace.shared.accessibilityDisplayShouldReduceMotion { swing.cancel() }
+        let swings = swing.active
+        let tap = swing.pose(at: CACurrentMediaTime(), held: held)
+        let grip = CGPoint(x: gx + tap.gripX * screenH, y: (tap.gripY - gripDepthFrac) * screenH)
 
         if !held {
             pressAmount += (0 - pressAmount) * 0.18
         }
         shadowResponse.update(at: CACurrentMediaTime(), held: held)
+        let press = swings ? tap.press : pressAmount
 
         if style == .laser {
             contactShadow.disable()
@@ -181,12 +215,14 @@ final class ArmView: NSView {
         }
         updateDisplayImage(a)
 
-        let dx = cursor.x - grip.x
-        let dy = cursor.y - grip.y
+        let toCursor = CGPoint(x: cursor.x - grip.x, y: cursor.y - grip.y)
+        let distance = max(1, hypot(toCursor.x, toCursor.y))
+        let dx = toCursor.x - toCursor.x / distance * tap.poke * screenH + tap.tipX * screenH
+        let dy = toCursor.y - toCursor.y / distance * tap.poke * screenH + tap.tipY * screenH
         let reach = hypot(dx, dy)
         let aimAngle = atan2(dy, dx)
 
-        let handPts = handLenFrac * screenH * (1 - 0.06 * pressAmount)
+        let handPts = handLenFrac * screenH * (1 - (swings ? 0.10 : 0.06) * press)
         let s = handPts / (a.wrist - a.handTop)
         let widthPts = s * a.aspect
         let handTipPts = (a.wrist - a.tip) * s
@@ -196,9 +232,9 @@ final class ArmView: NSView {
         var rodLen = along - handTipPts
         rodLen = max(minRodFrac * screenH, rodLen)
         let tipAngle = atan2(rodLen + handTipPts, tipOffX)
-        let rotation = aimAngle - tipAngle
+        let rotation = aimAngle - tipAngle + tap.tilt
 
-        let lift = currentLift(screenH)
+        let lift = liftFrac * screenH * (1 - 0.8 * press)
         let sx = lift * 0.6
         let sy = -lift
         let shadowOffset = CGSize(
@@ -206,7 +242,8 @@ final class ArmView: NSView {
             height: sx * sin(-rotation) + sy * cos(-rotation)
         )
 
-        let pose = [rotation, rodLen, handPts, widthPts, grip.x, lift, pressAmount,
+        let contact = swings ? max(0, press) : shadowResponse.amount
+        let pose = [rotation, rodLen, handPts, widthPts, grip.x, grip.y, lift, press,
                     shadowResponse.amount, showShadow ? 1 : 0, a.aspect]
             .map { ($0 * 100).rounded() }
         guard pose != lastPose else {
@@ -217,17 +254,17 @@ final class ArmView: NSView {
         CATransaction.begin()
         CATransaction.setDisableActions(true)
 
-        if showShadow && shadowStyle == .contact && !pointerHidden {
+        if showShadow && shadowStyle == .contact && !pointerHidden && activeGesture == nil {
             contactShadow.update(ContactShadowPose(asset: a, width: widthPts, height: handPts,
-                                                  rodLength: rodLen, rotation: rotation, press: shadowResponse.amount))
+                                                  rodLength: rodLen, rotation: rotation, press: contact))
         } else {
             contactShadow.disable()
         }
-        let originalShadow = showShadow && (shadowStyle == .original || !contactShadow.isReady)
+        let originalShadow = showShadow && (activeGesture != nil || shadowStyle == .original || !contactShadow.isReady)
         for sub in [rodLayer, handLayer] {
             sub.shadowOffset = shadowOffset
-            sub.shadowRadius = max(1, lift * 0.35) + 5 * pressAmount
-            sub.shadowOpacity = originalShadow ? Float(0.26 + 0.02 * pressAmount) : 0
+            sub.shadowRadius = max(1, lift * 0.35) + 5 * max(0, press)
+            sub.shadowOpacity = originalShadow ? Float(0.26 + 0.02 * max(0, press)) : 0
         }
 
         rodLayer.bounds = CGRect(x: 0, y: 0, width: widthPts, height: rodLen)
@@ -240,10 +277,6 @@ final class ArmView: NSView {
         group.transform = CATransform3DMakeRotation(rotation, 0, 0, 1)
 
         CATransaction.commit()
-    }
-
-    private func currentLift(_ screenH: CGFloat) -> CGFloat {
-        liftFrac * screenH * (1 - 0.8 * pressAmount)
     }
 
     var shadowDiagnostics: [String: Any] { contactShadow.diagnostics }

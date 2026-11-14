@@ -1,0 +1,20 @@
+[
+  {
+    "repository": "xynova/tinyhand",
+    "commit": "c7bbac616dde0decf97f3522445646a390bcdaf7",
+    "source": "assets/hand_line_o.webp",
+    "source_git_blob": "185b55d15944520aa15b3f1cae37681ea70e0d7c",
+    "output": "assets/gesture_ok.png",
+    "sha256": "09728c6434905a91e6338a59887beb7db2502352bc9d293985afa3a21842f1dc",
+    "change": "Decoded to lossless PNG for existing app loading; no new base pointer style."
+  },
+  {
+    "repository": "xynova/tinyhand",
+    "commit": "c7bbac616dde0decf97f3522445646a390bcdaf7",
+    "source": "assets/hand_line_s.webp",
+    "source_git_blob": "6706bb9741c437546578931826cfbe3cd7b538d7",
+    "output": "assets/gesture_shaka.png",
+    "sha256": "c6209b47bd40e3af88cb8882f6c8731801d1c6d3a7918af6d69db9ab3192502a",
+    "change": "Decoded to lossless PNG for existing app loading; no new base pointer style."
+  }
+]

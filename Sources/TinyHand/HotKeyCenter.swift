@@ -4,16 +4,18 @@ import Carbon.HIToolbox
 final class HotKeyCenter {
     static let shared = HotKeyCenter()
 
-    private var handlers: [UInt32: () -> Void] = [:]
+    private struct Handler { let press: () -> Void; let release: (() -> Void)? }
+    private var handlers: [UInt32: Handler] = [:]
+    private var held = Set<UInt32>()
+    private var blocked = Set<UInt32>()
     private var refs: [UInt32: EventHotKeyRef] = [:]
     private var nextID: UInt32 = 1
     private var eventHandler: EventHandlerRef?
 
     private init() {
-        var spec = EventTypeSpec(
-            eventClass: OSType(kEventClassKeyboard),
-            eventKind: UInt32(kEventHotKeyPressed)
-        )
+        let specs = [EventTypeSpec(eventClass: OSType(kEventClassKeyboard), eventKind: UInt32(kEventHotKeyPressed)),
+                     EventTypeSpec(eventClass: OSType(kEventClassKeyboard), eventKind: UInt32(kEventHotKeyReleased))]
+        _ = specs.withUnsafeBufferPointer { specs in
         InstallEventHandler(
             GetApplicationEventTarget(),
             { _, event, _ -> OSStatus in
@@ -27,21 +29,23 @@ final class HotKeyCenter {
                     nil,
                     &hkID
                 )
-                HotKeyCenter.shared.handlers[hkID.id]?()
+                HotKeyCenter.shared.dispatch(hkID.id, released: GetEventKind(event) == UInt32(kEventHotKeyReleased))
                 return noErr
             },
-            1,
-            &spec,
+            2,
+            specs.baseAddress,
             nil,
             &eventHandler
         )
+        }
     }
 
     @discardableResult
-    func register(keyCode: UInt32, modifiers: UInt32, action: @escaping () -> Void) -> UInt32? {
+    func register(keyCode: UInt32, modifiers: UInt32, action: @escaping () -> Void, onRelease: (() -> Void)? = nil) -> UInt32? {
         let id = nextID
         nextID += 1
-        handlers[id] = action
+        handlers[id] = Handler(press: action, release: onRelease)
+        if onRelease != nil && CGEventSource.keyState(.combinedSessionState, key: CGKeyCode(keyCode)) { blocked.insert(id) }
 
         var ref: EventHotKeyRef?
         let hkID = EventHotKeyID(signature: OSType(0x54484B59), id: id)
@@ -57,6 +61,7 @@ final class HotKeyCenter {
         )
         guard status == noErr, let ref = ref else {
             handlers[id] = nil
+            blocked.remove(id)
             return nil
         }
         refs[id] = ref
@@ -68,5 +73,16 @@ final class HotKeyCenter {
             UnregisterEventHotKey(ref)
         }
         handlers[id] = nil
+        held.remove(id); blocked.remove(id)
+    }
+    private func dispatch(_ id: UInt32, released: Bool) {
+        guard let handler = handlers[id] else { return }
+        if released {
+            blocked.remove(id)
+            if held.remove(id) != nil { handler.release?() }
+        } else if !blocked.contains(id) {
+            if handler.release != nil && !held.insert(id).inserted { return }
+            handler.press()
+        }
     }
 }

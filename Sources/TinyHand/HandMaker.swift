@@ -14,7 +14,8 @@ enum HandMaker {
     - The fingertip is the highest point of the image. Nothing above or beside it.
     - The hand ends at the bottom in a wrist cuff or a clean flat wrist, facing straight down, centred.
     - Upright, not tilted. Whole hand visible, nothing cropped.
-    - Transparent background. No shadow, no floor, no outline glow, no text, no stick, no arm.
+    - A genuinely transparent PNG background with an alpha channel. Do not draw a checkerboard or a solid background.
+    - No shadow, no floor, no outline glow, no text, no stick, no arm.
     - Soft 3D toy look, bright and readable at small sizes.
     - Portrait image, hand filling most of the height with a little empty space around it.
     """
@@ -61,8 +62,11 @@ enum HandMaker {
         }
         let w = image.width
         let h = image.height
+        guard w <= 8192, h <= 8192, w * h <= 20_000_000 else {
+            throw Problem(message: "Use a smaller image, up to 20 megapixels and 8192 pixels on either side.")
+        }
         guard w >= 64, h >= 64 else {
-            throw Problem(message: "The image is too small. Use one at least 512 pixels tall.")
+            throw Problem(message: "The image is too small. Use at least 64 pixels in each dimension; 512 pixels tall or larger looks best.")
         }
         var rgba = [UInt8](repeating: 0, count: w * h * 4)
         guard let ctx = CGContext(data: &rgba, width: w, height: h, bitsPerComponent: 8, bytesPerRow: w * 4,
@@ -74,7 +78,7 @@ enum HandMaker {
         return Pixels(width: w, height: h, rgba: rgba)
     }
 
-    private static func check(_ p: Pixels) throws {
+    private static func check(_ p: Pixels, pointing: Bool = true) throws {
         let w = p.width
         let h = p.height
         var edge = 0
@@ -133,7 +137,7 @@ enum HandMaker {
         let bw = box.maxX - box.minX + 1
         let bh = box.maxY - box.minY + 1
         let aspect = Double(bh) / Double(bw)
-        if aspect < 1.05 || aspect > 2.8 {
+        if pointing && (aspect < 1.05 || aspect > 2.8) {
             throw Problem(message: "The hand should stand upright, taller than it is wide.")
         }
         if Double(bh) / Double(h) < 0.5 {
@@ -149,7 +153,7 @@ enum HandMaker {
                 fingerMax = max(fingerMax, x)
             }
         }
-        if Double(fingerMax - fingerMin + 1) / Double(bw) > 0.4 {
+        if pointing && Double(fingerMax - fingerMin + 1) / Double(bw) > 0.4 {
             throw Problem(message: "The top of the image should be a single finger pointing up.")
         }
 
@@ -306,6 +310,50 @@ enum HandMaker {
             throw Problem(message: "Look Here Please couldn't save the hand.")
         }
         try data.write(to: url, options: .atomic)
+    }
+
+    static func makeGesture(from url: URL, reference: HandAsset) throws -> CGImage {
+        guard let source = CGImageSourceCreateWithURL(url as CFURL, nil),
+              let image = CGImageSourceCreateImageAtIndex(source, 0, nil) else {
+            throw Problem(message: "Choose an image with a transparent background.")
+        }
+        let pixels = try read(image)
+        try check(pixels, pointing: false)
+        guard let box = bounds(pixels), let context = gestureContext(reference) else {
+            throw Problem(message: "That gesture image is empty.")
+        }
+        let width = CGFloat(reference.image.width), height = CGFloat(reference.image.height)
+        let handHeight = (reference.wrist - reference.handTop) * height
+        let scale = min(handHeight / CGFloat(box.maxY - box.minY + 1), width * 0.9 / CGFloat(box.maxX - box.minX + 1))
+        let wrist = CGFloat(bottomSpan(pixels, box).center + 0.5) * scale
+        let top = reference.wrist * height - CGFloat(box.maxY + 1) * scale
+        context.draw(image, in: CGRect(x: reference.rodX * width - wrist,
+            y: height - top - CGFloat(image.height) * scale, width: CGFloat(image.width) * scale, height: CGFloat(image.height) * scale))
+        guard let composed = context.makeImage() else { throw Problem(message: "The gesture could not be prepared.") }
+        return composed
+    }
+
+    static func composeGesture(_ source: HandAsset, reference: HandAsset) -> CGImage? {
+        let width = CGFloat(reference.image.width), height = CGFloat(reference.image.height)
+        let sourceRect = CGRect(x: 0, y: source.handTop * CGFloat(source.image.height), width: CGFloat(source.image.width),
+                                height: (source.wrist - source.handTop) * CGFloat(source.image.height))
+        guard let hand = source.image.cropping(to: sourceRect), let context = gestureContext(reference) else { return nil }
+        let scale = min((reference.wrist - reference.handTop) * height / CGFloat(hand.height), width * 0.9 / CGFloat(hand.width))
+        context.draw(hand, in: CGRect(x: reference.rodX * width - source.rodX * CGFloat(source.image.width) * scale,
+                                     y: (1 - reference.wrist) * height, width: CGFloat(hand.width) * scale, height: CGFloat(hand.height) * scale))
+        return context.makeImage()
+    }
+
+    private static func gestureContext(_ reference: HandAsset) -> CGContext? {
+        let width = reference.image.width, height = reference.image.height
+        guard let context = CGContext(data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: 0,
+            space: CGColorSpace(name: CGColorSpace.sRGB)!, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return nil }
+        context.interpolationQuality = .high
+        context.saveGState()
+        context.clip(to: CGRect(x: 0, y: 0, width: CGFloat(width), height: (1 - reference.wrist) * CGFloat(height) + 1))
+        context.draw(reference.image, in: CGRect(x: 0, y: 0, width: width, height: height))
+        context.restoreGState()
+        return context
     }
 }
 

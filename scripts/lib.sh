@@ -33,10 +33,12 @@ make_bundle() {
     mkdir -p "$app/Contents/MacOS" "$app/Contents/Resources"
     cp "$binary" "$app/Contents/MacOS/$EXECUTABLE_NAME"
     cp "$ROOT"/assets/hand_*.png "$app/Contents/Resources/"
+    cp "$ROOT"/assets/gesture_*.png "$app/Contents/Resources/"
     cp "$ROOT"/assets/sounds/tap_*.wav "$ROOT/assets/AppIcon.icns" "$ROOT/assets/Assets.car" "$app/Contents/Resources/"
     cp "$ROOT"/assets/menubar_*.png "$app/Contents/Resources/"
     cp "$ROOT/assets/LookHerePlease.sdef" "$app/Contents/Resources/"
     cp "$ROOT/LICENSE" "$app/Contents/Resources/LICENSE.txt"
+    cp "$ROOT/assets/ThirdPartyNotices.txt" "$app/Contents/Resources/ThirdPartyNotices.txt"
 
     local fw
     fw="$(find "$ROOT/.build/artifacts" -path "*macos-arm64_x86_64/Sparkle.framework" -maxdepth 6 | head -1)"

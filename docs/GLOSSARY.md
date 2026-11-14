@@ -3,6 +3,12 @@
 | Term | Meaning |
 | --- | --- |
 | Pointer | The visible hand, Laser dot, Spotlight or Presentation pointer that follows the cursor. |
+| Magnification | An optional circular live view that enlarges the desktop beneath the cursor. Its marker shows the actual click location. |
+| Whole line | Fade a completed annotation as a whole after the saved delay. |
+| Trail | Erase a pen stroke from its start at a chosen speed, while keeping its complete geometry in annotation history. |
+| Tap swing | Optional wind-up and strike of a hand during a tap, independent of pointer-follow behavior. |
+| Hand gesture | Temporary artwork for the selected hand. Two slots start with OK and Shaka and can be customized per hand. |
+| Hold Gesture 1 / Hold Gesture 2 | Optional shortcuts that show a pose while held and restore the normal hand on release or context cancellation. |
 | Spotlight | A clear, softly edged circle around the cursor with the rest of the current display dimmed. Pointer size sets its radius. |
 | Presentation pointer | A silver telescoping rod with a dark grip and coral tip at the cursor. Pointer size sets its thickness. |
 | Shadow style | The hand shadow choice in Appearance, independent of its visibility switch. |

@@ -1,6 +1,9 @@
 import AppKit
 
 final class InputTap {
+    private let sessionLocked: () -> Bool
+    var onScreenLocked: (() -> Void)?
+    init(sessionLocked: @escaping () -> Bool = { PresentationSession.isLocked }) { self.sessionLocked = sessionLocked }
     private let controls = ControlInput()
     var onDismissControls: (() -> Void)?
     var onControlStatusClick: ((Bool) -> Void)?
@@ -153,6 +156,18 @@ final class InputTap {
             eventCount += 1
             eventTypes[String(type.rawValue), default: 0] += 1
             let forwarded = Unmanaged.passUnretained(event)
+            if [.leftMouseDown, .rightMouseDown, .otherMouseDown, .keyDown].contains(type), sessionLocked() {
+                // The login window owns locked-session input. Do not let drawing,
+                // a stale popover or quick controls consume an unlock press.
+                active = false
+                generation &+= 1
+                presses.removeAll()
+                controls.resetForSystem()
+                radial.resetForSystem()
+                updateEnabled()
+                DispatchQueue.main.async { [weak self] in self?.onScreenLocked?() }
+                return forwarded
+            }
             if event.timestamp > 0 {
                 let wait = Double(DispatchTime.now().uptimeNanoseconds &- event.timestamp) / 1_000_000
                 if wait < 600_000 {

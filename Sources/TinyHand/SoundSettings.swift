@@ -9,7 +9,7 @@ struct SoundPage: View {
 
     var body: some View {
         let on = Preferences.handSound
-        VStack(alignment: .leading, spacing: 22) {
+        VStack(alignment: .leading, spacing: Space.xxl) {
             VStack(alignment: .leading, spacing: 8) {
                 Text("Tap sound")
                     .font(.system(size: 12, weight: .semibold))
@@ -18,6 +18,7 @@ struct SoundPage: View {
                 LazyVGrid(columns: columns, spacing: 8) {
                     SoundTile(title: "Off", symbol: "speaker.slash.fill", selected: !on) {
                         Preferences.handSound = false
+                        model.stopPreview()
                         model.refresh()
                     }
                     ForEach(TapSoundChoice.allCases, id: \.self) { choice in
@@ -35,15 +36,14 @@ struct SoundPage: View {
                     .padding(.horizontal, 4)
             }
             Card(title: nil) {
-                Row("Laser dot taps too", detail: "Off by default, for quiet pointing.") {
-                    Toggle("", isOn: model.binding({ Preferences.laserSound }, { Preferences.laserSound = $0 }))
+                Row("Laser dot sound", detail: "Use the selected tap sound for Laser dot, independently of hand sound. Off by default.") {
+                    Toggle("Laser dot tap sound", isOn: model.binding({ Preferences.laserSound }, { Preferences.laserSound = $0 }))
                         .toggleStyle(.switch).labelsHidden().focusable(false)
-                        .disabled(!on)
                 }
             }
-            .opacity(on ? 1 : 0.5)
         }
         .onAppear { model.warmPreview() }
+        .onDisappear { model.stopPreview() }
     }
 }
 
@@ -65,7 +65,7 @@ struct InkSwatch: View {
                 }
             }
             .frame(width: 20, height: 20)
-            .padding(3)
+            .padding(Space.xs)
             .overlay(Circle().strokeBorder(selected ? Color.accentColor : Color.clear, lineWidth: 2))
             .scaleEffect(hovering && !selected ? 1.08 : 1)
             .contentShape(Circle())
@@ -91,26 +91,27 @@ struct SoundTile: View {
                 Image(systemName: symbol)
                     .font(.system(size: 18, weight: .medium))
                     .foregroundColor(selected ? .accentColor : .secondary)
-                    .frame(height: 22)
+                    .frame(height: 24)
                 Text(title)
                     .font(.system(size: 12, weight: selected ? .semibold : .regular))
                     .foregroundColor(selected ? .primary : .secondary)
                     .lineLimit(1)
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 14)
+            .padding(.vertical, Space.lg)
             .background(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
                     .fill(selected ? Color.accentColor.opacity(0.12) : Color.primary.opacity(hovering ? 0.07 : 0.035))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .strokeBorder(selected ? Color.accentColor.opacity(0.7) : Color.clear, lineWidth: 1.5)
+                    .strokeBorder(selected ? Color.accentColor.opacity(0.7) : Color.clear, lineWidth: 2)
             )
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .focusable(false)
+        .accessibilityLabel(title == "Off" ? "Turn hand sound off" : "Preview \(title) tap sound")
+        .help(title == "Off" ? "Mute hand taps" : "Preview and select the \(title) tap sound")
         .onHover { hovering = $0 }
     }
 }
@@ -121,7 +122,7 @@ struct AboutPage: View {
 
     var body: some View {
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "dev"
-        VStack(alignment: .leading, spacing: 22) {
+        VStack(alignment: .leading, spacing: Space.xxl) {
             HStack(spacing: 16) {
                 if let icon = NSImage(named: "AppIcon") ?? NSApp.applicationIconImage {
                     Image(nsImage: icon).resizable().frame(width: 72, height: 72)
@@ -141,6 +142,11 @@ struct AboutPage: View {
                 LinkRow(title: "Look Here Please on GitHub", detail: "Source and project status", url: "https://github.com/austinpresley/please-look-here")
                 LinkRow(title: "Based on TinyHand", detail: "Original project by Kamran Ahmed", url: "https://github.com/nilbuild/tinyhand")
                 LinkRow(title: "License", detail: "MIT", url: "https://github.com/austinpresley/please-look-here/blob/main/LICENSE")
+                if let notices = Bundle.main.url(forResource: "ThirdPartyNotices", withExtension: "txt") {
+                    Row("Open-source notices", detail: "Credits and licenses for adapted code, sounds and artwork.") {
+                        Button("Open Notices") { NSWorkspace.shared.open(notices) }
+                    }
+                }
             }
             HStack {
                 Spacer()

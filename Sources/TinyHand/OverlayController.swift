@@ -13,9 +13,22 @@ final class OverlayController {
     private let toolbar = Toolbar()
     let radial = RadialMenu()
     private let accessibility: () -> Bool
+    private let screenRecording: () -> Bool
+    private let requestRecording: () -> Void
+    private let magnifier: MagnifierController
     private let tapSound = TapSound()
+    private let contactFeedback = TapContactFeedback()
+    private var previousTapSwing = Preferences.tapSwing
+    private var gestures = HandGestureSession()
+    private let gesturePreview = TapContactFeedback()
+    private var pendingGesturePreview: HandGestureSlot?
+    private var gesturePreviewDeadline = Date.distantPast
+    private var previousGestureSignature = ""
+    var activeGesture: HandGestureSlot? { armView.activeGesture }
+    var canUseHandGestures: Bool { canUsePresentationShortcuts && !radial.visible && !armView.held && style.assetName != nil }
     private let displayLink = PointerDisplayLink()
     private let textEditor = TextAnnotationEditor()
+    private var lifecycle: PresentationLifecycle?
     private var timer: Timer?
     private var timerInterval: TimeInterval = 0
     private var monitors: [Any] = []
@@ -44,6 +57,9 @@ final class OverlayController {
     private var previousCatalog: [PointerCatalog.Entry] = []
     private(set) var isActive = false
     private(set) var isCapturing = false
+    private(set) var isMagnifying = false
+    private(set) var lastMagnifierError: String?
+    var magnifierDiagnostics: [String: Any] { magnifier.diagnostics }
     private(set) var lastCaptureURL: URL?
     private(set) var lastCaptureError: String?
     private(set) var lastCaptureSize: [Int] = []
@@ -65,12 +81,13 @@ final class OverlayController {
     var canRedo: Bool { armView.ink.canRedo }
     var inkStrokes: Int { armView.ink.count }
     var tapMaxWaitMs: Double { inputTap.maxWaitMs }
-    var motionClock: String { displayLink.isRunning ? "displayLink" : "timer" }
+    var motionClock: String { displayLink.isRunning ? "displayLink" : timer == nil ? "sleeping" : "timer" }
     var inputDiagnostics: [String: Any] { inputTap.diagnostics }
     var toolbarVisible: Bool { toolbar.revealed }
     var toolbarFrame: CGRect { toolbar.frame }
     var pointerVisible: Bool { isActive && !armView.pointerHidden }
     var shadowDiagnostics: [String: Any] { armView.shadowDiagnostics }
+    var contactSoundPending: Bool { contactFeedback.pending }
     var canUsePresentationShortcuts: Bool {
         isActive && !ownMenuOpen && !textEditor.isShowing && !isCapturing && NSApp.keyWindow == nil && Date() >= menuOpeningUntil && menuRects.isEmpty
     }
@@ -80,8 +97,14 @@ final class OverlayController {
         "active=\(isActive) mode=\(mode.rawValue) tool=\(Preferences.drawingTool.rawValue) held=\(armView.held) downPoint=\(downPoint != nil) drawing=\(armView.ink.isDrawing) strokes=\(inkStrokes) motion=\(Preferences.pointerMotion.rawValue) clock=\(motionClock)"
     }
 
-    init(accessibility: @escaping () -> Bool = { AXIsProcessTrusted() }) {
+    init(accessibility: @escaping () -> Bool = { AXIsProcessTrusted() },
+         screenRecording: @escaping () -> Bool = { ScreenCapture.hasPermission },
+         requestRecording: @escaping () -> Void = { ScreenCapture.requestPermission() },
+         magnifier: MagnifierController = MagnifierController()) {
         self.accessibility = accessibility
+        self.screenRecording = screenRecording
+        self.requestRecording = requestRecording
+        self.magnifier = magnifier
         let frame = NSScreen.main?.frame ?? CGRect(x: 0, y: 0, width: 1440, height: 900)
         window = OverlayWindow(contentRect: frame, styleMask: .borderless, backing: .buffered, defer: false)
         window.isOpaque = false; window.backgroundColor = .clear; window.hasShadow = false
@@ -90,6 +113,13 @@ final class OverlayController {
         window.collectionBehavior = [.canJoinAllSpaces, .stationary, .ignoresCycle, .fullScreenAuxiliary]
         armView = ArmView(frame: CGRect(origin: .zero, size: frame.size))
         window.contentView = armView
+        armView.installMagnifier(magnifier.layer)
+        magnifier.onFailure = { [weak self] message in
+            guard let self else { return }
+            self.isMagnifying = false; self.lastMagnifierError = message
+            self.toolbar.setMagnifying(false); self.toolbar.showMessage(message)
+            self.onActiveChanged?()
+        }
         inputTap.radial.onEvent = { [weak self] event in
             guard let self else { return }
             switch event {
@@ -105,6 +135,7 @@ final class OverlayController {
         }
         inputTap.onDismissControls = { [weak self] in self?.onDismissControls?() }
         inputTap.onControlStatusClick = { [weak self] in self?.onControlStatusClick?($0) }
+        inputTap.onScreenLocked = { [weak self] in self?.stopForSystem("locked session input") }
         radial.onClose = { [weak self] in self?.inputTap.radial.end(); self?.updateToolbarVisibility() }
         inputTap.onMouseDown = { [weak self] button, feedback, point, flags in self?.pressed(button, feedback: feedback, at: point, flags: flags) }
         inputTap.onMouseUp = { [weak self] button, feedback in self?.released(button, feedback: feedback) }
@@ -125,16 +156,31 @@ final class OverlayController {
         toolbar.onUndo = { [weak self] in self?.undo() }
         toolbar.onClear = { [weak self] in self?.clearInk() }
         toolbar.onCapture = { [weak self] in self?.captureScreenshot(fromToolbar: true) }
+        toolbar.onMagnifier = { [weak self] in guard let self else { return }; _ = self.setMagnification(!self.isMagnifying) }
         toolbar.onToggleSound = { [weak self] in self?.soundOn.toggle() }
         toolbar.onExit = { [weak self] in self?.exit() }
         toolbar.onFixPermission = { [weak self] in self?.onNeedsPermission?() }
         preferencesObserver = NotificationCenter.default.addObserver(forName: Preferences.changed, object: nil, queue: .main) { [weak self] _ in self?.syncPreferences() }
         syncPreferences()
+        lifecycle = PresentationLifecycle(stop: { [weak self] in self?.stopForSystem($0) },
+                                          recover: { [weak self] in self?.recoverPresentation() },
+                                          accessibilityChanged: { [weak self] in self?.cancelTapFeedback(); self?.cancelHandGestures(); self?.wake() })
         catalogTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
             guard let self else { return }
             CustomHands.reload()
             if self.previousCatalog != PointerCatalog.entries { self.syncPreferences() }
+            let gestureSignature = HandGestureCatalog.signature(for: self.style)
+            if self.previousGestureSignature != gestureSignature {
+                self.previousGestureSignature = gestureSignature; self.cancelHandGestures()
+            }
+            // A sleeping pointer still notices permissions, app windows and menus
+            // at low frequency. This service does not restart motion rendering.
+            if self.isActive, let screen = self.currentScreen() {
+                self.updateZones(mouse: NSEvent.mouseLocation, screen: screen)
+                self.checkPermission(); self.refreshShortcutContext(); self.refreshMagnifier()
+            }
         }
+        catalogTimer?.tolerance = 0.25
     }
 
     deinit {
@@ -152,8 +198,11 @@ final class OverlayController {
     @discardableResult
     func pick(_ style: PointerStyle) -> Bool {
         guard (try? PointerCatalog.validateSelection(style)) != nil else { return false }
+        cancelTapFeedback()
+        cancelHandGestures()
         armView.setStyle(style)
         PointerStyle.saved = armView.style
+        previousGestureSignature = HandGestureCatalog.signature(for: armView.style)
         toolbar.select(armView.style)
         syncSound()
         onActiveChanged?()
@@ -178,6 +227,8 @@ final class OverlayController {
             return false
         }
         inputTap.setActive(false)
+        cancelTapFeedback()
+        cancelHandGestures()
         releaseDrawing()
         heldButtons.removeAll()
         armView.held = false
@@ -201,10 +252,83 @@ final class OverlayController {
     func redo() { releaseDrawing(); armView.ink.redo() }
     func clearInk() { releaseDrawing(); armView.ink.clear() }
     func toggleToolbar() { Preferences.showToolbar.toggle() }
+    @discardableResult func beginGesture(_ slot: HandGestureSlot, owner: String, shortcut: Shortcut? = nil) -> Bool {
+        guard canUseHandGestures, HandGestureCatalog.image(slot, style: style) != nil else { return false }
+        gestures.begin(slot, owner: owner, shortcut: shortcut)
+        applyGesture(); return true
+    }
+    func endGesture(_ owner: String) { gestures.end(owner); applyGesture() }
+    func cancelHandGestures(notify: Bool = true) {
+        let hadGesture = activeGesture != nil
+        gestures.cancel(); gesturePreview.cancel(); pendingGesturePreview = nil
+        _ = armView.setGesture(nil)
+        if hadGesture && notify { onActiveChanged?() }
+    }
+    @discardableResult func previewGesture(_ slot: HandGestureSlot) -> Bool {
+        guard !isCapturing && NSApp.keyWindow == nil && style.assetName != nil,
+              HandGestureCatalog.image(slot, style: style) != nil else { return false }
+        if !isActive && !activate() { return false }
+        cancelHandGestures(notify: false)
+        pendingGesturePreview = slot; gesturePreviewDeadline = Date().addingTimeInterval(2)
+        wake(); return true
+    }
+    private func applyGesture() {
+        let previous = armView.activeGesture
+        if !armView.setGesture(gestures.active) { gestures.cancel(); _ = armView.setGesture(nil) }
+        if previous != armView.activeGesture { onActiveChanged?() }
+    }
+    private func refreshGestures() {
+        if pendingGesturePreview != nil && Date() > gesturePreviewDeadline { pendingGesturePreview = nil }
+        guard canUseHandGestures else {
+            if activeGesture != nil { cancelHandGestures(notify: false) }
+            return
+        }
+        if let slot = pendingGesturePreview {
+            pendingGesturePreview = nil
+            if beginGesture(slot, owner: "preview") {
+                gesturePreview.schedule(after: 2) { [weak self] in self?.endGesture("preview") }
+            }
+        }
+    }
+    func presentationContextChanged() {
+        if NSApp.keyWindow != nil { cancelHandGestures() }
+        refreshMagnifier(); refreshShortcutContext()
+    }
+    func snapshotPresentation(to url: URL) {
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            do {
+                let image = try await ScreenCapture.ownWindowImage(self.window)
+                try ScreenCapture.png(image).write(to: url, options: .atomic)
+            } catch { try? error.localizedDescription.write(to: url.appendingPathExtension("error.txt"), atomically: true, encoding: .utf8) }
+        }
+    }
+    @discardableResult func setMagnification(_ enabled: Bool) -> Bool {
+        guard !enabled || !isCapturing else { return false }
+        if enabled && !screenRecording() {
+            lastMagnifierError = "Allow Screen Recording in Settings > General, then try magnification again."
+            onDismissControls?(); deactivate()
+            if ProcessInfo.processInfo.environment["TINYHAND_TEST_MODE"] != "1" { requestRecording() }
+            return false
+        }
+        if enabled && !isActive && !activate() { return false }
+        isMagnifying = enabled; lastMagnifierError = nil
+        toolbar.setMagnifying(enabled)
+        refreshMagnifier()
+        if isActive { wake() }
+        onActiveChanged?()
+        return true
+    }
     func resetTapWait() { inputTap.resetWait() }
     func toolbarButtonCenter(_ style: PointerStyle) -> CGPoint? { toolbar.center(of: style) }
 
     private func syncPreferences() {
+        cancelHandGestures(notify: false)
+        previousGestureSignature = HandGestureCatalog.signature(for: PointerStyle.saved)
+        if previousTapSwing != Preferences.tapSwing {
+            previousTapSwing = Preferences.tapSwing
+            cancelTapFeedback()
+        }
         PointerCatalog.reconcile()
         if radial.visible { radial.close() }
         previousCatalog = PointerCatalog.entries
@@ -214,9 +338,10 @@ final class OverlayController {
         }
         updateToolbarVisibility()
         armView.updateInkColor()
-        if armView.style != PointerStyle.saved { armView.setStyle(PointerStyle.saved) }
+        if armView.style != PointerStyle.saved { cancelTapFeedback(); armView.setStyle(PointerStyle.saved) }
         toolbar.select(armView.style)
         toolbar.setMode(mode)
+        toolbar.setMagnifying(isMagnifying)
         toolbar.setNeedsPermission(needsDrawingPermission)
         tapSound.load(Preferences.tapSound)
         syncSound()
@@ -234,6 +359,7 @@ final class OverlayController {
         onActiveChanged?()
     }
     private func syncSound() {
+        if !soundOn { contactFeedback.cancel() }
         tapSound.enabled = soundOn
         toolbar.setSoundOn(soundOn)
         onSoundChanged?()
@@ -255,14 +381,17 @@ final class OverlayController {
         inputTap.setActive(enabled)
     }
     func suspendInput(_ suspended: Bool) {
+        if suspended { cancelTapFeedback(); cancelHandGestures() }
         ownMenuOpen = suspended
         if !suspended { menuOpeningUntil = .distantPast; lastMenuScan = .distantPast }
         syncInput()
         refreshShortcutContext()
+        refreshMagnifier()
     }
 
     @discardableResult
     func activate() -> Bool {
+        guard !PresentationSession.isLocked else { return false }
         guard !isActive else { return mode != .draw || inputTap.isInstalled }
         if mode == .draw, !accessibility() {
             Preferences.pointerMode = .point
@@ -278,6 +407,7 @@ final class OverlayController {
         syncInput()
         installMonitors()
         CursorHider.hide()
+        rejoinPresentationWindows()
         window.orderFrontRegardless()
         revealUntil = Date().addingTimeInterval(3)
         lastMotion = Date()
@@ -294,6 +424,10 @@ final class OverlayController {
     func deactivate() {
         guard isActive else { return }
         isActive = false
+        cancelTapFeedback()
+        cancelHandGestures(notify: false)
+        isMagnifying = false; magnifier.suspend(); toolbar.setMagnifying(false)
+        tapSound.silence()
         radial.close()
         inputTap.configureRadial(trigger: Preferences.radialTrigger, eligible: false)
         captureTask?.cancel()
@@ -322,8 +456,28 @@ final class OverlayController {
         onActiveChanged?()
     }
 
+    func stopForSystem(_ reason: String) {
+        Log.write("Presentation stopped: \(reason)")
+        onDismissControls?()
+        deactivate()
+        CursorHider.show()
+    }
+    private func rejoinPresentationWindows() {
+        ([window] + toolbar.windows + [radial.window]).forEach { $0.rejoinAllSpaces() }
+    }
+    func recoverPresentation() {
+        guard isActive else { return }
+        cancelHandGestures()
+        releaseDrawing(); radial.close(); onDismissControls?()
+        rejoinPresentationWindows()
+        window.orderFrontRegardless()
+        updateToolbarVisibility()
+        wake()
+    }
+
     private func pressed(_ button: Int64, feedback: InputTap.Feedback, at cgPoint: CGPoint, flags: CGEventFlags) {
         guard isActive else { return }
+        cancelHandGestures()
         heldButtons.insert(button)
         armView.press(); armView.held = true
         if feedback == .draw && button == 0 {
@@ -338,13 +492,14 @@ final class OverlayController {
             } else {
                 armView.ink.tool = tool
                 armView.ink.begin(at: point, width: armView.inkWidth)
-                tapSound.play()
+                scheduleTapSound()
             }
         }
         wake()
     }
     private func dragged(to point: CGPoint) {
         guard downPoint != nil else { return }
+        armView.reachTapContact(); contactFeedback.reachContact()
         armView.ink.extend(to: local(point))
         wake()
     }
@@ -383,6 +538,8 @@ final class OverlayController {
         if !isActive { _ = activate() }
         guard let screen = currentScreen() else { return }
         releaseDrawing()
+        cancelTapFeedback()
+        cancelHandGestures()
         radial.close()
         isCapturing = true
         let captureID = UUID()
@@ -393,6 +550,7 @@ final class OverlayController {
         let previousHidden = armView.pointerHidden
         if fromToolbar { armView.pointerHidden = true }
         toolbar.setCapturing(true)
+        refreshMagnifier()
         syncInput(); refreshShortcutContext()
         captureTask = Task { @MainActor [weak self] in
             guard let self = self else { return }
@@ -446,15 +604,23 @@ final class OverlayController {
     }
 
     private func installMonitors() {
-        let mask: NSEvent.EventTypeMask = [.mouseMoved, .leftMouseDragged, .rightMouseDragged, .otherMouseDragged, .leftMouseDown, .leftMouseUp, .rightMouseDown, .rightMouseUp, .otherMouseDown, .otherMouseUp, .flagsChanged]
+        let mask: NSEvent.EventTypeMask = [.mouseMoved, .leftMouseDragged, .rightMouseDragged, .otherMouseDragged, .leftMouseDown, .leftMouseUp, .rightMouseDown, .rightMouseUp, .otherMouseDown, .otherMouseUp, .flagsChanged, .keyDown, .keyUp]
         if let global = NSEvent.addGlobalMonitorForEvents(matching: mask, handler: { [weak self] event in self?.observed(event, own: false) }) { monitors.append(global) }
         if let local = NSEvent.addLocalMonitorForEvents(matching: mask, handler: { [weak self] event in self?.observed(event, own: true); return event }) { monitors.append(local) }
     }
     private func observed(_ event: NSEvent, own: Bool) {
+        if event.type == .flagsChanged { gestures.retainModifiers(event.modifierFlags); applyGesture() }
+        if event.type == .keyUp { gestures.releaseKey(UInt32(event.keyCode)); applyGesture() }
+        if event.type == .keyDown && event.keyCode == 53 { cancelHandGestures() }
         if mode == .point && !own && !isCapturing && !textEditor.isShowing {
             switch event.type {
             case .leftMouseDown, .rightMouseDown, .otherMouseDown:
-                armView.press(); armView.held = true; tapSound.play()
+                cancelHandGestures()
+                armView.press(); armView.held = true
+                if !Preferences.interactKeepsHand { armView.cancelTapAnimation() }
+                scheduleTapSound()
+            case .leftMouseDragged, .rightMouseDragged, .otherMouseDragged:
+                armView.reachTapContact(); contactFeedback.reachContact()
             case .leftMouseUp, .rightMouseUp, .otherMouseUp: armView.held = false
             default: break
             }
@@ -467,8 +633,22 @@ final class OverlayController {
         scheduleMotion()
         tick()
     }
+    private func scheduleTapSound() {
+        let style = self.style
+        contactFeedback.schedule(after: armView.tapSoundDelay) { [weak self] in
+            guard let self, self.isActive, self.style == style, self.soundOn else { return }
+            self.tapSound.play()
+        }
+    }
+    private func cancelTapFeedback() { contactFeedback.cancel(); armView.cancelTapAnimation() }
     private func scheduleMotion() {
         guard isActive else { return }
+        if MotionPacing.shouldSleep(stillFor: Date().timeIntervalSince(lastMotion),
+            settling: armView.isSettling || CursorHider.isSettling, held: armView.held, drawing: armView.ink.isDrawing) {
+            timer?.invalidate(); timer = nil; timerInterval = 0
+            displayLink.stop()
+            return
+        }
         let busy = Date().timeIntervalSince(lastMotion) < 0.5 || armView.isSettling || armView.held || armView.ink.isDrawing
         if Preferences.pointerMotion == .responsive && busy && displayLink.start(on: armView) {
             runTimer(every: 1.0 / 30)
@@ -485,6 +665,7 @@ final class OverlayController {
             guard let self = self else { return }
             self.tick(aim: !self.displayLink.isRunning)
         }
+        if interval >= 1.0 / 20 { t.tolerance = interval * 0.5 }
         RunLoop.main.add(t, forMode: .common)
         timer = t
     }
@@ -507,8 +688,10 @@ final class OverlayController {
             refreshShortcutContext()
         }
         if !isCapturing && aim {
+            refreshGestures()
             armView.aim(cursor: CGPoint(x: mouse.x - screen.frame.minX, y: mouse.y - screen.frame.minY))
         }
+        refreshMagnifier()
         if downPoint != nil {
             let down = CGEventSource.buttonState(.hidSystemState, button: .left)
             if down { buttonSeenDown = true }
@@ -538,6 +721,7 @@ final class OverlayController {
         let normal = !radial.visible && (overMenu || overOwnWindow || textEditor.isShowing
             || mode.hidesPointer(whilePressing: pressing, keepsHand: Preferences.interactKeepsHand))
         if normal != normalCursor && !isCapturing {
+            if normal { cancelTapFeedback(); cancelHandGestures() }
             normalCursor = normal
             armView.pointerHidden = normal
             if normal { CursorHider.show() } else { CursorHider.hide() }
@@ -557,6 +741,11 @@ final class OverlayController {
     private func checkPermission() {
         guard Date().timeIntervalSince(lastPermissionCheck) > 1 else { return }
         lastPermissionCheck = Date()
+        if isMagnifying && !screenRecording() {
+            _ = setMagnification(false)
+            lastMagnifierError = "Screen Recording access changed. Turn it on in Settings > General to use magnification."
+            toolbar.showMessage(lastMagnifierError!)
+        }
         if mode == .draw && !accessibility() {
             needsDrawingPermission = true
             releaseDrawing()
@@ -573,6 +762,16 @@ final class OverlayController {
         guard key != shortcutContext else { return }
         shortcutContext = key
         onShortcutContextChanged?()
+    }
+    private func refreshMagnifier() {
+        guard isActive && isMagnifying else { magnifier.suspend(); return }
+        if isCapturing { magnifier.suspend(keepingImage: !armView.pointerHidden); return }
+        guard !normalCursor && !ownMenuOpen && !textEditor.isShowing && !radial.visible,
+              NSApp.keyWindow == nil, let screen = currentScreen(), let target = MagnifierTarget(screen) else {
+            magnifier.suspend(); return
+        }
+        magnifier.update(target: target, mouse: NSEvent.mouseLocation,
+                         zoom: CGFloat(Preferences.magnifierZoom), diameter: CGFloat(Preferences.magnifierDiameter))
     }
     private func currentScreen() -> NSScreen? {
         let mouse = NSEvent.mouseLocation

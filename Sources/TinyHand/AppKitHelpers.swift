@@ -1,5 +1,16 @@
 import AppKit
 
+extension NSWindow {
+    /// Reassert membership after macOS removes a hidden auxiliary window from
+    /// full-screen Spaces. Showing it alone does not restore that membership.
+    func rejoinAllSpaces() {
+        guard collectionBehavior.contains(.canJoinAllSpaces) else { return }
+        collectionBehavior.remove(.canJoinAllSpaces)
+        CATransaction.flush()
+        collectionBehavior.insert(.canJoinAllSpaces)
+    }
+}
+
 extension NSView {
     func removeFocusRings() {
         focusRingType = .none

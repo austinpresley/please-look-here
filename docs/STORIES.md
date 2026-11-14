@@ -1,5 +1,9 @@
 # Look Here Please backlog
 
+## Selected fork upgrades, 14 November 2026
+
+Austin authorized shortlist items 1, 2, 3, 4, 7, 9, 10, 12, 13 and 14 for autonomous implementation. The current milestone is [S-026 through S-035](fork-upgrades-2026-11-14.md), with its acceptance criteria, UX decisions and progress. Preserve the existing local review app and its user data. All validation and release packaging run locally; hosted CI stays disabled.
+
 Recorded from Austin's app review on 10 November 2026. This is the current
 implementation queue. The source feedback and unchanged areas are in
 [the review record](FEEDBACK-2026-11-10.md).

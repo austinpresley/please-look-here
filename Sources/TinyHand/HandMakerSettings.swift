@@ -8,20 +8,20 @@ struct MakeHandPage: View {
     @State private var dropping = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 26) {
+        VStack(alignment: .leading, spacing: Space.xxl) {
             Step(number: 1, title: "Describe it", detail: "What should your hand look like?") {
                 PlainField(placeholder: "e.g. knitted wool in mustard yellow", text: $model.handIdea)
                     .frame(maxWidth: 420)
             }
-            Step(number: 2, title: "Make the image", detail: "Open it in ChatGPT, or copy the prompt for another image tool. Download the result as a PNG with a transparent background.") {
+            Step(number: 2, title: "Make the image", detail: "Copy the prompt and paste it into an image tool. Send it, then download the finished image as a PNG with a transparent background, not a screenshot or a drawn checkerboard.") {
                 HStack(spacing: 8) {
-                    PrimaryButton(title: "Open in ChatGPT", symbol: "arrow.up.right") { model.openChatGPT() }
+                    PrimaryButton(title: "Copy Prompt & Open ChatGPT", symbol: "arrow.up.right") { model.openChatGPT() }
                     PrimaryButton(title: model.promptCopied ? "Copied" : "Copy prompt", symbol: model.promptCopied ? "checkmark" : "doc.on.doc", primary: false) {
                         model.copyPrompt()
                     }
                 }
             }
-            Step(number: 3, title: "Add it", detail: nil) {
+            Step(number: 3, title: "Preview and add", detail: "Choose or drop the downloaded image. We check it before saving. Add Hand saves and selects it without replacing your other hands.") {
                 if let draft = model.draft {
                     preview(draft)
                 } else {
@@ -52,14 +52,14 @@ struct MakeHandPage: View {
             }
             .padding(.horizontal, 24)
             .frame(maxWidth: .infinity)
-            .frame(height: 130)
+            .frame(height: 128)
             .background(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
                     .fill(Color.primary.opacity(dropping ? 0.07 : 0.03))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .strokeBorder(dropping ? Color.accentColor : Color.primary.opacity(0.14), style: StrokeStyle(lineWidth: 1.2, dash: [5, 4]))
+                    .strokeBorder(dropping ? Color.accentColor : Color.primary.opacity(0.14), style: StrokeStyle(lineWidth: 1, dash: [5, 4]))
             )
             .contentShape(Rectangle())
         }
@@ -80,17 +80,14 @@ struct MakeHandPage: View {
     }
 
     private func preview(_ draft: SettingsModel.HandDraft) -> some View {
-        HStack(alignment: .center, spacing: 22) {
+        HStack(alignment: .center, spacing: Space.xxl) {
             Image(nsImage: NSImage(cgImage: draft.image.cropping(to: CGRect(x: 112, y: 90, width: 800, height: 1000)) ?? draft.image, size: NSSize(width: 144, height: 180)))
                 .resizable()
                 .interpolation(.high)
                 .frame(width: 144, height: 180)
-                .padding(.vertical, 10)
-                .frame(width: 170)
-                .background(
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .fill(Color(red: 0.91, green: 0.81, blue: 0.71))
-                )
+                .padding(.vertical, Space.md)
+                .frame(width: 168)
+                .background(TransparencyPreview().clipShape(RoundedRectangle(cornerRadius: 12)))
             VStack(alignment: .leading, spacing: 12) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Name").font(.system(size: 11, weight: .medium)).foregroundColor(.secondary)
@@ -102,12 +99,26 @@ struct MakeHandPage: View {
                     .foregroundColor(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: 300, alignment: .leading)
-                HStack(spacing: 10) {
-                    PrimaryButton(title: "Add hand", symbol: nil) { model.saveDraft() }
+                HStack(spacing: Space.sm) {
+                    PrimaryButton(title: "Add Hand", symbol: nil) { model.saveDraft() }
                     TextButton(title: "Use another image") { model.chooseHandFile() }
                 }
             }
         }
+    }
+}
+
+struct TransparencyPreview: View {
+    var body: some View {
+        Canvas { context, size in
+            let cell: CGFloat = 12
+            for row in 0..<Int(ceil(size.height / cell)) {
+                for column in 0..<Int(ceil(size.width / cell)) {
+                    let rect = CGRect(x: CGFloat(column) * cell, y: CGFloat(row) * cell, width: cell, height: cell)
+                    context.fill(Path(rect), with: .color(Color.primary.opacity((row + column).isMultiple(of: 2) ? 0.04 : 0.12)))
+                }
+            }
+        }.accessibilityHidden(true)
     }
 }
 
@@ -125,7 +136,7 @@ struct Step<Content: View>: View {
                 .foregroundColor(.white)
                 .frame(width: 20, height: 20)
                 .background(Circle().fill(Color.primary.opacity(0.75)))
-            VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: Space.sm) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title).font(.system(size: 13, weight: .semibold))
                     if let detail = detail {
@@ -147,8 +158,8 @@ struct PlainField: View {
         TextField(placeholder, text: $text)
             .textFieldStyle(.plain)
             .font(.system(size: 13))
-            .padding(.horizontal, 10)
-            .padding(.vertical, 7)
+            .padding(.horizontal, Space.md)
+            .padding(.vertical, Space.sm)
             .background(
                 RoundedRectangle(cornerRadius: 8, style: .continuous)
                     .fill(Color.primary.opacity(0.06))
@@ -182,17 +193,17 @@ struct PrimaryButton: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 6) {
+            HStack(spacing: Space.sm) {
                 if let symbol = symbol {
                     Image(systemName: symbol)
                         .font(.system(size: 11, weight: .semibold))
-                        .frame(width: 14, height: 14)
+                        .frame(width: 16, height: 16)
                 }
                 Text(title).font(.system(size: 12, weight: .semibold))
             }
             .foregroundColor(primary ? .white : .primary)
-            .padding(.horizontal, 14)
-            .frame(height: 30)
+            .padding(.horizontal, Space.lg)
+            .frame(height: 32)
             .background(Capsule().fill(primary
                 ? Color.accentColor.opacity(hovering ? 0.88 : 1)
                 : Color.primary.opacity(hovering ? 0.14 : 0.09)))

@@ -1,13 +1,17 @@
 import Carbon.HIToolbox
 
 enum PresentationAction: String, CaseIterable {
-    case mode, capture, toolbar, nextPointer, previousPointer, sound, matchInk
+    case mode, capture, magnifier, toolbar, nextPointer, previousPointer, sound, matchInk
     case pen, rectangle, arrow, text, number, undo, redo, settings, exitPointer
+    case gesture1, gesture2
 
     var title: String {
         switch self {
         case .mode: return "Toggle Interact"
         case .capture: return "Take Screenshot"
+        case .magnifier: return "Toggle Magnification"
+        case .gesture1: return "Hold Gesture 1"
+        case .gesture2: return "Hold Gesture 2"
         case .toolbar: return "Show / Hide Toolbar"
         case .nextPointer: return "Next Pointer"
         case .previousPointer: return "Previous Pointer"
@@ -23,6 +27,7 @@ enum PresentationAction: String, CaseIterable {
 
     var tool: DrawingTool? { DrawingTool(rawValue: rawValue) }
     var drawOnly: Bool { tool != nil || self == .undo || self == .redo }
+    var gesture: HandGestureSlot? { self == .gesture1 ? .first : self == .gesture2 ? .second : nil }
 
 }
 

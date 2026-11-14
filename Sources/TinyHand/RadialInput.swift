@@ -37,6 +37,12 @@ final class RadialInput {
         }
     }
     func end() { lock.withLock { open = false } }
+    func resetForSystem() {
+        lock.withLock {
+            cancel(); eligible = false; held = false
+            buttons.removeAll(); keys.removeAll()
+        }
+    }
     private func send(_ event: Event) {
         DispatchQueue.main.async { [weak self] in self?.onEvent?(event) }
     }

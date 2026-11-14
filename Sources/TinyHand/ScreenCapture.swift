@@ -21,6 +21,17 @@ final class ScreenCapture {
     static func openPermissionSettings() {
         if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture") { NSWorkspace.shared.open(url) }
     }
+    @MainActor static func ownWindowImage(_ window: NSWindow) async throws -> CGImage {
+        let content = try await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: false)
+        guard let captured = content.windows.first(where: { $0.windowID == CGWindowID(window.windowNumber) && $0.owningApplication?.processID == getpid() }) else { throw ScreenshotError.display }
+        let filter = SCContentFilter(desktopIndependentWindow: captured)
+        let config = SCStreamConfiguration()
+        config.width = max(1, Int(window.frame.width * (window.screen?.backingScaleFactor ?? 2)))
+        config.height = max(1, Int(window.frame.height * (window.screen?.backingScaleFactor ?? 2)))
+        config.showsCursor = false; config.capturesAudio = false
+        if #available(macOS 14, *) { return try await SCScreenshotManager.captureImage(contentFilter: filter, configuration: config) }
+        return try await SingleScreenshotFrame().grab(filter: filter, configuration: config)
+    }
 
     @MainActor func screenshot(screen: NSScreen, overlayID: CGWindowID) async throws -> CGImage {
         guard Self.hasPermission else { Self.requestPermission(); throw ScreenshotError.permission }

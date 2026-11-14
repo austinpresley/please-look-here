@@ -87,6 +87,7 @@ struct ShortcutsPage: View {
                         .font(.callout).foregroundStyle(.secondary)
                 }.padding(Space.lg)
             }
+            HandGestureShortcutSettings(model: model)
             Card(title: "Pointer and drawing") {
                 Row("Turn pointer on or off") {
                     ShortcutField(shortcut: Preferences.toggleShortcut, model: model, label: "Turn pointer on or off") { model.applyToggleShortcut?($0) ?? false }
@@ -94,7 +95,7 @@ struct ShortcutsPage: View {
                 Row("Clear Drawing") {
                     ShortcutField(shortcut: Preferences.clearShortcut, model: model, label: "Clear Drawing") { model.applyClearShortcut?($0) ?? false }
                 }
-                ForEach(PresentationAction.allCases.filter { !$0.drawOnly }, id: \.self) { action in shortcutRow(action) }
+                ForEach(PresentationAction.allCases.filter { !$0.drawOnly && $0.gesture == nil }, id: \.self) { action in shortcutRow(action) }
             }
             Card(title: "Drawing with Interact off") {
                 ForEach(PresentationAction.allCases.filter(\.drawOnly), id: \.self) { action in shortcutRow(action) }
@@ -160,7 +161,16 @@ struct AppearancePage: View {
                         : "The grip follows small movements more closely and catches up to quick flicks.") {
                     EmptyView()
                 }
+                Row("Tap swing", detail: "Optional wind-up and strike. Off keeps the current tap. Drags touch down immediately; Reduce Motion turns the swing off.") {
+                    HStack(spacing: Space.sm) {
+                        Slider(value: model.binding({ Preferences.tapSwing }, { Preferences.tapSwing = $0 }), in: 0...2, step: 0.1)
+                            .frame(width: 144).accessibilityLabel("Tap swing")
+                        Text(Preferences.tapSwing < 0.01 ? "Off" : String(format: "%.1f×", Preferences.tapSwing))
+                            .monospacedDigit().frame(width: 48, alignment: .trailing)
+                    }
+                }
             }
+            MagnificationSettings(model: model)
             Card(title: "Toolbar") {
                 Row("Show toolbar", detail: "Reveal at pointer startup or nearby. Hide when you move away. Off keeps it hidden.") {
                     Toggle("Show toolbar", isOn: model.binding({ Preferences.showToolbar }, { Preferences.showToolbar = $0 })).labelsHidden().toggleStyle(.switch)
@@ -176,7 +186,7 @@ struct AppearancePage: View {
 
 struct DrawingPage: View {
     @ObservedObject var model: SettingsModel
-    private let fadeChoices: [(String, Double)] = [("After 3 seconds", 3), ("After 6 seconds", 6), ("After 10 seconds", 10), ("Keep until cleared", 0)]
+    private let fadeChoices: [(String, Double)] = [("3 seconds", 3), ("6 seconds", 6), ("10 seconds", 10)]
     var body: some View {
         VStack(alignment: .leading, spacing: Space.xxl) {
             Card(title: "Tools") {
@@ -217,10 +227,35 @@ struct DrawingPage: View {
                         }
                     }
                 }
-                Row("Lines fade") {
-                    Picker("Lines fade", selection: model.binding({ Preferences.fadeSeconds }, { Preferences.fadeSeconds = $0 })) {
-                        ForEach(fadeChoices, id: \.1) { Text($0.0).tag($0.1) }
+                Row("Fading", detail: Preferences.inkFadeStyle == .trail
+                    ? "The start of a pen stroke erases as you draw. Other annotations fade as a whole."
+                    : "Choose how long annotations stay on screen.") {
+                    Picker("Ink fading", selection: model.binding({ Preferences.inkFadeStyle }, { Preferences.inkFadeStyle = $0 })) {
+                        ForEach(InkFadeStyle.allCases, id: \.self) { Text($0.title).tag($0) }
                     }.labelsHidden().fixedSize()
+                }
+                if Preferences.inkFadeStyle != .permanent {
+                    Row(Preferences.inkFadeStyle == .trail ? "Other annotations fade after" : "Fade after") {
+                        Picker("Fade delay", selection: model.binding({ max(0.5, Preferences.fadeSeconds) }, { Preferences.fadeSeconds = $0 })) {
+                            ForEach(fadeChoices, id: \.1) { Text($0.0).tag($0.1) }
+                        }.labelsHidden().fixedSize()
+                    }
+                }
+                if Preferences.inkFadeStyle == .trail {
+                    Row("Trail delay") {
+                        HStack(spacing: Space.sm) {
+                            Slider(value: model.binding({ Preferences.trailDelay }, { Preferences.trailDelay = $0 }), in: 0.2...3, step: 0.2)
+                                .frame(width: 144).accessibilityLabel("Trail delay")
+                            Text(String(format: "%.1f s", Preferences.trailDelay)).monospacedDigit().frame(width: 56, alignment: .trailing)
+                        }
+                    }
+                    Row("Trail speed") {
+                        HStack(spacing: Space.sm) {
+                            Slider(value: model.binding({ Preferences.trailSpeed }, { Preferences.trailSpeed = $0 }), in: 40...600, step: 20)
+                                .frame(width: 144).accessibilityLabel("Trail speed")
+                            Text("\(Int(Preferences.trailSpeed)) pt/s").monospacedDigit().frame(width: 56, alignment: .trailing)
+                        }
+                    }
                 }
             }
         }

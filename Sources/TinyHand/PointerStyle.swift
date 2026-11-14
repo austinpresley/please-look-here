@@ -385,6 +385,16 @@ struct HandAsset: Sendable {
         urls.append(URL(fileURLWithPath: "assets/\(name).png"))
         return urls
     }
+    static func imageSignature(_ name: String) -> String {
+        guard let url = imageURLs(name).first(where: { FileManager.default.fileExists(atPath: $0.path) }),
+              let attributes = try? FileManager.default.attributesOfItem(atPath: url.path) else { return "missing" }
+        let date = (attributes[.modificationDate] as? Date)?.timeIntervalSince1970.bitPattern ?? 0
+        return "\(url.path):\(date):\(attributes[.size] ?? 0)"
+    }
+    func replacingImage(_ replacement: CGImage) -> HandAsset {
+        HandAsset(image: replacement, aspect: aspect, handTop: handTop, tip: tip, wrist: wrist, rodEnd: rodEnd,
+                  tipX: tipX, rodX: rodX, handMinX: handMinX, handMaxX: handMaxX)
+    }
 
     private static func loadImage(_ name: String) -> CGImage? {
         for url in imageURLs(name) where FileManager.default.fileExists(atPath: url.path) {

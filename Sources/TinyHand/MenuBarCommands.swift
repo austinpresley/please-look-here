@@ -25,6 +25,12 @@ final class MenuBarCommands: NSObject {
         add("toggle", "Turn Pointer On", "toggle", to: pointer)
         add("interact", "Interact", "interact", ["enabled": true], to: pointer)
         submenu("Choose Pointer", pointers, to: pointer)
+        let gestures = NSMenu(title: "Hand Gestures")
+        submenu("Hand Gestures", gestures, to: pointer)
+        for slot in HandGestureSlot.allCases {
+            add(slot.action.rawValue, "Show \(slot.title)", "gesture", ["slot": slot.rawValue], to: gestures)
+        }
+        add("gestureArtwork", "Edit Gesture Artwork…", "settings", ["section": "pointers"], to: gestures)
         add("sound", "Tap Sound", "toggle-current-sound", to: pointer)
         let drawing = group("Drawing")
         for tool in DrawingTool.allCases { add(tool.rawValue, tool.title, "tool", ["tool": tool.rawValue], to: drawing) }
@@ -35,6 +41,7 @@ final class MenuBarCommands: NSObject {
         add("clear", "Clear Drawing", "clear", to: drawing)
         let presentation = group("Presentation")
         add("capture", "Take Screenshot", "capture", to: presentation)
+        add("magnifier", "Magnification", "magnifier", ["enabled": true], to: presentation)
         add("toolbar", "Show Toolbar", "configure", ["settings": ["showToolbar": true]], to: presentation)
         menu.addItem(.separator())
         add("permission", "Allow Drawing…", "settings", ["section": "general"], to: menu)
@@ -85,6 +92,13 @@ final class MenuBarCommands: NSObject {
             }
         }
         for item in pointers.items { item.state = item.representedObject as? String == overlay.style.rawValue ? .on : .off }
+        for slot in HandGestureSlot.allCases {
+            let item = items[slot.action.rawValue]
+            item?.title = "Show \(slot.title) · \(HandGestureCatalog.hasCustom(slot, style: overlay.style) ? "Custom" : slot.stockTitle)"
+            item?.state = overlay.activeGesture == slot ? .on : .off
+            item?.isEnabled = overlay.style.assetName != nil && !overlay.isCapturing
+            item?.toolTip = "Show this pose for two seconds. Assign a hold shortcut in Settings."
+        }
         for item in colors.items { item.state = item.representedObject as? String == Preferences.inkChoice.rawValue ? .on : .off }
         items["toggle"]?.title = overlay.isActive ? "Turn Pointer Off" : "Turn Pointer On"
         items["interact"]?.state = overlay.mode.isInteractive ? .on : .off
@@ -96,6 +110,9 @@ final class MenuBarCommands: NSObject {
         items["clear"]?.isEnabled = overlay.inkStrokes > 0 && !overlay.isCapturing
         items["capture"]?.isEnabled = !overlay.isCapturing
         items["capture"]?.title = overlay.isCapturing ? "Taking Screenshot…" : "Take Screenshot"
+        items["magnifier"]?.state = overlay.isMagnifying ? .on : .off
+        items["magnifier"]?.isEnabled = !overlay.isCapturing
+        if let item = items["magnifier"] { requests[item] = ["version": 1, "operation": "magnifier", "enabled": !overlay.isMagnifying] }
         items["permission"]?.isHidden = overlay.drawingAllowed
         items["toolbar"]?.state = Preferences.showToolbar ? .on : .off
         items["toolbar"]?.title = Preferences.showToolbar ? "Hide Toolbar" : "Show Toolbar"

@@ -10,13 +10,19 @@ final class Ink {
     private var markerOffset = CGPoint.zero
     private var changedMarker = false
     private var rendered: [UUID: (Annotation, CALayer)] = [:]
+    private var trails: [UUID: InkTrail] = [:]
+    private var trailTimer: Timer?
+    private let clock: () -> TimeInterval
+    init(clock: @escaping () -> TimeInterval = { CACurrentMediaTime() }) { self.clock = clock }
+    deinit { trailTimer?.invalidate() }
     var onChanged: (() -> Void)?
     var color = Ink.purple
     var scale: CGFloat = 2
     var tool: DrawingTool = .pen
     var opacity: CGFloat = 1
     var smoothing: StrokeSmoothing = .light
-    var keep: Bool { Preferences.fadeSeconds <= 0 }
+    var keep: Bool { Preferences.inkFadeStyle == .permanent }
+    var hasActiveTrails: Bool { !trails.isEmpty }
     var isDrawing: Bool { draft != nil || editingMarker != nil }
     var canUndo: Bool { document.canUndo }
     var canRedo: Bool { document.canRedo }
@@ -48,6 +54,10 @@ final class Ink {
         case .text: return
         }
         draft = Annotation(shape: shape, style: style)
+        if tool == .pen && Preferences.inkFadeStyle == .trail, let draft {
+            trails[draft.id] = InkTrail(at: point, time: clock())
+            startTrailTimer()
+        }
         render()
     }
 
@@ -67,6 +77,7 @@ final class Ink {
             guard let last = points.last, hypot(point.x - last.x, point.y - last.y) >= 1.5 else { return }
             points.append(point)
             annotation.shape = .pen(points)
+            trails[annotation.id]?.append(point, time: clock())
         case .rectangle(let a, _): annotation.shape = .rectangle(a, point)
         case .arrow(let a, _): annotation.shape = .arrow(a, point)
         case .number(let n, _): annotation.shape = .number(n, point)
@@ -83,12 +94,13 @@ final class Ink {
         } else if let annotation = draft, annotation.isMeaningful {
             document.append(annotation)
             committed = annotation.id
+            trails[annotation.id]?.finished = true
         }
         draft = nil
         editingMarker = nil
         pressPoint = nil
         render()
-        if let id = committed, !keep, let visible = rendered[id]?.1 {
+        if let id = committed, !keep, trails[id] == nil, let visible = rendered[id]?.1 {
             let animation = CABasicAnimation(keyPath: "opacity")
             animation.fromValue = 1
             animation.toValue = 0
@@ -126,17 +138,46 @@ final class Ink {
         for id in rendered.keys.filter({ !ids.contains($0) }) {
             rendered.removeValue(forKey: id)?.1.removeFromSuperlayer()
         }
+        trails = trails.filter { ids.contains($0.key) }
+        if trails.isEmpty { trailTimer?.invalidate(); trailTimer = nil }
         CATransaction.begin()
         CATransaction.setDisableActions(true)
         for item in items {
             if let existing = rendered[item.id], existing.0 == item { continue }
             let replacement = makeLayer(item)
+            if Preferences.inkFadeStyle == .trail, trails[item.id] == nil, rendered[item.id] == nil,
+               case .pen(let points) = item.shape, let first = points.first {
+                var trail = InkTrail(at: first, time: clock())
+                for point in points.dropFirst() { trail.append(point, time: clock()) }
+                trail.finished = draft?.id != item.id
+                trails[item.id] = trail
+                startTrailTimer()
+            }
+            if let trail = trails[item.id], let shape = replacement as? CAShapeLayer { shape.strokeStart = trail.fraction }
             if let previous = rendered[item.id]?.1 {
                 layer.replaceSublayer(previous, with: replacement)
             } else { layer.addSublayer(replacement) }
             rendered[item.id] = (item, replacement)
         }
         CATransaction.commit()
+    }
+
+    private func startTrailTimer() {
+        guard trailTimer == nil else { return }
+        let timer = Timer(timeInterval: 1.0 / 60, repeats: true) { [weak self] _ in self?.advanceTrails() }
+        RunLoop.main.add(timer, forMode: .common)
+        trailTimer = timer
+    }
+    func advanceTrails() {
+        let now = clock()
+        CATransaction.begin(); CATransaction.setDisableActions(true)
+        for id in Array(trails.keys) {
+            trails[id]?.advance(to: now, delay: Preferences.trailDelay, speed: CGFloat(Preferences.trailSpeed))
+            if let trail = trails[id], let shape = rendered[id]?.1 as? CAShapeLayer { shape.strokeStart = trail.fraction }
+            if trails[id]?.complete == true { trails.removeValue(forKey: id) }
+        }
+        CATransaction.commit()
+        if trails.isEmpty { trailTimer?.invalidate(); trailTimer = nil }
     }
 
     private func makeLayer(_ annotation: Annotation) -> CALayer {
