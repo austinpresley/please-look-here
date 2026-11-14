@@ -1,0 +1,107 @@
+{
+  "Name": "Look Here Please",
+  "Author": "Austin Presley",
+  "Description": "Control the Look Here Please pointer from Stream Deck and see its actual state on each key.",
+  "UUID": "com.austinpresley.lookhereplease",
+  "Version": "1.0.3.2",
+  "SDKVersion": 2,
+  "CodePath": "look-here-please-deck",
+  "Icon": "icons/plugin",
+  "Category": "Look Here Please",
+  "CategoryIcon": "icons/category",
+  "OS": [
+    {
+      "Platform": "mac",
+      "MinimumVersion": "13"
+    }
+  ],
+  "Software": {
+    "MinimumVersion": "6.5"
+  },
+  "Actions": [
+    {
+      "UUID": "com.austinpresley.lookhereplease.pointer",
+      "Name": "Pointer On/Off",
+      "Tooltip": "Turn the current pointer on or off. The key shows the selected hand or laser and its actual state.",
+      "PropertyInspectorPath": "inspectors/pointer.html",
+      "Icon": "icons/action-pointer",
+      "Controllers": [
+        "Keypad"
+      ],
+      "SupportedInMultiActions": false,
+      "UserTitleEnabled": false,
+      "States": [
+        {
+          "Image": "icons/key"
+        }
+      ]
+    },
+    {
+      "UUID": "com.austinpresley.lookhereplease.interact",
+      "Name": "Interact",
+      "Tooltip": "On uses apps normally. Off draws on screen.",
+      "Icon": "icons/action-interact",
+      "Controllers": [
+        "Keypad"
+      ],
+      "SupportedInMultiActions": false,
+      "UserTitleEnabled": false,
+      "States": [
+        {
+          "Image": "icons/key"
+        }
+      ]
+    },
+    {
+      "UUID": "com.austinpresley.lookhereplease.choose-pointer",
+      "Name": "Choose Pointer",
+      "Tooltip": "Cycle all enabled, available pointers. Keep On/Off and Interact unchanged.",
+      "Icon": "icons/action-select",
+      "PropertyInspectorPath": "inspectors/choose-pointer.html",
+      "Controllers": [
+        "Keypad"
+      ],
+      "SupportedInMultiActions": false,
+      "UserTitleEnabled": false,
+      "States": [
+        {
+          "Image": "icons/key"
+        }
+      ]
+    },
+    {
+      "UUID": "com.austinpresley.lookhereplease.select-pointer",
+      "Name": "Select Pointer",
+      "Tooltip": "Select one fixed pointer configured in this action. The key shows when it is selected.",
+      "Icon": "icons/action-select",
+      "PropertyInspectorPath": "inspectors/select-pointer.html",
+      "Controllers": [
+        "Keypad"
+      ],
+      "SupportedInMultiActions": false,
+      "UserTitleEnabled": false,
+      "States": [
+        {
+          "Image": "icons/key"
+        }
+      ]
+    },
+    {
+      "UUID": "com.austinpresley.lookhereplease.choose-tool",
+      "Name": "Choose Tool",
+      "Tooltip": "Cycle drawing tools or select one tool. Turns Interact off and keeps pointer On/Off unchanged.",
+      "Icon": "icons/action-tool",
+      "PropertyInspectorPath": "inspectors/choose-tool.html",
+      "Controllers": [
+        "Keypad"
+      ],
+      "SupportedInMultiActions": false,
+      "UserTitleEnabled": false,
+      "States": [
+        {
+          "Image": "icons/key"
+        }
+      ]
+    }
+  ]
+}

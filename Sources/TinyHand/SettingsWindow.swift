@@ -3,17 +3,21 @@ import Carbon.HIToolbox
 import SwiftUI
 
 final class SettingsWindow: NSObject, NSWindowDelegate {
-    var applyToggleShortcut: ((Shortcut) -> Bool)? {
+    var applyToggleShortcut: ((Shortcut?) -> Bool)? {
         didSet { model.applyToggleShortcut = applyToggleShortcut }
     }
-    var applyClearShortcut: ((Shortcut) -> Bool)? {
+    var applyClearShortcut: ((Shortcut?) -> Bool)? {
         didSet { model.applyClearShortcut = applyClearShortcut }
     }
     var onRecording: ((Bool) -> Void)? {
         didSet { model.onRecording = onRecording }
     }
-    var applyPresentationShortcut: ((PresentationAction, Shortcut) -> Bool)? {
+    var applyPresentationShortcut: ((PresentationAction, Shortcut?) -> Bool)? {
         didSet { model.applyPresentationShortcut = applyPresentationShortcut }
+    }
+    var shortcutError: String? {
+        get { model.shortcutError }
+        set { model.shortcutError = newValue }
     }
     var applyMode: ((PointerMode) -> Bool)? {
         didSet { model.applyMode = applyMode }
@@ -123,7 +127,7 @@ final class SettingsWindow: NSObject, NSWindowDelegate {
         let w = NSWindow(contentRect: CGRect(x: 0, y: 0, width: 784, height: 640),
                          styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
                          backing: .buffered, defer: false)
-        w.title = "TinyHand Settings"
+        w.title = "Look Here Please Settings"
         w.titleVisibility = .hidden
         w.titlebarAppearsTransparent = true
         w.isReleasedWhenClosed = false
@@ -145,15 +149,15 @@ final class SettingsWindow: NSObject, NSWindowDelegate {
 
 final class ShortcutRecorder: NSButton {
     var allowsPlainKeys = false
-    var onChange: ((Shortcut) -> Bool)?
+    var onChange: ((Shortcut?) -> Bool)?
     var onRecording: ((Bool) -> Void)?
 
-    private var shortcut: Shortcut
+    private var shortcut: Shortcut?
     private var monitor: Any?
     private var clickMonitor: Any?
     private let keys = NSStackView()
 
-    init(shortcut: Shortcut) {
+    init(shortcut: Shortcut?) {
         self.shortcut = shortcut
         super.init(frame: .zero)
         isBordered = false
@@ -176,15 +180,15 @@ final class ShortcutRecorder: NSButton {
             keys.centerXAnchor.constraint(equalTo: centerXAnchor),
             keys.centerYAnchor.constraint(equalTo: centerYAnchor),
         ])
-        setLabel(shortcut.display)
+        setLabel(shortcut?.display ?? "Unassigned")
     }
 
-    func show(_ s: Shortcut) {
+    func show(_ s: Shortcut?) {
         guard monitor == nil, s != shortcut else {
             return
         }
         shortcut = s
-        setLabel(s.display)
+        setLabel(s?.display ?? "Unassigned")
     }
 
     private static let modifierSymbols: Set<Character> = ["⌃", "⌥", "⇧", "⌘"]
@@ -331,7 +335,7 @@ final class ShortcutRecorder: NSButton {
         monitor = nil
         clickMonitor = nil
         setRecordingLook(false)
-        setLabel(shortcut.display)
+        setLabel(shortcut?.display ?? "Unassigned")
         onRecording?(false)
     }
 

@@ -14,6 +14,7 @@ let package = Package(
             path: "Sources/TinyHand",
             linkerSettings: [.unsafeFlags(["-Xlinker", "-rpath", "-Xlinker", "@executable_path/../Frameworks"])]
         ),
-        .testTarget(name: "TinyHandTests", dependencies: ["TinyHand"])
+        .executableTarget(name: "LookHerePleaseDeck", path: "Sources/LookHerePleaseDeck"),
+        .testTarget(name: "TinyHandTests", dependencies: ["TinyHand", "LookHerePleaseDeck"])
     ]
 )

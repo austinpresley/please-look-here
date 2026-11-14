@@ -140,7 +140,7 @@ enum E2ETest {
             pump(0.1)
         }
         pump(0.2)
-        print("active after Esc:", overlay.isActive)
+        print("active after unassigned Esc, expected true:", overlay.isActive)
 
         overlay.deactivate()
         PointerStyle.saved = savedStyle

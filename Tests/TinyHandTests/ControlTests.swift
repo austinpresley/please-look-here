@@ -67,6 +67,22 @@ import Testing
         #expect(try request(api, ["version": 1, "operation": "tool", "tool": "arrow"])["ok"] as? Bool == false)
     }
 
+    @Test func interactUsesStrictBooleansAndKeepsPermissionFallback() throws {
+        let api = bridge()
+        let response = try request(api, ["version": 1, "operation": "interact", "enabled": true])
+        #expect(response["ok"] as? Bool == true)
+        #expect((response["state"] as? [String: Any])?["interact"] as? Bool == true)
+        #expect(try request(api, ["version": 1, "operation": "interact", "enabled": false])["ok"] as? Bool == false)
+        #expect(Preferences.pointerMode.isInteractive)
+        for invalid: Any in [1, "true", NSNull()] {
+            #expect(try request(api, ["version": 1, "operation": "interact", "enabled": invalid])["ok"] as? Bool == false)
+        }
+        let configured = try request(api, ["version": 1, "operation": "configure", "settings": ["interactKeepsHand": false]])
+        #expect(configured["ok"] as? Bool == true)
+        #expect(!Preferences.interactKeepsHand)
+        #expect(try request(api, ["version": 1, "operation": "configure", "settings": ["interactKeepsHand": 0]])["ok"] as? Bool == false)
+    }
+
     @Test func keepAtLeastOnePinnedPointerAndRespectLimit() throws {
         let api = bridge()
         Preferences.pinnedStyles = [.laser]
@@ -92,5 +108,49 @@ import Testing
         defer { clipboard.releaseGlobally() }
         #expect(ScreenCapture.copy(data, to: clipboard))
         #expect(clipboard.data(forType: .png) == data)
+    }
+
+    @Test func toolCycleOrderAndStrictPermissionRejection() throws {
+        #expect(DrawingTool.allCases.map(\.rawValue) == ["pen", "rectangle", "arrow", "text", "number"])
+        #expect(DrawingTool.allCases.map(\.next) == [.rectangle, .arrow, .text, .number, .pen])
+        let api = bridge()
+        Preferences.drawingTool = .text
+        for mode in PointerMode.allCases {
+            Preferences.pointerMode = mode
+            for fields: [String: Any] in [["operation": "cycle-tool"], ["operation": "tool", "tool": "pen"]] {
+                let reply = try request(api, fields.merging(["version": 1]) { old, _ in old })
+                #expect(reply["ok"] as? Bool == false)
+                #expect((reply["error"] as? [String: Any])?["code"] as? String == "accessibility")
+                #expect(Preferences.drawingTool == .text && Preferences.pointerMode == mode)
+                #expect((reply["state"] as? [String: Any])?["active"] as? Bool == false)
+            }
+        }
+        for fields: [String: Any] in [
+            ["operation": "cycle-tool", "tool": "pen"], ["operation": "cycle-tool", "activate": true],
+            ["operation": "tool", "tool": "cycle"], ["operation": "tool", "tool": NSNull()], ["operation": "tool", "tool": 1]
+        ] {
+            let reply = try request(api, fields.merging(["version": 1]) { old, _ in old })
+            #expect((reply["error"] as? [String: Any])?["code"] as? String == "invalid-request")
+            #expect(Preferences.drawingTool == .text)
+        }
+    }
+
+    @Test func captureRejectsToolChangesWithActualReasonBeforePermission() throws {
+        _ = NSApplication.shared
+        Preferences.pointerMode = .point
+        Preferences.drawingTool = .number
+        let overlay = OverlayController(accessibility: { false })
+        let api = ControlBridge(overlay: overlay, accessibility: { false }, openSettings: { _ in }, openHandCreator: {})
+        // Capture sets its busy state synchronously; cancel before the async task
+        // can capture anything or touch clipboard/files.
+        overlay.captureScreenshot()
+        defer { overlay.deactivate() }
+        #expect(overlay.isCapturing)
+        let active = overlay.isActive
+        for fields: [String: Any] in [["operation": "cycle-tool"], ["operation": "tool", "tool": "pen"]] {
+            let reply = try request(api, fields.merging(["version": 1]) { old, _ in old })
+            #expect((reply["error"] as? [String: Any])?["code"] as? String == "capturing")
+            #expect(Preferences.drawingTool == .number && Preferences.pointerMode == .point && overlay.isActive == active)
+        }
     }
 }

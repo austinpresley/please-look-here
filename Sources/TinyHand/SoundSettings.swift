@@ -127,9 +127,9 @@ struct AboutPage: View {
                     Image(nsImage: icon).resizable().frame(width: 72, height: 72)
                 }
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("TinyHand").font(.system(size: 18, weight: .bold))
+                    Text("Look Here Please").font(.system(size: 18, weight: .bold))
                     Text("Version \(version)").font(.system(size: 12)).foregroundColor(.secondary)
-                    Text("A tiny hand for your Mac. Free and open source.").font(.system(size: 12)).foregroundColor(.secondary)
+                    Text("Point it out. Draw it on screen.").font(.system(size: 12)).foregroundColor(.secondary)
                 }
                 Spacer()
                 if let updater = model.updater {
@@ -137,10 +137,10 @@ struct AboutPage: View {
                 }
             }
             Card(title: nil) {
-                LinkRow(title: "Website", detail: "tinyhand.app", url: "https://tinyhand.app")
-                LinkRow(title: "Source code", detail: "github.com/nilbuild/tinyhand", url: "https://github.com/nilbuild/tinyhand")
-                LinkRow(title: "Made by", detail: "@nilbuild on X", url: "https://x.com/nilbuild")
-                LinkRow(title: "License", detail: "MIT", url: "https://github.com/nilbuild/tinyhand/blob/main/LICENSE")
+                Row("By Austin Presley", detail: "Hands, laser and screen annotations for your Mac.") { EmptyView() }
+                LinkRow(title: "Look Here Please on GitHub", detail: "Source and project status", url: "https://github.com/austinpresley/please-look-here")
+                LinkRow(title: "Based on TinyHand", detail: "Original project by Kamran Ahmed", url: "https://github.com/nilbuild/tinyhand")
+                LinkRow(title: "License", detail: "MIT", url: "https://github.com/austinpresley/please-look-here/blob/main/LICENSE")
             }
             HStack {
                 Spacer()

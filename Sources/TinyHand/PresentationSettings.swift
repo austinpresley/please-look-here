@@ -7,27 +7,26 @@ struct GeneralPage: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Space.xxl) {
             Card(title: "Using the pointer") {
-                Row("Pointer mode", detail: "Point uses apps normally. Draw adds annotations.") {
-                    Picker("Pointer mode", selection: model.binding({ Preferences.pointerMode }, { mode in
-                        if model.applyMode?(mode) == false { model.generalMessage = "Allow Accessibility to use Draw. Point is still available." }
-                        else if model.applyMode == nil { Preferences.pointerMode = mode }
-                    })) {
-                        ForEach(PointerMode.allCases, id: \.self) { Text($0.title).tag($0) }
-                    }
-                    .labelsHidden().pickerStyle(.segmented).frame(width: 144)
+                Row("Interact", detail: "On: use apps normally. Off: draw on screen.") {
+                    Toggle("Interact", isOn: model.binding({ Preferences.pointerMode.isInteractive }, { enabled in
+                        let mode: PointerMode = enabled ? .point : .draw
+                        if model.applyMode?(mode) == false {
+                            model.generalMessage = "Allow Accessibility to draw. Interact stays on."
+                        } else {
+                            if model.applyMode == nil { Preferences.pointerMode = mode }
+                            model.generalMessage = nil
+                        }
+                    })).labelsHidden().toggleStyle(.switch)
+                    .help("Let clicks reach the app underneath. Turn off to draw on screen.")
                 }
-                Row("Hold to use apps in Draw", detail: "Temporarily pass clicks and drags through.") {
-                    Picker("Interaction key", selection: model.binding({ Preferences.interactKey }, { Preferences.interactKey = $0 })) {
-                        ForEach(InteractKey.allCases, id: \.self) { Text($0.title).tag($0) }
-                    }.labelsHidden().fixedSize()
-                }
-                Row("Keep the hand while interacting") {
-                    Toggle("Keep the hand while interacting", isOn: model.binding({ Preferences.interactKeepsHand }, { Preferences.interactKeepsHand = $0 })).labelsHidden().toggleStyle(.switch)
+                Row("Keep the hand visible while interacting", detail: "When off, hide it during clicks and drags, then show it on release.") {
+                    Toggle("Keep the hand visible while interacting", isOn: model.binding({ Preferences.interactKeepsHand }, { Preferences.interactKeepsHand = $0 })).labelsHidden().toggleStyle(.switch)
                 }
             }
             if let message = model.generalMessage { Text(message).font(.callout).foregroundStyle(.secondary) }
+            StreamDeckSettings()
             Card(title: "Permissions") {
-                Row("Drawing", detail: AXIsProcessTrusted() ? "Accessibility is allowed." : "Point works without this permission.") {
+                Row("Drawing", detail: AXIsProcessTrusted() ? "Accessibility is allowed." : "Interact works without this permission.") {
                     PillButton(title: AXIsProcessTrusted() ? "Review…" : "Allow Drawing…") {
                         let prompt = kAXTrustedCheckOptionPrompt.takeUnretainedValue()
                         _ = AXIsProcessTrustedWithOptions([prompt: true] as CFDictionary)
@@ -52,7 +51,7 @@ struct GeneralPage: View {
                 }
             }
             Card(title: "Startup") {
-                Row("Open TinyHand when you log in") {
+                Row("Open Look Here Please when you log in") {
                     Toggle("Open at login", isOn: model.binding({ Preferences.launchAtLogin }, { Preferences.launchAtLogin = $0 })).labelsHidden().toggleStyle(.switch)
                 }
                 if let updater = model.updater {
@@ -69,8 +68,25 @@ struct ShortcutsPage: View {
     @ObservedObject var model: SettingsModel
     var body: some View {
         VStack(alignment: .leading, spacing: Space.xxl) {
-            Text("Presentation commands use key combinations. Tool keys work only in Draw, and pause while you type text or edit Settings.")
+            Text("Shortcuts start unassigned. Click a row’s shortcut control to record keys, or Clear to remove them. Tool keys work with Interact off and pause while you type or edit Settings.")
                 .font(.callout).foregroundStyle(.secondary)
+            Card(title: "Quick controls at the cursor") {
+                Row("Hold to open", detail: "Only while the pointer is on. Starts unassigned.") {
+                    Picker("Radial menu modifier", selection: model.binding({ Preferences.radialTrigger?.rawValue ?? "" }, { Preferences.radialTrigger = RadialTrigger(rawValue: $0) })) {
+                        Text("Unassigned").tag("")
+                        ForEach(RadialTrigger.allCases, id: \.self) { Text($0.title).tag($0.rawValue) }
+                    }.labelsHidden().pickerStyle(.menu).frame(width: 160)
+                    Button("Clear") { Preferences.radialTrigger = nil }.disabled(Preferences.radialTrigger == nil)
+                        .accessibilityLabel("Clear radial menu modifier")
+                        .help("Remove the radial menu modifier. Leave it Unassigned.")
+                }
+                VStack(alignment: .leading, spacing: Space.sm) {
+                    Text("Hold the modifier alone. Move through Pointer, Color or Tools to the outer choices, then release to select. Move inward to go back. Release at the center, press Escape or click outside to cancel. Next and Previous show more choices; move inward slightly before choosing again.")
+                        .font(.callout).foregroundStyle(.secondary)
+                    Text("At a display edge, enter the shifted center first. During a drag, Settings, text entry or capture, the menu stays closed. Other keys close it and keep their usual shortcuts. Requires Accessibility permission.")
+                        .font(.callout).foregroundStyle(.secondary)
+                }.padding(Space.lg)
+            }
             Card(title: "Pointer and drawing") {
                 Row("Turn pointer on or off") {
                     ShortcutField(shortcut: Preferences.toggleShortcut, model: model, label: "Turn pointer on or off") { model.applyToggleShortcut?($0) ?? false }
@@ -80,18 +96,17 @@ struct ShortcutsPage: View {
                 }
                 ForEach(PresentationAction.allCases.filter { !$0.drawOnly }, id: \.self) { action in shortcutRow(action) }
             }
-            Card(title: "Tools in Draw mode") {
+            Card(title: "Drawing with Interact off") {
                 ForEach(PresentationAction.allCases.filter(\.drawOnly), id: \.self) { action in shortcutRow(action) }
-                Row("Undo / Redo", detail: "Only annotations are affected while Draw is active.") {
-                    Text("⌘Z / ⇧⌘Z").font(.callout).foregroundStyle(.secondary)
-                }
+                Text("Standard editing shortcuts stay available in app text fields. Command-comma opens Settings while an app window is focused.")
+                    .font(.callout).foregroundStyle(.secondary)
             }
             if let error = model.shortcutError { Text(error).font(.callout).foregroundStyle(.red) }
         }
     }
     private func shortcutRow(_ action: PresentationAction) -> some View {
         Row(action.title) {
-            ShortcutField(shortcut: Preferences.shortcut(for: action), model: model, label: action.title, allowsPlainKeys: action.drawOnly) {
+            ShortcutField(shortcut: Preferences.shortcut(for: action), model: model, label: action.title, allowsPlainKeys: action.tool != nil) {
                 model.applyPresentationShortcut?(action, $0) ?? false
             }
         }
@@ -110,7 +125,7 @@ struct AppearancePage: View {
                 }
             }
             Card(title: "Pointer") {
-                Row("Size", detail: "Relative to the display height.") {
+                Row("Size", detail: "Relative to the display height. Also sets Spotlight's circle size and Presentation pointer's thickness.") {
                     HStack(spacing: Space.sm) {
                         Slider(value: model.binding({ Double(Preferences.pointerSize) }, { Preferences.pointerSize = CGFloat($0) }),
                                in: Double(Preferences.pointerSizeRange.lowerBound)...Double(Preferences.pointerSizeRange.upperBound))
@@ -121,6 +136,16 @@ struct AppearancePage: View {
                 }
                 Row("Shadow under the pointer") {
                     Toggle("Pointer shadow", isOn: model.binding({ Preferences.showShadow }, { Preferences.showShadow = $0 })).labelsHidden().toggleStyle(.switch)
+                }
+                Row("Shadow style", detail: Preferences.shadowStyle == .contact
+                    ? "Dark at the fingertip, softer as the hand lifts away."
+                    : "The original soft shadow under the hand.") {
+                    Picker("Shadow style", selection: model.binding({ Preferences.shadowStyle }, { Preferences.shadowStyle = $0 })) {
+                        ForEach(PointerShadowStyle.allCases, id: \.self) { Text($0.title).tag($0) }
+                    }
+                    .labelsHidden().pickerStyle(.menu).frame(width: 144)
+                    .disabled(!Preferences.showShadow)
+                    .help("Choose the hand's shadow. The laser keeps its own glow.")
                 }
             }
             Card(title: "Motion") {
@@ -137,8 +162,9 @@ struct AppearancePage: View {
                 }
             }
             Card(title: "Toolbar") {
-                Row("Show the toolbar", detail: "Reveal it when the pointer starts or when you move near it.") {
+                Row("Show toolbar", detail: "Reveal at pointer startup or nearby. Hide when you move away. Off keeps it hidden.") {
                     Toggle("Show toolbar", isOn: model.binding({ Preferences.showToolbar }, { Preferences.showToolbar = $0 })).labelsHidden().toggleStyle(.switch)
+                        .help("Show for 3 seconds when the pointer starts or this setting turns on, then while the cursor is nearby. Off keeps the floating toolbar hidden. Controls remain in the menu bar.")
                 }
                 Row("Position", detail: "Drag its handle to move it. Right-click the handle to reset.") {
                     PillButton(title: "Reset Position") { Preferences.toolbarPosition = nil }
@@ -154,12 +180,12 @@ struct DrawingPage: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Space.xxl) {
             Card(title: "Tools") {
-                Row("Selected tool", detail: "Use the tool row in Draw mode, or its keyboard shortcut.") {
+                Row("Selected tool", detail: "With Interact off, use the tool row or its keyboard shortcut.") {
                     Picker("Drawing tool", selection: model.binding({ Preferences.drawingTool }, { Preferences.drawingTool = $0 })) {
                         ForEach(DrawingTool.allCases, id: \.self) { Label($0.title, systemImage: $0.symbol).tag($0) }
                     }.labelsHidden().fixedSize()
                 }
-                Row("Number markers", detail: "Choose Number or Control-click in Draw. Drag a marker to move it; click it to remove it.") { EmptyView() }
+                Row("Number markers", detail: "With Interact off, choose Number or Control-click. Drag a marker to move it; click it to remove it.") { EmptyView() }
                 Row("Text labels", detail: "Click where the label belongs. Return adds text; Escape cancels.") { EmptyView() }
             }
             Card(title: "Stroke") {

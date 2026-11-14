@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  body { margin: 0; padding: 10px 12px; color: #d8d8d8; background: #2d2d2d; font: 12px -apple-system, sans-serif; }
+  label { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .name { width: 74px; flex: none; text-align: right; }
+  select { flex: 1; min-width: 0; }
+  #note { color: #e7b94a; margin: 4px 0 0 82px; }
+</style>
+</head>
+<body>
+  <label><span class="name">Pointer</span><select id="style"></select></label>
+  <label><span class="name"></span><input id="activate" type="checkbox"> Turn pointer on when selected</label>
+  <div id="note" hidden>Open Look Here Please to refresh the list.</div>
+<script>
+let socket, context, action, settings = {};
+const select = document.getElementById('style');
+const activate = document.getElementById('activate');
+const note = document.getElementById('note');
+
+function send(event, payload) {
+  socket.send(JSON.stringify({ event, context, action, payload }));
+}
+
+function save() {
+  settings = { style: select.value, activate: activate.checked };
+  send('setSettings', settings);
+}
+
+function fill(styles) {
+  const known = styles.some(style => style.id === settings.style);
+  const options = styles.map(style => new Option(style.name, style.id));
+  if (settings.style && !known) options.unshift(new Option('Missing: ' + settings.style, settings.style));
+  if (!settings.style) options.unshift(new Option('Choose a pointer', ''));
+  select.replaceChildren(...options);
+  select.value = settings.style || '';
+}
+
+function connectElgatoStreamDeckSocket(port, uuid, registerEvent, info, actionInfo) {
+  const parsed = JSON.parse(actionInfo);
+  context = uuid;
+  action = parsed.action;
+  settings = parsed.payload.settings || {};
+  activate.checked = settings.activate !== false;
+  fill([]);
+  socket = new WebSocket('ws://127.0.0.1:' + port);
+  socket.onopen = () => {
+    socket.send(JSON.stringify({ event: registerEvent, uuid }));
+    send('sendToPlugin', { request: 'styles' });
+  };
+  socket.onmessage = message => {
+    const event = JSON.parse(message.data);
+    if (event.event === 'sendToPropertyInspector') {
+      fill(event.payload.styles);
+      note.hidden = event.payload.available;
+    }
+  };
+}
+
+select.addEventListener('change', save);
+activate.addEventListener('change', save);
+</script>
+</body>
+</html>

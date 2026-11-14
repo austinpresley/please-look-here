@@ -1,0 +1,26 @@
+B-3.png
+Built-in image generation, logo-brand concept.
+The saved PNG was normalized to 1024x1024 with sips after generation.
+
+EXACT INITIAL GENERATION PROMPT
+
+B-3. A bold, original, FLAT VECTOR pictogram for a playful macOS pointing utility. One square 1024x1024 PNG. Full-bleed uniform coral #E64029 background, cream #FFF2D6 hand, amber #FFCC75 ping. Only these three SOLID colors. Immaculately smooth color fields, no grain, texture, shading, lighting, gradients or 3D.
+
+EXTREME CLOSE CROP: a huge thick cream index finger enters diagonally from the LOWER LEFT CORNER, with only a cropped portion of its compact rounded fist visible along the bottom-left edges. Exactly ONE hand and ONE extended INDEX finger. All other fingers curled and the thumb tucked flat against the fist; no second upright digit. No little detail lines. No cuff or wrist visible because of the crop.
+
+The fingertip physically touches the lower-left edge of a large solid amber dot centered just above the middle of the canvas, around x570 y450. TWO concentric thick amber rings radiate around this dot, with broad coral gaps. Rings behind the finger, dot at its tip, no detached floating dot. The ping dominates: its outer diameter is roughly 560 pixels, fully inside the centered 80% of the square. The cropped finger is roughly 160 pixels wide, substantial but secondary to the ping.
+
+A forceful modern sign-system mark, warm and mildly silly. Big simple silhouettes that still communicate touch at 32px and 16px. Vector-like flat illustration with a few clean layers, zero fine outlines. Opaque coral fills every corner of the square. No rounded-square tile, inset panel, border, frame, margin, shadow, mockup, UI, text, letters, numbers, logos, emoji, SF Symbol or known character glove.
+
+EXACT REVISION PROMPT
+
+Edit this B-3 concept only. Preserve its extreme cropped cream pointing glove entering from the bottom-left corner, one extended INDEX fingertip touching a large amber dot with TWO concentric amber rings on coral. Keep exactly one hand, other fingers curled, thumb tucked, only part of the fist visible at the lower-left edges.
+
+Reduce the diameter of the complete ping by 12%, keeping its center near x530 y440 and physically connected to the fingertip. Its outer ring must sit fully within the centered 80% of the square. Keep the index thick and the cropped fist clearly part of the same single hand. The ping remains the hero and the only cropped object is the base of the hand. Make both rings chunkier with wide coral gaps for 16px clarity.
+
+CRITICAL: replace all tonal variation with exactly three flat uniform colors, coral #E64029 background, cream #FFF2D6 glove, amber #FFCC75 dot and rings. Digital vector fills with no texture, grain, shading, lighting, gradients, relief or 3D. Antialiased edges only, perfectly constant RGB fields everywhere else. No outlines or crease lines. No text, letters, numbers, logos, UI, mockup, rounded tile, inset panel, margin, border, frame or shadow. Full-bleed opaque square artwork, 1024x1024 PNG.
+
+REFERENCE HISTORY
+
+The initial selected generation used a text prompt. Revisions used the then-current B-3.png as a reference image. Before generation, .github/logo.png, assets/hand_glove.png and assets/hand_blue.png were visually inspected. An earlier discarded B-1 attempt additionally passed the two pointer assets as reference images.
+

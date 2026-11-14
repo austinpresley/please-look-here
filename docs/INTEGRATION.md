@@ -1,5 +1,11 @@
 # Selected fork integration
 
+This document records the 9 November integration. Austin's
+[10 November feedback](FEEDBACK-2026-11-10.md) and [current backlog](STORIES.md)
+take precedence for future work, including the Look Here Please name and removal
+of the held interaction modifier. S-001 through S-004 are authorized for implementation. The clarified Interact
+toggle in STORIES.md supersedes the historical Point/Draw controls below.
+
 Austin selected these display ranks from the final 42-item audit on 9 November 2026. The rank and the stable research ID differ; this table is authoritative for this branch.
 
 | Rank | Research ID | Acceptance |

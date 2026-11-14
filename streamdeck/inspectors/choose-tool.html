@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Choose Tool</title>
+<style>
+  body { margin: 0; padding: 12px; color: #dedede; background: #2d2d2d; font: 12px -apple-system, sans-serif; }
+  label { display: block; margin-bottom: 8px; font-weight: 600; }
+  select { box-sizing: border-box; width: 100%; font: inherit; }
+  p { line-height: 1.5; margin: 12px 0 0; }
+  #error { color: #ffd16b; }
+</style>
+</head>
+<body>
+  <label for="tool">Tool choice</label>
+  <select id="tool" aria-describedby="help order error">
+    <option value="cycle">Cycle tools</option>
+    <option value="pen">Pen</option>
+    <option value="rectangle">Rectangle</option>
+    <option value="arrow">Arrow</option>
+    <option value="text">Text</option>
+    <option value="number">Number</option>
+  </select>
+  <p id="error" role="status" hidden>Saved tool choice is invalid. Choose Cycle tools or a drawing tool.</p>
+  <p id="help">Select a drawing tool and turn Interact off. Pointer On/Off stays the same. Drawing needs Accessibility permission.</p>
+  <p id="order">Cycle order: Pen, Rectangle, Arrow, Text, Number, then Pen. Cycle keys show the current tool. Fixed keys show their assigned tool. A check means that tool is selected and ready to draw.</p>
+<script>
+let socket, context, settings = {};
+const tool = document.getElementById('tool');
+const error = document.getElementById('error');
+const choices = new Set(['cycle', 'pen', 'rectangle', 'arrow', 'text', 'number']);
+
+function showSettings(value) {
+  settings = value;
+  const choice = Object.hasOwn(settings, 'tool') ? settings.tool : 'cycle';
+  const valid = typeof choice === 'string' && choices.has(choice);
+  tool.querySelector('[data-invalid]')?.remove();
+  if (!valid) {
+    const option = new Option('Choose a valid tool', '');
+    option.dataset.invalid = 'true';
+    option.disabled = true;
+    tool.prepend(option);
+  }
+  tool.value = valid ? choice : '';
+  tool.setAttribute('aria-invalid', String(!valid));
+  error.hidden = valid;
+}
+
+function connectElgatoStreamDeckSocket(port, uuid, registerEvent, info, actionInfo) {
+  context = uuid;
+  showSettings(JSON.parse(actionInfo).payload.settings || {});
+  socket = new WebSocket('ws://127.0.0.1:' + port);
+  socket.onopen = () => socket.send(JSON.stringify({ event: registerEvent, uuid }));
+  socket.onmessage = message => {
+    const event = JSON.parse(message.data);
+    if (event.event === 'didReceiveSettings') showSettings(event.payload.settings || {});
+  };
+}
+
+tool.addEventListener('change', () => {
+  if (!choices.has(tool.value) || socket?.readyState !== WebSocket.OPEN) return;
+  showSettings({ ...settings, tool: tool.value });
+  socket.send(JSON.stringify({ event: 'setSettings', context, payload: settings }));
+});
+</script>
+</body>
+</html>

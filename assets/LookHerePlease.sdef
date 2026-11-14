@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dictionary SYSTEM "file://localhost/System/Library/DTDs/sdef.dtd">
+<dictionary title="Look Here Please Terminology">
+    <suite name="Look Here Please Suite" code="LkHp" description="Turn the pointer on and off, change Interact, and choose the pointer and drawing tool.">
+        <documentation>
+            <html><![CDATA[
+<p>Example:</p>
+<pre>tell application "Look Here Please"
+    set selected pointer to pointer "Robot"
+    set pointer active to true
+    set interact to true
+    get {pointer active, interact, name of selected pointer, drawing tool}
+end tell</pre>
+<p>Look Here Please reports rejected changes as script errors. For example, turning Interact off needs Accessibility permission.</p>
+]]></html>
+        </documentation>
+        <enumeration name="drawing tool type" code="LkTl" description="A drawing tool.">
+            <enumerator name="pen tool" code="LkPn" description="Freehand pen."/>
+            <enumerator name="rectangle tool" code="LkRc" description="Rectangle."/>
+            <enumerator name="arrow tool" code="LkAr" description="Arrow."/>
+            <enumerator name="text tool" code="LkTx" description="Text label."/>
+            <enumerator name="number tool" code="LkNm" description="Numbered marker."/>
+        </enumeration>
+        <class name="application" code="capp" description="The Look Here Please application.">
+            <cocoa class="NSApplication"/>
+            <element type="pointer" access="r" description="Every available pointer, including custom hands.">
+                <cocoa key="scriptPointers"/>
+            </element>
+            <property name="pointer active" code="LkPa" type="boolean" access="rw" description="Whether the pointer is on.">
+                <cocoa key="scriptPointerActive"/>
+            </property>
+            <property name="interact" code="LkIn" type="boolean" access="rw" description="True uses apps normally. False draws on screen and needs Accessibility permission.">
+                <cocoa key="scriptInteract"/>
+            </property>
+            <property name="selected pointer" code="LkSp" access="rw" description="The selected pointer. Set it to a pointer or a pointer id. Setting it does not turn the pointer on.">
+                <type type="pointer"/>
+                <type type="text"/>
+                <cocoa key="scriptSelectedPointer"/>
+            </property>
+            <property name="drawing tool" code="LkDt" type="drawing tool type" access="rw" description="The drawing tool. Setting it also turns Interact off, which needs Accessibility permission.">
+                <cocoa key="scriptDrawingTool"/>
+            </property>
+        </class>
+        <class name="pointer" code="LkPt" plural="pointers" description="A pointer style.">
+            <cocoa class="LHPScriptPointer"/>
+            <property name="id" code="ID  " type="text" access="r" description="The stable pointer identifier.">
+                <cocoa key="uniqueID"/>
+            </property>
+            <property name="name" code="pnam" type="text" access="r" description="The pointer's name.">
+                <cocoa key="name"/>
+            </property>
+        </class>
+        <command name="count" code="corecnte" description="Count the pointers.">
+            <cocoa class="NSCountCommand"/>
+            <direct-parameter type="specifier" description="The objects to count."/>
+            <parameter name="each" code="kocl" type="type" optional="yes" description="The class of objects to count.">
+                <cocoa key="ObjectClass"/>
+            </parameter>
+            <result type="integer" description="The number of objects."/>
+        </command>
+        <command name="exists" code="coredoex" description="Check whether a pointer exists.">
+            <cocoa class="NSExistsCommand"/>
+            <direct-parameter type="specifier" description="The object to check."/>
+            <result type="boolean" description="Whether it exists."/>
+        </command>
+        <command name="toggle pointer" code="LkHpTgPt" description="Turn the pointer on or off.">
+            <cocoa class="LHPTogglePointerCommand"/>
+            <result type="boolean" description="Whether the pointer is now on."/>
+        </command>
+        <command name="toggle interact" code="LkHpTgIn" description="Change Interact. Turning it off needs Accessibility permission.">
+            <cocoa class="LHPToggleInteractCommand"/>
+            <result type="boolean" description="Whether Interact is now on."/>
+        </command>
+    </suite>
+</dictionary>

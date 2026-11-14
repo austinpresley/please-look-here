@@ -56,7 +56,7 @@ final class Toolbar: NSObject, NSWindowDelegate {
     private let row = NSStackView()
     private let tools = NSStackView()
     private let pointerStrip = NSStackView()
-    private let mode = NSSegmentedControl(labels: ["Point", "Draw"], trackingMode: .selectOne, target: nil, action: nil)
+    private let interact = NSSwitch()
     private var toolButtons: [DrawingTool: Button] = [:]
     private var styleButtons: [PointerStyle: Button] = [:]
     private var colors: [InkChoice: Button] = [:]
@@ -65,6 +65,8 @@ final class Toolbar: NSObject, NSWindowDelegate {
     private var current: PointerStyle?
     private var undoButton: Button!
     private var captureButton: Button!
+    private var clearButton: Button!
+    private var exitButton: Button!
     private var soundButton: Button!
     private var permissionButton: NSButton!
     private var hint: Panel?
@@ -73,7 +75,7 @@ final class Toolbar: NSObject, NSWindowDelegate {
     private var remembersMoves = false
     private var savingPosition = false
     private var previousPreferencePosition = Preferences.toolbarPosition
-    private(set) var revealed = false
+    var revealed: Bool { panel.isVisible && panel.alphaValue > 0 }
     var frame: CGRect { panel.frame }
     var windows: [NSWindow] { [panel] + (hint.map { [$0] } ?? []) }
 
@@ -117,29 +119,36 @@ final class Toolbar: NSObject, NSWindowDelegate {
         }
         handle.reset = { [weak self] in self?.resetPosition() }
         row.addArrangedSubview(handle)
-        mode.selectedSegment = Preferences.pointerMode == .point ? 0 : 1
-        mode.target = self
-        mode.action = #selector(modeChanged)
-        mode.setAccessibilityLabel("Pointer mode")
-        mode.toolTip = "Point uses apps normally. Draw adds annotations."
-        row.addArrangedSubview(mode)
+        let interactLabel = NSTextField(labelWithString: "Interact")
+        interactLabel.font = .systemFont(ofSize: 13)
+        interact.state = Preferences.pointerMode.isInteractive ? .on : .off
+        interact.target = self
+        interact.action = #selector(modeChanged)
+        interact.setAccessibilityLabel("Interact")
+        interact.toolTip = Preferences.shortcut(for: .mode).help("On: use apps normally. Off: draw on screen.")
+        let interaction = NSStackView(views: [interactLabel, interact])
+        interaction.orientation = .horizontal
+        interaction.alignment = .centerY
+        interaction.spacing = 8
+        row.addArrangedSubview(interaction)
         row.addArrangedSubview(Self.divider())
         row.addArrangedSubview(pointerStrip)
         row.addArrangedSubview(Self.divider())
-        undoButton = button(symbol: "arrow.uturn.backward", tip: "Undo annotation (⌘Z)") { [weak self] in self?.onUndo?() }
-        captureButton = button(symbol: "camera", tip: "Take Screenshot (\(Preferences.shortcut(for: .capture).display))") { [weak self] in self?.onCapture?() }
+        undoButton = button(symbol: "arrow.uturn.backward", tip: Preferences.shortcut(for: .undo).help("Undo annotation")) { [weak self] in self?.onUndo?() }
+        captureButton = button(symbol: "camera", tip: Preferences.shortcut(for: .capture).help("Take Screenshot")) { [weak self] in self?.onCapture?() }
         soundButton = button(symbol: "speaker.wave.2.fill", tip: "Toggle tap sound") { [weak self] in self?.onToggleSound?() }
         row.addArrangedSubview(undoButton)
         row.addArrangedSubview(captureButton)
         row.addArrangedSubview(soundButton)
-        row.addArrangedSubview(button(symbol: "xmark", tip: "Turn pointer off (Esc)") { [weak self] in self?.onExit?() })
+        exitButton = button(symbol: "xmark", tip: Preferences.shortcut(for: .exitPointer).help("Turn pointer off")) { [weak self] in self?.onExit?() }
+        row.addArrangedSubview(exitButton)
         permissionButton = NSButton(title: "Allow Drawing…", target: self, action: #selector(fixPermission))
         permissionButton.bezelStyle = .rounded
         permissionButton.isHidden = true
-        permissionButton.toolTip = "Open Accessibility settings to allow drawing. Point mode still works."
+        permissionButton.toolTip = "Open Accessibility settings to allow drawing. Interact still works."
         root.addArrangedSubview(permissionButton)
         for tool in DrawingTool.allCases {
-            let b = button(symbol: tool.symbol, tip: "\(tool.title) tool (\(Preferences.shortcut(for: PresentationAction(rawValue: tool.rawValue)!).display))") { [weak self] in self?.onTool?(tool) }
+            let b = button(symbol: tool.symbol, tip: Preferences.shortcut(for: PresentationAction(rawValue: tool.rawValue)!).help("\(tool.title) tool")) { [weak self] in self?.onTool?(tool) }
             toolButtons[tool] = b
             tools.addArrangedSubview(b)
         }
@@ -150,7 +159,8 @@ final class Toolbar: NSObject, NSWindowDelegate {
             tools.addArrangedSubview(b)
         }
         tools.addArrangedSubview(Self.divider())
-        tools.addArrangedSubview(button(symbol: "trash", tip: "Clear Drawing (\(Preferences.clearShortcut.display))") { [weak self] in self?.onClear?() })
+        clearButton = button(symbol: "trash", tip: Preferences.clearShortcut.help("Clear Drawing")) { [weak self] in self?.onClear?() }
+        tools.addArrangedSubview(clearButton)
         NotificationCenter.default.addObserver(forName: Preferences.changed, object: nil, queue: .main) { [weak self] _ in self?.refresh() }
         refresh()
     }
@@ -182,7 +192,7 @@ final class Toolbar: NSObject, NSWindowDelegate {
     }
 
     private func refresh() {
-        let styles = Preferences.pinnedStyles
+        let styles = PointerCatalog.quickStyles
         if styles != shownStyles {
             for b in styleButtons.values { actions[b] = nil; b.removeFromSuperview() }
             shownStyles = styles
@@ -196,15 +206,19 @@ final class Toolbar: NSObject, NSWindowDelegate {
         for (style, b) in styleButtons { b.selected = style == current }
         for (tool, b) in toolButtons {
             b.selected = tool == Preferences.drawingTool
-            b.toolTip = "\(tool.title) tool (\(Preferences.shortcut(for: PresentationAction(rawValue: tool.rawValue)!).display))"
+            b.toolTip = Preferences.shortcut(for: PresentationAction(rawValue: tool.rawValue)!).help("\(tool.title) tool")
         }
         for (color, b) in colors {
             b.selected = color == Preferences.inkChoice
             b.image = Self.colorImage(color.resolved(for: current ?? PointerStyle.saved))
         }
-        mode.selectedSegment = Preferences.pointerMode == .point ? 0 : 1
+        interact.state = Preferences.pointerMode.isInteractive ? .on : .off
+        interact.toolTip = Preferences.shortcut(for: .mode).help("On: use apps normally. Off: draw on screen.")
         tools.isHidden = Preferences.pointerMode == .point
-        captureButton.toolTip = "Take Screenshot (\(Preferences.shortcut(for: .capture).display))"
+        exitButton.toolTip = Preferences.shortcut(for: .exitPointer).help("Turn pointer off")
+        undoButton.toolTip = Preferences.shortcut(for: .undo).help("Undo annotation")
+        clearButton.toolTip = Preferences.clearShortcut.help("Clear Drawing")
+        captureButton.toolTip = Preferences.shortcut(for: .capture).help("Take Screenshot")
         let position = Preferences.toolbarPosition
         let resetPosition = previousPreferencePosition != nil && position == nil
         if resetPosition { remembersMoves = false }
@@ -213,7 +227,7 @@ final class Toolbar: NSObject, NSWindowDelegate {
         previousPreferencePosition = position
     }
     func select(_ style: PointerStyle) { current = style; refresh() }
-    func setMode(_ value: PointerMode) { mode.selectedSegment = value == .point ? 0 : 1; tools.isHidden = value == .point; resize() }
+    func setMode(_ value: PointerMode) { interact.state = value.isInteractive ? .on : .off; tools.isHidden = value.isInteractive; resize() }
     func setUndoEnabled(_ value: Bool) { undoButton.isEnabled = value }
     func setCapturing(_ value: Bool) { captureButton.isEnabled = !value }
     func setSoundOn(_ value: Bool) {
@@ -260,14 +274,17 @@ final class Toolbar: NSObject, NSWindowDelegate {
         previousPreferencePosition = panel.frame.origin
     }
     func resetPosition() { Preferences.toolbarPosition = nil; if let screen = panel.screen ?? screen { place(on: screen) } }
-    func show() { panel.orderFrontRegardless() }
-    func hide() { hideHint(); revealed = false; panel.orderOut(nil) }
+    func hide() { hideHint(); setRevealed(false) }
     func setRevealed(_ value: Bool) {
-        guard value != revealed else { return }
-        revealed = value
+        // Reconcile the native panel, including after deactivate/reactivate.
+        // A cached flag can say hidden while an ordered panel is still opaque.
         panel.ignoresMouseEvents = !value
-        if value { panel.orderFrontRegardless() }
         panel.alphaValue = value ? 1 : 0
+        if value {
+            if !panel.isVisible { panel.orderFrontRegardless() }
+        } else if panel.isVisible {
+            panel.orderOut(nil)
+        }
     }
     private func resize() {
         let origin = panel.frame.origin
@@ -335,7 +352,7 @@ final class Toolbar: NSObject, NSWindowDelegate {
         return b
     }
     @objc private func tapped(_ sender: Button) { actions[sender]?() }
-    @objc private func modeChanged() { onMode?(mode.selectedSegment == 0 ? .point : .draw) }
+    @objc private func modeChanged() { onMode?(interact.state == .on ? .point : .draw) }
     @objc private func fixPermission() { onFixPermission?() }
     private static func divider() -> NSView {
         let line = NSBox()
@@ -354,6 +371,7 @@ final class Toolbar: NSObject, NSWindowDelegate {
         }
     }
     static func icon(for style: PointerStyle) -> NSImage? {
+        if let image = PresentationPointerArtwork.icon(for: style) { return image }
         if style == .laser { return colorImage(Ink.red) }
         return style.assetName.flatMap(HandAsset.thumbnail)
     }

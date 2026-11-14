@@ -136,7 +136,7 @@ struct PointersPage: View {
                     Text(message).font(.system(size: 12)).foregroundColor(.red).padding(.horizontal, 4)
                 }
             }
-            YourHands(model: model)
+            PointerLibrary(model: model)
         }
         .coordinateSpace(name: "pointersPage")
         .overlay(alignment: .topLeading) {
@@ -191,9 +191,9 @@ struct PointerPicker: View {
         VStack(alignment: .leading, spacing: 0) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
-                    section(nil, PointerStyle.builtInHands + [.laser], pinned)
+                    section(nil, (PointerStyle.builtInHands + PointerStyle.presentationStyles).filter { PointerCatalog.selectableStyles.contains($0) }, pinned)
                     if !PointerStyle.customHands.isEmpty {
-                        section("Your hands", PointerStyle.customHands, pinned)
+                        section("Your hands", PointerStyle.customHands.filter { PointerCatalog.selectableStyles.contains($0) }, pinned)
                     }
                 }
                 .padding(12)
@@ -462,7 +462,8 @@ struct ToolbarSlot: View {
         }
         .contentShape(Rectangle())
         .onHover { hovering = $0 }
-        .help(style.title)
+        .opacity(Preferences.disabledPointerIDs.contains(style.rawValue) ? 0.45 : 1)
+        .help(Preferences.disabledPointerIDs.contains(style.rawValue) ? "\(style.title) is disabled. Its toolbar pin is kept." : style.title)
     }
 }
 

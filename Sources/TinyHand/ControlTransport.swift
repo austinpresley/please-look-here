@@ -27,7 +27,7 @@ enum ControlTransport {
     static func secureDirectory() throws {
         guard !directory.isEmpty,
               path.utf8CString.count <= MemoryLayout.size(ofValue: sockaddr_un().sun_path) else {
-            throw Failure(message: "Cannot resolve the TinyHand control endpoint")
+            throw Failure(message: "Cannot resolve the Look Here Please control endpoint")
         }
         if mkdir(directory, 0o700) != 0 && errno != EEXIST {
             throw Failure(message: "Cannot create control directory")
@@ -115,11 +115,11 @@ enum ControlTransport {
                let id = Bundle.main.bundleIdentifier,
                NSRunningApplication.runningApplications(withBundleIdentifier: id)
                 .allSatisfy({ $0.processIdentifier == getpid() }) {
-                throw Failure(message: "TinyHand is not running. Launch the compatible app first.", code: "not-running")
+                throw Failure(message: "Look Here Please is not running. Launch the compatible app first.", code: "not-running")
             }
-            throw Failure(message: "Could not connect to TinyHand. Quit any other copies and try again.")
+            throw Failure(message: "Could not connect to Look Here Please. Quit any other copies and try again.")
         }
-        guard sameUser(fd) else { throw Failure(message: "Could not verify the TinyHand control peer") }
+        guard sameUser(fd) else { throw Failure(message: "Could not verify the Look Here Please control peer") }
         try writeLine(fd, data: data)
         return try readLine(fd, limit: responseLimit, deadline: .now() + .seconds(2))
     }
@@ -127,7 +127,7 @@ enum ControlTransport {
     static func runCLI(_ arguments: [String]) -> Int32 {
         do {
             guard arguments.count == 1, let data = arguments[0].data(using: .utf8) else {
-                throw Failure(message: "Usage: TinyHand --ctl '<JSON request>'")
+                throw Failure(message: "Usage: <app>/Contents/MacOS/TinyHand --ctl '<JSON request>'")
             }
             let response = try request(data)
             FileHandle.standardOutput.write(response + Data([10]))
@@ -156,7 +156,7 @@ final class ControlServer {
         guard lock >= 0 else { throw ControlTransport.Failure(message: "Cannot open control lock") }
         guard flock(lock, LOCK_EX | LOCK_NB) == 0 else {
             close(lock); lock = -1
-            throw ControlTransport.Failure(message: "A TinyHand control server is already running")
+            throw ControlTransport.Failure(message: "A Look Here Please control server is already running")
         }
         listener = socket(AF_UNIX, SOCK_STREAM, 0)
         guard listener >= 0 else { stop(); throw ControlTransport.Failure(message: "Cannot create listener") }
@@ -185,7 +185,7 @@ final class ControlServer {
                 let request = try ControlTransport.readLine(peer, limit: ControlTransport.requestLimit, deadline: deadline)
                 let response = try DispatchQueue.main.sync {
                     guard DispatchTime.now() < deadline else {
-                        throw ControlTransport.Failure(message: "TinyHand was busy before the request could run")
+                        throw ControlTransport.Failure(message: "Look Here Please was busy before the request could run")
                     }
                     return handler(request)
                 }

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-APP="$ROOT/dist/verification/TinyHandFixture.app"
+APP="${TINYHAND_FIXTURE_APP:-$ROOT/dist/verification/TinyHandFixture.app}"
 mkdir -p "$APP/Contents/MacOS"
 swiftc "$ROOT/Tests/Fixtures/Canvas.swift" -o "$APP/Contents/MacOS/TinyHandFixture" -framework AppKit
 cat > "$APP/Contents/Info.plist" <<'PLIST'

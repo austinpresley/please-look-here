@@ -20,6 +20,10 @@ struct PointerStyle: Hashable {
     static let plush = PointerStyle("plush")
     static let robot = PointerStyle("robot")
     static let laser = PointerStyle("laser")
+    static let spotlight = PointerStyle("spotlight")
+    static let presentation = PointerStyle("presentation")
+
+    static let presentationStyles: [PointerStyle] = [.laser, .spotlight, .presentation]
 
     private static let builtIn: [(id: String, title: String, ink: CGColor)] = [
         ("lavender", "Lavender toy", Ink.purple),
@@ -69,7 +73,7 @@ struct PointerStyle: Hashable {
     }
 
     static var allCases: [PointerStyle] {
-        builtInHands + customHands + [.laser]
+        builtInHands + customHands + presentationStyles
     }
 
     static let defaultPinned: [PointerStyle] = [.lavender, .glove, .coral, .plush, .robot, .laser]
@@ -79,6 +83,8 @@ struct PointerStyle: Hashable {
     }
 
     var title: String {
+        if self == .spotlight { return "Spotlight" }
+        if self == .presentation { return "Presentation pointer" }
         if self == .laser {
             return "Laser dot"
         }
@@ -89,7 +95,7 @@ struct PointerStyle: Hashable {
     }
 
     var assetName: String? {
-        if self == .laser {
+        if Self.presentationStyles.contains(self) {
             return nil
         }
         if isCustom {
@@ -99,6 +105,8 @@ struct PointerStyle: Hashable {
     }
 
     var inkColor: CGColor {
+        if self == .spotlight { return Ink.hex(0xF2B705) }
+        if self == .presentation { return Ink.hex(0xEE6B61) }
         if self == .laser {
             return Ink.red
         }
@@ -108,24 +116,40 @@ struct PointerStyle: Hashable {
         return PointerStyle.builtIn.first { $0.id == rawValue }?.ink ?? Ink.purple
     }
 
+    var symbol: String {
+        if self == .laser { return "circle.fill" }
+        if self == .spotlight { return "flashlight.on.fill" }
+        if self == .presentation { return "line.diagonal" }
+        return "hand.point.up.left.fill"
+    }
+
+    var catalogType: String {
+        if self == .spotlight { return "spotlight" }
+        if self == .presentation { return "presentation" }
+        if self == .laser { return "laser" }
+        return isCustom ? "custom" : "hand"
+    }
+
     private static let defaultsKey = "pointerStyle"
+
+    static var savedID: String {
+        switch Preferences.storage.string(forKey: defaultsKey) {
+        case "dot": return "laser"
+        case "sunny": return "coral"
+        case let raw?: return raw
+        case nil: return "lavender"
+        }
+    }
 
     static var saved: PointerStyle {
         get {
-            let raw = Preferences.storage.string(forKey: defaultsKey)
-            if raw == "dot" {
-                return .laser
-            }
-            if raw == "sunny" {
-                return .coral
-            }
-            return raw.flatMap(PointerStyle.init(rawValue:)) ?? .lavender
+            PointerStyle(rawValue: savedID) ?? .lavender
         }
         set { Preferences.storage.set(newValue.rawValue, forKey: defaultsKey) }
     }
 }
 
-struct HandAsset {
+struct HandAsset: Sendable {
     let image: CGImage
     let aspect: CGFloat
     let handTop: CGFloat
@@ -164,10 +188,37 @@ struct HandAsset {
 
     private static var thumbnails: [String: NSImage] = [:]
 
+    private struct Availability {
+        let url: URL?
+        let modified: Date?
+        let size: Int?
+        let valid: Bool
+    }
+    private static var availability: [String: Availability] = [:]
+
+    /// Check the file, not the render cache. Cache image validation until the file
+    /// changes so polling a catalog does not repeatedly decode every large hand.
+    static func isAvailable(_ name: String) -> Bool {
+        let url = imageURLs(name).first { FileManager.default.fileExists(atPath: $0.path) }
+        let attributes = url.flatMap { try? FileManager.default.attributesOfItem(atPath: $0.path) }
+        let modified = attributes?[.modificationDate] as? Date
+        let size = attributes?[.size] as? Int
+        if let old = availability[name], old.url == url, old.modified == modified, old.size == size { return old.valid }
+        forget(name)
+        let asset = url == nil ? nil : loadImage(name).flatMap(measure)
+        let valid = asset != nil
+        // Reappearing images must repopulate the gallery too. Its fast icon path
+        // reads thumbnails only and otherwise keeps a blank placeholder.
+        if let asset { thumbnails[name] = asset.thumbnail }
+        availability[name] = Availability(url: url, modified: modified, size: size, valid: valid)
+        return valid
+    }
+
     static func forget(_ name: String) {
         cache[name] = nil
         recent.removeAll { $0 == name }
         thumbnails[name] = nil
+        availability[name] = nil
     }
 
     static func cachedThumbnail(_ name: String) -> NSImage? {
@@ -322,7 +373,7 @@ struct HandAsset {
         )
     }
 
-    private static func loadImage(_ name: String) -> CGImage? {
+    private static func imageURLs(_ name: String) -> [URL] {
         let exeDir = URL(fileURLWithPath: CommandLine.arguments[0]).deletingLastPathComponent()
         var urls: [URL] = []
         urls.append(CustomHands.directory.appendingPathComponent("\(name).png"))
@@ -332,7 +383,11 @@ struct HandAsset {
         urls.append(exeDir.appendingPathComponent("\(name).png"))
         urls.append(exeDir.appendingPathComponent("assets/\(name).png"))
         urls.append(URL(fileURLWithPath: "assets/\(name).png"))
-        for url in urls where FileManager.default.fileExists(atPath: url.path) {
+        return urls
+    }
+
+    private static func loadImage(_ name: String) -> CGImage? {
+        for url in imageURLs(name) where FileManager.default.fileExists(atPath: url.path) {
             if let image = NSImage(contentsOf: url),
                let cg = image.cgImage(forProposedRect: nil, context: nil, hints: nil) {
                 return cg

@@ -6,7 +6,7 @@ enum ScreenshotError: LocalizedError {
     case permission, display, timeout, encoding
     var errorDescription: String? {
         switch self {
-        case .permission: return "Allow TinyHand in System Settings → Privacy & Security → Screen & System Audio Recording, then try the screenshot again. You may need to reopen the app."
+        case .permission: return "Allow Look Here Please in System Settings → Privacy & Security → Screen & System Audio Recording, then try the screenshot again. You may need to reopen the app."
         case .display: return "The display is no longer available. Move the pointer to a connected display and try again."
         case .timeout: return "The screen did not produce a frame. Try the screenshot again."
         case .encoding: return "The screenshot could not be encoded as a PNG. Try again."
@@ -52,7 +52,7 @@ final class ScreenCapture {
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd 'at' HH.mm.ss"
-        let filename = "TinyHand \(formatter.string(from: Date())) \(UUID().uuidString.prefix(6)).png"
+        let filename = "Look Here Please \(formatter.string(from: Date())) \(UUID().uuidString.prefix(6)).png"
         let url = folder.appendingPathComponent(filename)
         try data.write(to: url, options: .atomic)
         return url

@@ -4,9 +4,12 @@ enum RenderTest {
     static func run(outPath: String) {
         _ = NSApplication.shared
 
-        let panel = CGSize(width: 420, height: 560)
-        let styles = PointerStyle.allCases
-        let target = CGPoint(x: panel.width - 230, y: 380)
+        let env = ProcessInfo.processInfo.environment
+        let scene = env["TH_PRESENTATION_SCENE"] == "1"
+        let dark = env["TH_DARK"] != nil
+        let panel = scene ? CGSize(width: 720, height: 480) : CGSize(width: 420, height: 560)
+        let styles = env["TH_RENDER_STYLES"].map { $0.split(separator: ",").compactMap { PointerStyle(rawValue: String($0)) } } ?? PointerStyle.allCases
+        let target = scene ? CGPoint(x: 336, y: 205) : CGPoint(x: panel.width - 230, y: 380)
         let w = Int(panel.width) * styles.count
         let h = Int(panel.height)
 
@@ -21,8 +24,9 @@ enum RenderTest {
         for (i, style) in styles.enumerated() {
             ctx.saveGState()
             ctx.translateBy(x: CGFloat(i) * panel.width, y: 0)
-            ctx.setFillColor(CGColor(red: 0.93, green: 0.94, blue: 0.92, alpha: 1))
+            ctx.setFillColor(scene ? Ink.hex(dark ? 0x222330 : 0xF6F3ED) : CGColor(red: 0.93, green: 0.94, blue: 0.92, alpha: 1))
             ctx.fill(CGRect(x: 0, y: 0, width: panel.width, height: panel.height))
+            if scene { drawPresentationScene(in: ctx, panel: panel, dark: dark) }
 
             let view = ArmView(frame: NSRect(origin: .zero, size: panel))
             view.setStyle(style)
@@ -65,5 +69,27 @@ enum RenderTest {
         }
         try? data.write(to: URL(fileURLWithPath: outPath))
         print("rendered \(outPath)  \(w)x\(h)")
+    }
+
+    private static func drawPresentationScene(in context: CGContext, panel: CGSize, dark: Bool) {
+        NSGraphicsContext.saveGraphicsState()
+        NSGraphicsContext.current = NSGraphicsContext(cgContext: context, flipped: false)
+        let color = NSColor(cgColor: Ink.hex(dark ? 0xEEE9E1 : 0x332C3A))!
+        func text(_ value: String, at point: CGPoint, size: CGFloat, weight: NSFont.Weight = .regular) {
+            NSAttributedString(string: value, attributes: [.font: NSFont.systemFont(ofSize: size, weight: weight), .foregroundColor: color]).draw(at: point)
+        }
+        text("A clearer way to present", at: CGPoint(x: 40, y: panel.height - 76), size: 28, weight: .semibold)
+        text("Point to the part that matters.", at: CGPoint(x: 40, y: panel.height - 108), size: 16)
+        for index in 0..<3 {
+            let rect = CGRect(x: 40 + CGFloat(index) * 216, y: 92, width: 200, height: 208)
+            context.setFillColor(Ink.hex(dark ? 0x353645 : 0xFFFFFF))
+            context.addPath(CGPath(roundedRect: rect, cornerWidth: 16, cornerHeight: 16, transform: nil))
+            context.fillPath()
+            context.setFillColor(Ink.hex([0xEE6B61, 0x8F75CE, 0x419B85][index]))
+            context.fillEllipse(in: CGRect(x: rect.minX + 20, y: rect.maxY - 64, width: 36, height: 36))
+            text(["Choose", "Explain", "Keep moving"][index], at: CGPoint(x: rect.minX + 20, y: rect.maxY - 104), size: 18, weight: .semibold)
+            text(["Find your pointer.", "Show one detail.", "Stay in the flow."][index], at: CGPoint(x: rect.minX + 20, y: rect.maxY - 136), size: 13)
+        }
+        NSGraphicsContext.restoreGraphicsState()
     }
 }

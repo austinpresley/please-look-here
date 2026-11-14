@@ -2,11 +2,19 @@ import AppKit
 
 enum PointerMode: String, CaseIterable {
     case point, draw
-    var title: String { self == .point ? "Point" : "Draw" }
+    // Preserve stored values and protocol v1 clients while presenting one Interact toggle.
+    var isInteractive: Bool { self == .point }
+    var title: String { isInteractive ? "Interact On" : "Interact Off" }
+
+    func hidesPointer(whilePressing pressing: Bool, keepsHand: Bool) -> Bool {
+        isInteractive && pressing && !keepsHand
+    }
 }
 
 enum DrawingTool: String, CaseIterable {
     case pen, rectangle, arrow, text, number
+    /// Protocol and toolbar order. Always wrap, including Number back to Pen.
+    var next: DrawingTool { Self.allCases[(Self.allCases.firstIndex(of: self)! + 1) % Self.allCases.count] }
     var title: String { rawValue.capitalized }
     var symbol: String {
         switch self {

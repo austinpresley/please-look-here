@@ -7,10 +7,12 @@ final class ControlBridge {
     private let openSettings: (String?) -> Void
     private let openHandCreator: () -> Void
     private let accessibility: () -> Bool
+    var verifyMenuBar: (([String: Any]) -> [String: Any])?
+    var verifyShortcuts: (([String: Any]) -> [String: Any])?
     private let snapshotSettings: ((String) -> Bool)?
     static var operations: [String] {
-        let normal = ["status", "styles", "on", "off", "toggle", "clear", "undo", "redo", "mode", "tool", "capture", "style", "laser", "configure", "toggle-sound", "pin", "settings", "custom-hands"]
-        return ProcessInfo.processInfo.environment["TINYHAND_TEST_MODE"] == "1" ? normal + ["snapshot-settings"] : normal
+        let normal = ["status", "styles", "cycle-pointer", "cycle-tool", "enable-pointer", "on", "off", "toggle", "clear", "undo", "redo", "interact", "mode", "tool", "capture", "style", "laser", "configure", "toggle-sound", "toggle-current-sound", "pin", "settings", "custom-hands"]
+        return ProcessInfo.processInfo.environment["TINYHAND_TEST_MODE"] == "1" ? normal + ["snapshot-settings", "run-applescript", "test-shortcuts", "test-radial", "test-menu-bar"] : normal
     }
 
     init(overlay: OverlayController, accessibility: @escaping () -> Bool = { AXIsProcessTrusted() }, openSettings: @escaping (String?) -> Void, openHandCreator: @escaping () -> Void, snapshotSettings: ((String) -> Bool)? = nil) {
@@ -42,10 +44,14 @@ final class ControlBridge {
             if op == "style" { allowed.formUnion(["style", "activate"]) }
             if op == "configure" { allowed.insert("settings") }
             if op == "pin" { allowed.formUnion(["style", "pinned"]) }
+            if op == "enable-pointer" { allowed.formUnion(["style", "enabled"]) }
             if op == "mode" { allowed.insert("mode") }
+            if op == "interact" { allowed.insert("enabled") }
             if op == "tool" { allowed.insert("tool") }
             if op == "settings" { allowed.insert("section") }
             if op == "snapshot-settings" { allowed.insert("path") }
+            if op == "run-applescript" { allowed.insert("source") }
+            if op == "test-shortcuts" || op == "test-radial" || op == "test-menu-bar" { allowed.insert("request") }
             guard Set(request.keys).isSubset(of: allowed) else { throw reject("Unexpected request fields") }
             switch op {
             case "on": try activate()
@@ -55,13 +61,23 @@ final class ControlBridge {
             case "clear": overlay.clearInk()
             case "undo": overlay.undo()
             case "redo": overlay.redo()
-            case "mode":
-                guard let value = request["mode"] as? String, let mode = PointerMode(rawValue: value) else { throw reject("Mode must be point or draw") }
-                if mode == .draw && !accessibility() { throw reject("Allow Accessibility to draw. Point mode is available without it.", code: "accessibility") }
+            case "mode", "interact":
+                let mode: PointerMode
+                if op == "interact" {
+                    mode = try readBool(request["enabled"]) ? .point : .draw
+                } else {
+                    guard let value = request["mode"] as? String, let storedMode = PointerMode(rawValue: value) else { throw reject("Legacy mode must be point or draw; use interact with an enabled boolean") }
+                    mode = storedMode
+                }
+                if mode == .draw && !accessibility() { throw reject("Allow Accessibility to draw. Interact is available without it.", code: "accessibility") }
                 guard overlay.setMode(mode) else { throw reject("Drawing is unavailable while capture is pending or permission is missing", code: "unavailable") }
             case "tool":
                 guard let value = request["tool"] as? String, let tool = DrawingTool(rawValue: value) else { throw reject("Unknown drawing tool") }
-                guard accessibility(), overlay.chooseTool(tool) else { throw reject("Allow Accessibility to use drawing tools", code: "accessibility") }
+                try selectTool(tool)
+            case "cycle-tool":
+                // The server serializes handlers on the main queue. Resolve the
+                // current tool here, never from a plugin's earlier observation.
+                try selectTool(Preferences.drawingTool.next)
             case "capture": overlay.captureScreenshot()
             case "style":
                 let style = try readStyle(request["style"])
@@ -70,13 +86,33 @@ final class ControlBridge {
                 if shouldActivate { try activate() }
                 overlay.pick(style)
                 NotificationCenter.default.post(name: Preferences.changed, object: nil)
+            case "cycle-pointer":
+                // ControlServer executes this entire operation on the main queue.
+                // Refresh manifest membership before resolving the current catalog.
+                CustomHands.reload()
+                let next = try PointerCatalog.nextSelectable(after: overlay.style)
+                guard overlay.pick(next) else {
+                    throw reject("The pointer image became unavailable. Restore it or choose another pointer.", code: "missing-asset")
+                }
+                NotificationCenter.default.post(name: Preferences.changed, object: nil)
             case "laser":
+                try validateAsset(for: .laser)
                 try activate()
                 overlay.pick(.laser)
                 NotificationCenter.default.post(name: Preferences.changed, object: nil)
+            case "enable-pointer":
+                let style = try readStyle(request["style"])
+                try PointerCatalog.setEnabled(try readBool(request["enabled"]), for: style)
             case "configure":
                 guard let patch = request["settings"] as? [String: Any], !patch.isEmpty else { throw reject("Settings are required") }
                 try configure(patch)
+            case "test-radial":
+                guard ProcessInfo.processInfo.environment["TINYHAND_DEFAULTS_SUITE"]?.hasPrefix("com.austinpresley.tinyhand.s013.") == true,
+                      let request = request["request"] as? [String: Any] else { throw reject("Use an isolated S-013 suite") }
+                if let policy = request["releaseSelects"] as? Bool { overlay.radial.releaseSelects = policy }
+                if let path = request["snapshot"] as? String, !overlay.radial.snapshot(to: path) { throw reject("Radial snapshot failed") }
+                response["radial"] = overlay.radial.diagnostics
+            case "toggle-current-sound": overlay.soundOn.toggle()
             case "toggle-sound": Preferences.handSound.toggle()
             case "pin":
                 let style = try readStyle(request["style"])
@@ -99,6 +135,19 @@ final class ControlBridge {
                 guard let path = request["path"] as? String, path.hasPrefix("/"), path.hasSuffix(".png"), snapshotSettings?(path) == true else {
                     throw reject("Focus Settings before taking a verification snapshot", code: "snapshot-failed")
                 }
+            case "test-menu-bar":
+                guard ProcessInfo.processInfo.environment["TINYHAND_DEFAULTS_SUITE"]?.hasPrefix("com.austinpresley.tinyhand.s023.") == true,
+                      let request = request["request"] as? [String: Any], let verifyMenuBar else { throw reject("Use an isolated S-023 suite") }
+                response["controls"] = verifyMenuBar(request)
+            case "test-shortcuts":
+                guard let request = request["request"] as? [String: Any], let verifyShortcuts else { throw reject("Shortcut test request is required") }
+                response["shortcuts"] = verifyShortcuts(request)
+            case "run-applescript":
+                // Test mode only. A process addressing itself needs no Automation consent.
+                guard let source = request["source"] as? String, let script = NSAppleScript(source: source) else { throw reject("Script source is required") }
+                var failure: NSDictionary?
+                let result = script.executeAndReturnError(&failure)
+                response["script"] = ["result": failure == nil ? describeScriptResult(result) : "", "errorNumber": failure?[NSAppleScript.errorNumber] as? Int ?? 0, "errorMessage": failure?[NSAppleScript.errorMessage] as? String ?? ""] as [String: Any]
             default: break
             }
             response["ok"] = true
@@ -106,20 +155,35 @@ final class ControlBridge {
             if op == "styles" { response["styles"] = styles() }
         } catch {
             let problem = error as? Problem
+            let catalogProblem = error as? PointerCatalog.Problem
             response["ok"] = false
-            response["error"] = ["code": problem?.code ?? "invalid-request", "message": problem?.message ?? "Malformed control request"]
+            response["error"] = ["code": problem?.code ?? catalogProblem?.code ?? "invalid-request", "message": problem?.message ?? catalogProblem?.message ?? "Malformed control request"]
             response["state"] = state()
         }
         return (try? JSONSerialization.data(withJSONObject: response, options: [.sortedKeys])) ?? Data()
     }
 
+    private func describeScriptResult(_ descriptor: NSAppleEventDescriptor) -> String {
+        guard descriptor.numberOfItems > 0, descriptor.descriptorType == typeAEList else {
+            if descriptor.descriptorType == typeTrue || descriptor.descriptorType == typeFalse || descriptor.descriptorType == typeBoolean { return descriptor.booleanValue ? "true" : "false" }
+            return descriptor.stringValue ?? String(descriptor.typeCodeValue)
+        }
+        return "{" + (1...descriptor.numberOfItems).compactMap { descriptor.atIndex($0).map(describeScriptResult) }.joined(separator: ", ") + "}"
+    }
+
     private func activate() throws {
-        guard Preferences.pointerMode == .point || accessibility() else { throw reject("Allow Accessibility to draw. Point mode is available without it.", code: "accessibility") }
+        guard Preferences.pointerMode == .point || accessibility() else { throw reject("Allow Accessibility to draw. Interact is available without it.", code: "accessibility") }
         let wasActive = overlay.isActive
         guard overlay.activate() else {
             if !wasActive { overlay.deactivate() }
-            throw reject("TinyHand could not start intercepting mouse input. Relaunch TinyHand and try again.", code: "activation-failed")
+            throw reject("Look Here Please could not start intercepting mouse input. Relaunch Look Here Please and try again.", code: "activation-failed")
         }
+    }
+
+    private func selectTool(_ tool: DrawingTool) throws {
+        guard !overlay.isCapturing else { throw reject("Wait for the screenshot to finish before changing drawing tools", code: "capturing") }
+        guard accessibility() else { throw reject("Allow Accessibility to use drawing tools", code: "accessibility") }
+        guard overlay.chooseTool(tool) else { throw reject("Drawing input could not start. Check Accessibility and try again.", code: "unavailable") }
     }
 
     private func readStyle(_ value: Any?) throws -> PointerStyle {
@@ -128,9 +192,7 @@ final class ControlBridge {
     }
 
     private func validateAsset(for style: PointerStyle) throws {
-        if let asset = style.assetName, HandAsset.load(asset) == nil {
-            throw reject("TinyHand could not load the image for this pointer.", code: "missing-asset")
-        }
+        try PointerCatalog.validateSelection(style)
     }
 
     private func readBool(_ value: Any?) throws -> Bool {
@@ -145,8 +207,13 @@ final class ControlBridge {
 
     /// Validate every field before writing anything; deliver one native settings notification.
     private func configure(_ patch: [String: Any]) throws {
-        let allowed: Set<String> = ["style", "ink", "fade", "size", "shadow", "handSound", "laserSound", "tapSound", "lineWidth", "opacity", "smoothing", "motion", "theme", "showToolbar", "captureCopies", "captureSaves", "captureFolder"]
+        let allowed: Set<String> = ["style", "ink", "fade", "size", "shadow", "shadowStyle", "handSound", "laserSound", "tapSound", "lineWidth", "opacity", "smoothing", "motion", "theme", "showToolbar", "interactKeepsHand", "captureCopies", "captureSaves", "captureFolder", "radialTrigger"]
         guard Set(patch.keys).isSubset(of: allowed) else { throw reject("Unsupported setting") }
+        var trigger: RadialTrigger?
+        if let value = patch["radialTrigger"] {
+            guard let id = value as? String, id.isEmpty || RadialTrigger(rawValue: id) != nil else { throw reject("Radial trigger must be empty, option, control, shift or command") }
+            trigger = RadialTrigger(rawValue: id)
+        }
         let style = try patch["style"].map { try readStyle($0) }
         if let style { try validateAsset(for: style) }
         let ink = patch["ink"].flatMap { ($0 as? String).flatMap(InkChoice.init(rawValue:)) }
@@ -158,6 +225,8 @@ final class ControlBridge {
         let size = try patch["size"].map { try readNumber($0) }
         if let size = size, !Preferences.pointerSizeRange.contains(CGFloat(size)) { throw reject("Pointer size is outside the native range") }
         let shadow = try patch["shadow"].map { try readBool($0) }
+        let shadowStyle = patch["shadowStyle"].flatMap { ($0 as? String).flatMap(PointerShadowStyle.init(rawValue:)) }
+        if patch["shadowStyle"] != nil && shadowStyle == nil { throw reject("Unknown shadow style") }
         let handSound = try patch["handSound"].map { try readBool($0) }
         let laserSound = try patch["laserSound"].map { try readBool($0) }
         let width = try patch["lineWidth"].map { try readNumber($0) }
@@ -171,6 +240,7 @@ final class ControlBridge {
         let theme = patch["theme"].flatMap { ($0 as? String).flatMap(AppTheme.init(rawValue:)) }
         if patch["theme"] != nil && theme == nil { throw reject("Theme must be system, light or dark") }
         let showToolbar = try patch["showToolbar"].map { try readBool($0) }
+        let keepsHand = try patch["interactKeepsHand"].map { try readBool($0) }
         let captureCopies = try patch["captureCopies"].map { try readBool($0) }
         let captureSaves = try patch["captureSaves"].map { try readBool($0) }
         guard (captureCopies ?? Preferences.captureCopies) || (captureSaves ?? Preferences.captureSaves) else { throw reject("Enable clipboard copy or screenshot saving") }
@@ -181,11 +251,13 @@ final class ControlBridge {
             if FileManager.default.fileExists(atPath: path, isDirectory: &isDirectory), !isDirectory.boolValue { throw reject("Capture folder is a file") }
         }
         Preferences.performBatch {
+            if patch["radialTrigger"] != nil { Preferences.radialTrigger = trigger }
             if let style = style { PointerStyle.saved = style }
             if let ink = ink { Preferences.inkChoice = ink }
             if let fade = fade { Preferences.fadeSeconds = fade }
             if let size = size { Preferences.pointerSize = CGFloat(size) }
             if let shadow = shadow { Preferences.showShadow = shadow }
+            if let shadowStyle { Preferences.shadowStyle = shadowStyle }
             if let handSound = handSound { Preferences.handSound = handSound }
             if let laserSound = laserSound { Preferences.laserSound = laserSound }
             if let sound = sound { Preferences.tapSound = sound }
@@ -195,6 +267,7 @@ final class ControlBridge {
             if let motion = motion { Preferences.pointerMotion = motion }
             if let theme = theme { Preferences.theme = theme }
             if let showToolbar = showToolbar { Preferences.showToolbar = showToolbar }
+            if let keepsHand = keepsHand { Preferences.interactKeepsHand = keepsHand }
             if let captureCopies = captureCopies { Preferences.captureCopies = captureCopies }
             if let captureSaves = captureSaves { Preferences.captureSaves = captureSaves }
             if let captureFolder = captureFolder { Preferences.captureFolder = URL(fileURLWithPath: captureFolder, isDirectory: true) }
@@ -203,31 +276,43 @@ final class ControlBridge {
 
     private func state() -> [String: Any] {
         ["running": true, "active": overlay.isActive, "style": overlay.style.rawValue,
-         "mode": overlay.mode.rawValue, "tool": Preferences.drawingTool.rawValue, "canUndo": overlay.canUndo, "canRedo": overlay.canRedo,
+         "mode": overlay.mode.rawValue, "interact": overlay.mode.isInteractive, "pointerVisible": overlay.pointerVisible,
+         "tool": Preferences.drawingTool.rawValue, "canUndo": overlay.canUndo, "canRedo": overlay.canRedo,
          "input": overlay.inputDiagnostics,
          "toolbarVisible": overlay.toolbarVisible, "toolbarFrame": [overlay.toolbarFrame.minX, overlay.toolbarFrame.minY, overlay.toolbarFrame.width, overlay.toolbarFrame.height],
          "annotations": overlay.inkStrokes, "capturing": overlay.isCapturing, "motionClock": overlay.motionClock,
+         "shadowRendering": overlay.shadowDiagnostics,
          "lastCapture": overlay.lastCaptureURL?.path ?? "", "lastCaptureError": overlay.lastCaptureError ?? "", "captureSize": overlay.lastCaptureSize,
          "accessibility": accessibility(), "appVersion": Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "development",
          "screenRecording": ScreenCapture.hasPermission,
          "windows": NSApp.windows.filter { $0.isVisible && $0.windowNumber > 0 && $0.windowNumber <= Int(UInt32.max) }.prefix(20).map { ["id": $0.windowNumber, "title": $0.title, "width": $0.frame.width, "height": $0.frame.height] as [String: Any] },
          "capabilities": Self.operations,
-         "settings": ["ink": Preferences.inkChoice.rawValue, "fade": Preferences.fadeSeconds,
+         "radial": overlay.radial.diagnostics,
+         "settings": ["radialTrigger": Preferences.radialTrigger?.rawValue ?? "", "ink": Preferences.inkChoice.rawValue, "fade": Preferences.fadeSeconds,
                       "size": Double(Preferences.pointerSize), "shadow": Preferences.showShadow,
+                      "shadowStyle": Preferences.shadowStyle.rawValue,
                       "handSound": Preferences.handSound, "laserSound": Preferences.laserSound, "tapSound": Preferences.tapSound.rawValue,
                       "lineWidth": Double(Preferences.strokeWidth), "opacity": Double(Preferences.inkOpacity), "smoothing": Preferences.strokeSmoothing.rawValue,
                       "motion": Preferences.pointerMotion.rawValue, "theme": Preferences.theme.rawValue, "showToolbar": Preferences.showToolbar,
+                      "interactKeepsHand": Preferences.interactKeepsHand,
                       "captureCopies": Preferences.captureCopies, "captureSaves": Preferences.captureSaves, "captureFolder": Preferences.captureFolder.path,
                       "toolbarPosition": Preferences.toolbarPosition.map { [$0.x, $0.y] } ?? []],
+         "shortcuts": Preferences.shortcutState,
          "sizeRange": [Double(Preferences.pointerSizeRange.lowerBound), Double(Preferences.pointerSizeRange.upperBound)],
+         "enabledPointers": PointerCatalog.selectableStyles.map(\.rawValue),
+         "quickPointers": PointerCatalog.quickStyles.map(\.rawValue),
+         "disabledPointers": Preferences.disabledPointerIDs.sorted(),
          "pinned": Preferences.pinnedStyles.map(\.rawValue)]
     }
 
     private func styles() -> [[String: Any]] {
-        PointerStyle.allCases.map { style in
-            var item: [String: Any] = ["id": style.rawValue, "name": style.title, "type": style == .laser ? "laser" : style.isCustom ? "custom" : "hand"]
-            // Use TinyHand's own cropped 128px thumbnails, including custom hands.
-            if let name = style.assetName, let image = HandAsset.thumbnail(name),
+        PointerCatalog.entries.map { entry in
+            let style = entry.style
+            var item: [String: Any] = ["id": style.rawValue, "name": style.title, "type": style.catalogType,
+                                       "enabled": entry.enabled, "available": entry.available, "selectable": entry.selectable,
+                                       "pinned": Preferences.pinnedStyles.contains(style)]
+            // Use Look Here Please's own cropped 128px thumbnails, including custom hands.
+            if entry.available, let image = Toolbar.icon(for: style),
                let tiff = image.tiffRepresentation, let bitmap = NSBitmapImageRep(data: tiff),
                let png = bitmap.representation(using: .png, properties: [:]) {
                 // Encode the ID rather than treating custom asset IDs as path components.

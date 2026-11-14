@@ -1,0 +1,35 @@
+B-2.png
+Built-in image generation, logo-brand concept.
+The saved PNG was normalized to 1024x1024 with sips after generation.
+
+EXACT INITIAL GENERATION PROMPT
+
+Original B-2 app-icon concept for Look Here Please. Produce a 1024x1024 square PNG of PURE FLAT DIGITAL VECTOR ART. Four uniform solid fills only: coral #E64029 background, cream #FFF2D6 glove, plum #47293D stick/cuff, amber #FFCC75 dot/rings. Absolutely no texture, grain, shading, lighting, depth or gradients.
+
+One goofy classroom pointer: one chunky cream cartoon glove mounted on a VISIBLE SHORT THICK PLUM STICK. The stick extends diagonally from x230 y800 to a broad cuff near x390 y620. The glove continues toward upper right with exactly one long extended INDEX finger. Three remaining fingers curl into a compact rounded fist; the thumb stays tucked against the fist, never raised. Use a single cream silhouette without crease lines. The hand is big, the stick stout and unmistakable, no human arm.
+
+The index fingertip physically touches a solid amber dot centered near x660 y350. Two chunky concentric amber ripple rings around the dot sit behind the glove. Wide background-colored gaps between the dot and rings. The finger overlaps the rings on its way to touching the dot. Ring strokes roughly as broad as the finger. The whole connected stick-hand-ping mark fills about 70% of the canvas, entirely inside the central 80%.
+
+Modern sign-system pictogram, original and warmly absurd. Strong simple silhouette that stays clear at 32px and 16px. The coral background fills the whole square edge to edge, including every corner. No rounded tile, frame, border, inset panel, margins, shadows, 3D, mockup, device, UI, text, letters, numbers, logos, emoji, SF Symbols or familiar character gloves.
+
+EXACT REVISION PROMPT
+
+Edit the supplied B-2 concept. Preserve the exact connected pointing-hand-on-stick touching a dot with two concentric rings, its diagonal, single extended INDEX finger, curled fingers and tucked thumb. Make these precise corrections:
+
+1. Replace EVERY textured or shaded color field with a perfectly uniform single RGB fill: background #E64029, glove #FFF2D6, dot and both rings #FFCC75, cuff and short stick #47293D. True flat digital vector logo rendering. No random color variation, grain, vignette, paper, light, shadow, gradients, bevel or 3D. Antialiasing ONLY at boundaries.
+2. Scale the complete connected mark DOWN by 12% around the canvas center, retaining all proportions and hand contact, to fit wholly within the centered 80% of the square. The background stays full bleed to all four edges and corners. Do not introduce any tile or frame.
+
+Exactly one glove, exactly one extended index, all other fingers curled, thumb tucked. Keep the strong stout stick visible. Broad rings and broad gaps, no detail lines. No text, letters, numbers, logos, UI, mockup, border, margin, rounded-square tile or outer shadow. Output a square 1024x1024 PNG.
+
+EXACT FINAL FLAT-COLOR REVISION PROMPT
+
+Convert the supplied B-2 concept into a perfectly FLAT POSTERIZED FOUR-COLOR bitmap. Keep its geometry, scale, placement and single pointing glove on a short stick unchanged. Keep the index fingertip touching the dot, two concentric ripple rings behind it, other fingers curled and thumb tucked.
+
+Treat it as a rasterization of simple filled SVG paths, not an illustration with materials. Quantize the interiors of all shapes to exactly these four RGB colors: background #E64029; glove #FFF2D6; ping dot and rings #FFCC75; cuff and stick #47293D. Completely erase all grain, texture, lighting, shading, tonal noise, gradients, highlights, shadows and bevels. Each region must have one constant color from edge to edge. Smooth antialiasing may appear ONLY at shape boundaries.
+
+Full-bleed opaque square 1024x1024 PNG. No tile, rounded-square shape, frame, border, margins, mockup, text, letters, numbers, logos or UI. Exactly one hand and one extended index finger.
+
+REFERENCE HISTORY
+
+The initial selected generation used a text prompt. Revisions used the then-current B-2.png as a reference image. Before generation, .github/logo.png, assets/hand_glove.png and assets/hand_blue.png were visually inspected. An earlier discarded B-1 attempt additionally passed the two pointer assets as reference images.
+

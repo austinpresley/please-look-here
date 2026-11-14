@@ -2,7 +2,7 @@ import AppKit
 
 enum HandMaker {
     static let prompt = """
-    Make a pointer image for TinyHand, a Mac app that shows a toy hand on screen.
+    Make a pointer image for Look Here Please, a Mac app that shows a toy hand on screen.
 
     Draw one cartoon right hand in this style: [describe your hand, e.g. knitted wool in mustard yellow]
 
@@ -42,12 +42,12 @@ enum HandMaker {
     static func make(from url: URL) throws -> (image: CGImage, ink: UInt32) {
         guard let source = CGImageSourceCreateWithURL(url as CFURL, nil),
               let image = CGImageSourceCreateImageAtIndex(source, 0, nil) else {
-            throw Problem(message: "That file isn't an image TinyHand can read.")
+            throw Problem(message: "That file isn't an image Look Here Please can read.")
         }
         let pixels = try read(image)
         try check(pixels)
         guard let composed = compose(image, pixels) else {
-            throw Problem(message: "TinyHand couldn't put that hand on a stick.")
+            throw Problem(message: "Look Here Please couldn't put that hand on a stick.")
         }
         return (composed, ink(pixels))
     }
@@ -68,7 +68,7 @@ enum HandMaker {
         guard let ctx = CGContext(data: &rgba, width: w, height: h, bitsPerComponent: 8, bytesPerRow: w * 4,
                                   space: CGColorSpace(name: CGColorSpace.sRGB) ?? CGColorSpaceCreateDeviceRGB(),
                                   bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else {
-            throw Problem(message: "That file isn't an image TinyHand can read.")
+            throw Problem(message: "That file isn't an image Look Here Please can read.")
         }
         ctx.draw(image, in: CGRect(x: 0, y: 0, width: w, height: h))
         return Pixels(width: w, height: h, rgba: rgba)
@@ -303,13 +303,13 @@ enum HandMaker {
 
     static func write(_ image: CGImage, to url: URL) throws {
         guard let data = NSBitmapImageRep(cgImage: image).representation(using: .png, properties: [:]) else {
-            throw Problem(message: "TinyHand couldn't save the hand.")
+            throw Problem(message: "Look Here Please couldn't save the hand.")
         }
         try data.write(to: url, options: .atomic)
     }
 }
 
-struct CustomHand: Codable {
+struct CustomHand: Codable, Equatable {
     let id: String
     var name: String
     let ink: UInt32
@@ -350,6 +350,16 @@ enum CustomHands {
         return all.first { $0.id == id }
     }
 
+    /// The manifest can change outside this process. Catalog refreshes keep
+    /// missing files distinct from disabled choices and notice restored entries.
+    static func reload() {
+        let previous = loaded
+        loaded = nil
+        if let previous, previous != all {
+            NotificationCenter.default.post(name: changed, object: nil)
+        }
+    }
+
     @discardableResult
     static func add(_ image: CGImage, ink: UInt32, name: String) throws -> PointerStyle {
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
@@ -360,7 +370,7 @@ enum CustomHands {
         list.append(CustomHand(id: id, name: trimmed.isEmpty ? "My hand \(list.count + 1)" : String(trimmed.prefix(16)), ink: ink))
         try save(list)
         guard let style = PointerStyle(rawValue: id) else {
-            throw HandMaker.Problem(message: "TinyHand couldn't add that hand.")
+            throw HandMaker.Problem(message: "Look Here Please couldn't add that hand.")
         }
         return style
     }

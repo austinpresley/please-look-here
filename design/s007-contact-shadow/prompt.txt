@@ -1,0 +1,12 @@
+Use case: product-mockup.
+Create a single photorealistic studio image showing the SAME lavender hand-shaped presentation pointer from the reference physically touching a blank white wall.
+
+Reference image 1 is the exact object identity reference: keep this distinctive glossy lavender molded-vinyl cartoon pointing hand, its long rounded index finger, curled knuckles, thumb, rounded wrist cuff, and shiny black pointer rod. Preserve its proportions, lavender color and recognizable shape. This is a toy presentation pointer, not a human hand.
+
+Scene: a completely blank, smooth, matte white, textureless vertical wall. The wall fills the entire background with no floor, horizon, seams, corners, grain or objects. Camera views the wall almost straight on.
+
+Pose and composition: landscape 3:2 product photograph, close enough to clearly judge the fingertip contact. The hand is diagonal with the extended index finger aimed toward the upper left and the black rod extending toward the lower right and out of frame, as in the app's pointer pose. The VERY TOP rounded tip of the extended index finger physically touches the wall. The finger's top is the contact point; the palm, cuff and rod lift progressively away from the wall toward the viewer. Show one pointer only.
+
+Lighting and shadow are the main purpose of this image: physically convincing directional studio lighting from a large, moderately soft source above and to the left, with gentle ambient fill. At the exact tiny fingertip-to-wall junction, show a very dark, near-black narrow contact shadow that merges naturally with the tip, with no visible gap. The cast shadow should be sharp and tight right at contact, then become progressively broader, softer and lighter along the extended finger, palm, cuff and rod as those parts lift away from the wall. The shadow should express the actual 3D shape and distance from the wall, naturally falling down and right. A believable smooth penumbra and restrained ambient occlusion, not a circular blurred black spot or an outline around the hand. Keep the wall clean white outside the physically cast shadow. Convincing lavender glossy-plastic highlights and subtle light bounced off the white wall.
+
+No text, captions, labels, UI, borders, comparison panels or watermarks. No painted wall texture, spotlight vignette, artificial glow, detached fingertip halo, generic uniform drop shadow, extra fingers or redesigned hand. This is a lighting study of the existing pointer, with realistic contact and cast shadows.

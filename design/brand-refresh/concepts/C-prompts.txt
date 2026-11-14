@@ -1,0 +1,55 @@
+Spotlight icon concepts for Look Here Please
+Generated with the built-in image_gen tool. Five generations total: C-1 draft, C-1 light correction, C-2, C-3, C-4.
+All final PNGs were resized from square 1254 x 1254 output to 1024 x 1024 using sips.
+Each generation was inspected at full size and as 64 px and 32 px copies in /tmp.
+Current .github/logo.png and all three assets/hand_*.png references were viewed before generation.
+The first C-1 draft used hand_glove.png, hand_blue.png, and hand_plush.png as style references.
+That draft's light was too diffuse for C-1. The final C-1 prompt below corrected it into a defined round pool.
+No anatomy, text, or rounded-tile rejection was needed. No git commands, builds, or tests were run.
+
+C-1.png
+C-1: Clear cream pointing silhouette and flat amber pool. At 32 px the pointing gesture survives; the stick is thin but visible.
+Reference supplied to this final generation: C-1 initial generated draft, using the three in-app pointer assets as style references.
+Exact prompt:
+Refine the supplied concept into C-1. Output a square 1024x1024 PNG.
+Keep the original glossy cream-white toy glove anatomy, one extended index finger, tightly tucked thumb, three curled fingers, rolled cuff, charcoal pointer stick, and confident lower-left to upper-right composition. Keep exactly one hand and one stick. Retain the chunky three-dimensional toy finish and strong pointing silhouette.
+Replace the fuzzy glow behind the fingertip with one FLAT, ROUND, sharply defined pool of warm amber-cream light projected on the plum background plane. It must be a true circle about 43% of the square width, centered at x65%, y35%, with an almost crisp boundary and only 2 pixels of edge softness. Uniform pale amber #E8B769 across the circle, a subtle brighter cream center, no bloom or surrounding halo. It is light on a flat background, not a spherical object or a raised disc. The fingertip sits inside this circle, and remains brighter cream-white than the amber light so its contour is visible at 32 pixels.
+Use a uniformly deep aubergine #47293D background filling the entire square edge to edge, with no vignette or corner darkening. Let the warm light brighten the upper index and upper hand; a little plum shadow falls toward the cuff. Keep the charcoal stick visible with a thin warm reflection.
+The whole hand-and-stick object should fit inside x18% to x79% and y18% to y83%, with its rounded stick end visible. Preserve generous dark negative space around it.
+No text, letters, numbers, logos, UI, additional lights, objects, hands, fingers, raised thumb, rude gesture, peace sign, stage, curtains, lamp, light cone hardware, rounded-square tile, border, margin, frame, outer shadow, or device/Dock mockup. This is full-bleed unmasked square artwork for an original premium macOS app icon.
+
+C-2.png
+C-2: Coral gives the best color separation from the light pool. At 32 px it remains clear, while the lower red fist is less distinct from plum than C-1.
+Reference supplied to this final generation: C-1.png, the finished cream-glove concept.
+Exact prompt:
+Create C-2 by recoloring the supplied C-1 icon concept. Output one square 1024x1024 PNG.
+Keep the same original glossy toy hand, precise anatomy, bold rounded volumes, single extended index finger, short thumb tucked tightly across the fist, three curled fingers, simple rolled cuff, and slender visible charcoal pointer stick. Exactly one hand on one stick. Keep the diagonal lower-left to upper-right composition, fingertip inside the single circular pool of light, combined object spanning about 65 to 70% of the square. Keep all important content inside the centered 80% of the canvas.
+Change the ENTIRE glove, including its cuff, from cream-white to saturated warm CORAL #E64029. It is glossy molded coral vinyl, never a white glove tinted pink. Warm spotlight makes broad lit areas vivid orange-coral, with modest cream specular highlights and rich red/plum shadows toward the cuff. The coral must remain bright enough to separate from the dark background at 32 pixels.
+Background remains deep aubergine plum #47293D, full bleed to all four square edges. Keep one FLAT round pool of light on the background plane behind the fingertip, about 43% of canvas width, centered around x65%, y34%, with a clearly defined nearly crisp edge. Use pale warm cream #FFF2D6 toward the middle and amber #FFCC75 around the edge so the coral fingertip contrasts clearly against it. The light is projected onto a flat plane, not a ball, raised object, coin, or hole. Keep charcoal stick legible with a warm specular edge.
+Premium dimensional 3D toy rendering, polished and simple, playful and deadpan-polite. No graphics or markings on the glove.
+No text, letters, numbers, logos, UI, extra objects, extra hands, extra or raised fingers, extended thumb, rude gesture, peace sign, sparkles, stage, curtains, lamp, light cone hardware, rounded-square tile, margin, border, vignette frame, outer drop shadow, device mockup, or Dock mockup. Unmasked edge-to-edge square artwork only; macOS supplies the rounded mask later.
+
+C-3.png
+C-3: Larger cream hand reads well at 32 px; the shorter stick is less prominent and the glow is softer.
+Reference supplied to this final generation: C-1.png, the finished cream-glove concept.
+Exact prompt:
+Create C-3 from the supplied cream-glove concept. Output one square 1024x1024 PNG.
+Use the supplied image as a reference for the original glove anatomy and glossy 3D toy material. Keep exactly one gloved hand mounted on exactly one charcoal pointer stick, reaching diagonally up-right from the lower left. One extended INDEX finger, the middle/ring/little fingers curled, the thumb short and tucked snugly across the fist. The index is clearly the only pointing digit. Keep an original simple cuff without markings.
+Make the HAND 25% LARGER than in the reference, while shortening the exposed stick. The large sculpted glove occupies about 55% of the square width and 55% of its height. Hand plus visible stick spans about 65 to 70% of the canvas. The rounded stick end is fully visible near x21%, y82%; the fingertip reaches about x73%, y24%. Keep the whole important silhouette in the centered 80%.
+Replace the hard circular pool with one SOFT-EDGED GLOWING DISC immediately behind the fingertip, like an attention or laser glow, not a stage spotlight. A compact warm cream core blends into amber #FFCC75 and then smoothly fades into the dark plum within a diameter of about 42% of canvas width. The light sits behind the top part of the extended index, toward the upper-right quadrant. No hard outline, ring, sphere, raised disc, second dot, sparkles, or light beam. The fingertip remains visibly brighter and cream-white, with a clear contour against the amber glow.
+The background is deep aubergine #47293D and fills the entire square edge to edge. The glove is warm cream #FFF2D6, smooth glossy molded vinyl with broad confident highlights and deeper plum reflected shading at the lower fist and cuff. Keep enough warm rim reflection on the charcoal stick for it to read at 32 px. Rich cinematic contrast, one object and one light, premium polished macOS icon concept, playful without clutter.
+Hard exclusions: no text, letters, numbers, logos, UI, extra hands or objects, extra fingers, extended thumb, rude gesture, peace sign, stage, curtains, lamps, light cone hardware, rounded-square tile, margin, border, vignette frame, outer drop shadow, device or Dock mockup. This is unmasked full-bleed square artwork.
+
+C-4.png
+C-4: Strongest overall. The cream hand and coral cuff/stick keep both pointing gesture and pointer prop legible at 32 px; the final light is softer than the prompt requested.
+Reference supplied to this final generation: C-3.png, the finished large-hand glow concept.
+Exact prompt:
+Use case: stylized-concept.
+Create C-4, a bolder original push on a Spotlight app icon. One square 1024x1024 PNG, premium glossy 3D toy rendering. The reference supplies only the successful pointing anatomy and chunky toy finish; recompose and relight it as described.
+Backdrop: completely full-bleed deep aubergine #352032, an unbroken square background with no corner vignette, border, tile, or outer shadow.
+One light: a concentrated round pool of amber-cream light on the background plane, centered x70%, y31%, diameter 33% of canvas width. A defined circular edge with a delicate soft transition, bright warm cream #FFF2D6 inside, amber #FFCC75 at its rim. It is flat projected light, no physical disc, ball, ring, separate laser dot, or visible beam.
+One object: exactly one large original cream-white molded toy glove on a slender CORAL lacquer pointer stick with a CORAL rolled glove cuff. The stick and cuff are a rich #E64029 in shadow, orange-coral in warm reflected light. No other accent objects. The whole object reaches diagonally from the lower-left toward the warm circle at upper right, with the extended fingertip landing within the circle. Keep the stick clearly exposed for roughly 22% of the canvas height. Combined hand and stick spans roughly 65 to 70% of canvas height and stays within the centered 80%. A thick readable stick ends visibly at x22%, y81%. The chunky glove fills the middle, with its fingertip around x73%, y25%.
+Exactly one extended INDEX finger. The other three fingers curl compactly into the fist, and the small thumb is tucked tightly against them, never a second prong. A clear three-quarter SIDE VIEW makes it unmistakably a politely pointing hand, with no middle-finger or peace-sign ambiguity. Rounded fingertip, compact palm, generous simple shapes. No face, seam decorations, three-stripe markings, or character styling.
+Dramatic light: the upper index is hot ivory with a broad white specular highlight, the upper knuckles catch the warm spotlight, and the lower cream fist falls into rich soft plum-and-peach shadow. Preserve the readable glove outline with a restrained warm rim reflection. Glossy coral cuff and coral stick add brand color in the lower-left. The glove must remain recognizably cream rather than becoming a black silhouette. The light feels theatrical and the little pointer feels like an expensive ridiculous toy. One object, one light, calm negative space, strong contrast at 32 pixels.
+No text, letters, numbers, logos, UI, extra hands, extra digits, raised thumb, rude gesture, peace sign, sparkles, stars, lamps, stage, curtains, spotlight hardware, light cone, rounded-square tile, margins, frame, outer drop shadow, device or Dock mockup. Unmasked edge-to-edge square artwork; macOS applies its own rounded mask later.
+

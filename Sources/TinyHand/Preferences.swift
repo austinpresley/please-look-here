@@ -7,39 +7,11 @@ struct Shortcut: Equatable {
     var modifiers: UInt32
     var display: String
 
-    static let toggleDefault = Shortcut(keyCode: UInt32(kVK_ANSI_H), modifiers: UInt32(controlKey | optionKey), display: "⌃⌥H")
-    static let clearDefault = Shortcut(keyCode: UInt32(kVK_ANSI_X), modifiers: UInt32(controlKey | optionKey), display: "⌃⌥X")
+    func help(_ title: String) -> String { "\(title) (\(display))" }
 }
 
-enum InteractKey: String, CaseIterable {
-    case option, command, control, off
-
-    var title: String {
-        switch self {
-        case .option: return "⌥ Option"
-        case .command: return "⌘ Command"
-        case .control: return "⌃ Control"
-        case .off: return "Off"
-        }
-    }
-
-    var symbol: String {
-        switch self {
-        case .option: return "⌥"
-        case .command: return "⌘"
-        case .control: return "⌃"
-        case .off: return ""
-        }
-    }
-
-    var cgFlags: CGEventFlags {
-        switch self {
-        case .option: return .maskAlternate
-        case .command: return .maskCommand
-        case .control: return .maskControl
-        case .off: return []
-        }
-    }
+extension Optional where Wrapped == Shortcut {
+    func help(_ title: String) -> String { self?.help(title) ?? title }
 }
 
 enum InkChoice: String, CaseIterable {
@@ -165,22 +137,39 @@ enum Preferences {
         set { set(newValue.path, "capture.folder") }
     }
 
-    static func shortcut(for action: PresentationAction) -> Shortcut {
-        loadShortcut("shortcut.\(action.rawValue)") ?? action.defaultShortcut
+    static func shortcut(for action: PresentationAction) -> Shortcut? {
+        loadShortcut("shortcut.\(action.rawValue)")
     }
 
-    static func setShortcut(_ shortcut: Shortcut, for action: PresentationAction) {
+    static func setShortcut(_ shortcut: Shortcut?, for action: PresentationAction) {
         saveShortcut(shortcut, "shortcut.\(action.rawValue)")
     }
 
-    static var toggleShortcut: Shortcut {
-        get { loadShortcut("shortcut.toggle") ?? .toggleDefault }
+    static var radialTrigger: RadialTrigger? {
+        get { defaults.string(forKey: "radialTrigger").flatMap(RadialTrigger.init(rawValue:)) }
+        set {
+            if let newValue { set(newValue.rawValue, "radialTrigger") }
+            else { defaults.removeObject(forKey: "radialTrigger"); NotificationCenter.default.post(name: changed, object: nil) }
+        }
+    }
+
+    static var toggleShortcut: Shortcut? {
+        get { loadShortcut("shortcut.toggle") }
         set { saveShortcut(newValue, "shortcut.toggle") }
     }
 
-    static var clearShortcut: Shortcut {
-        get { loadShortcut("shortcut.clear") ?? .clearDefault }
+    static var clearShortcut: Shortcut? {
+        get { loadShortcut("shortcut.clear") }
         set { saveShortcut(newValue, "shortcut.clear") }
+    }
+
+    static var shortcutState: [String: Any] {
+        var values: [String: Shortcut?] = ["toggle": toggleShortcut, "clear": clearShortcut]
+        for action in PresentationAction.allCases { values[action.rawValue] = .some(shortcut(for: action)) }
+        return values.mapValues { value -> Any in
+            guard let value else { return NSNull() }
+            return ["keyCode": value.keyCode, "modifiers": value.modifiers, "display": value.display]
+        }
     }
 
     static let pointerSizeRange: ClosedRange<CGFloat> = 0.04...0.20
@@ -193,6 +182,11 @@ enum Preferences {
     static var showShadow: Bool {
         get { defaults.object(forKey: "showShadow") as? Bool ?? true }
         set { set(newValue, "showShadow") }
+    }
+
+    static var shadowStyle: PointerShadowStyle {
+        get { defaults.string(forKey: "shadowStyle").flatMap(PointerShadowStyle.init(rawValue:)) ?? .original }
+        set { set(newValue.rawValue, "shadowStyle") }
     }
 
     static var fadeSeconds: Double {
@@ -216,13 +210,8 @@ enum Preferences {
     }
 
     static var interactKeepsHand: Bool {
-        get { defaults.bool(forKey: "interactKeepsHand") }
+        get { defaults.object(forKey: "interactKeepsHand") as? Bool ?? true }
         set { set(newValue, "interactKeepsHand") }
-    }
-
-    static var interactKey: InteractKey {
-        get { defaults.string(forKey: "interactKey").flatMap(InteractKey.init(rawValue:)) ?? .option }
-        set { set(newValue.rawValue, "interactKey") }
     }
 
     static var inkChoice: InkChoice {
@@ -236,6 +225,11 @@ enum Preferences {
     }
 
     static let maxPinned = 8
+
+    static var disabledPointerIDs: Set<String> {
+        get { Set(defaults.stringArray(forKey: "disabledPointerIDs") ?? []) }
+        set { set(newValue.sorted(), "disabledPointerIDs") }
+    }
 
     static var pinnedStyles: [PointerStyle] {
         get {
@@ -266,8 +260,8 @@ enum Preferences {
     }
 
     static func resetAll() {
-        for key in ["shortcut.toggle", "shortcut.clear", "pointerSize", "showShadow", "fadeSeconds",
-                    "sound.hands", "sound.laser", "interactKey", "interactKeepsHand", "pinnedStyles", "pointerStyle",
+        for key in ["radialTrigger", "shortcut.toggle", "shortcut.clear", "pointerSize", "showShadow", "shadowStyle", "fadeSeconds",
+                    "sound.hands", "sound.laser", "interactKey", "interactKeepsHand", "pinnedStyles", "pointerStyle", "disabledPointerIDs",
                     "inkChoice", "showInkButton", "tapSound", "pointerMode", "drawingTool", "strokeWidth", "inkOpacity",
                     "strokeSmoothing", "pointerMotion", "theme", "showToolbar", "toolbarPosition", "capture.copy", "capture.save", "capture.folder"]
                     + PresentationAction.allCases.map({ "shortcut.\($0.rawValue)" }) {
@@ -283,13 +277,19 @@ enum Preferences {
 
     private static func loadShortcut(_ key: String) -> Shortcut? {
         guard let d = defaults.dictionary(forKey: key),
-              let code = d["keyCode"] as? Int, let mods = d["modifiers"] as? Int, let label = d["display"] as? String else {
+              let code = d["keyCode"] as? Int, let mods = d["modifiers"] as? Int, let label = d["display"] as? String,
+              (0...127).contains(code), mods >= 0, mods <= Int(UInt32.max), !label.isEmpty else {
             return nil
         }
         return Shortcut(keyCode: UInt32(code), modifiers: UInt32(mods), display: label)
     }
 
-    private static func saveShortcut(_ s: Shortcut, _ key: String) {
-        set(["keyCode": Int(s.keyCode), "modifiers": Int(s.modifiers), "display": s.display], key)
+    private static func saveShortcut(_ s: Shortcut?, _ key: String) {
+        if let s {
+            set(["keyCode": Int(s.keyCode), "modifiers": Int(s.modifiers), "display": s.display], key)
+        } else {
+            defaults.removeObject(forKey: key)
+            if batchDepth == 0 { NotificationCenter.default.post(name: changed, object: nil) }
+        }
     }
 }

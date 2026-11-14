@@ -1,11 +1,11 @@
 #!/bin/bash
 
-APP_NAME="${TINYHAND_APP_NAME:-TinyHand}"
+APP_NAME="${TINYHAND_APP_NAME:-Look Here Please}"
 EXECUTABLE_NAME="TinyHand"
-BUNDLE_ID="${TINYHAND_BUNDLE_ID:-com.kamranahmed.tinyhand}"
-REPO="nilbuild/tinyhand"
-FEED_URL="https://github.com/$REPO/releases/latest/download/appcast.xml"
-SPARKLE_PUBLIC_KEY="FWubybHeS/qieOQ9ITnuaIcIpFXz/TPEWPLA7P2C5Yw="
+BUNDLE_ID="${TINYHAND_BUNDLE_ID:-com.austinpresley.pleaselookhere.integration}"
+REPO="${LOOK_HERE_PLEASE_UPDATE_REPO:-}"
+FEED_URL="${LOOK_HERE_PLEASE_UPDATE_FEED:-}"
+SPARKLE_PUBLIC_KEY="${LOOK_HERE_PLEASE_UPDATE_PUBLIC_KEY:-}"
 SPARKLE_VERSION="2.10.0"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 VERSION="${TINYHAND_VERSION:-$(tr -d '[:space:]' < "$ROOT/VERSION")}"
@@ -18,6 +18,10 @@ make_bundle() {
     local binary="$1" app="$2" build="$3" updates="${4:-}"
     local update_keys=""
     if [[ "$updates" == "--with-updates" ]]; then
+        if [[ -z "$FEED_URL" || -z "$SPARKLE_PUBLIC_KEY" || "$FEED_URL" == *nilbuild/tinyhand* ]]; then
+            echo "Configure a Look Here Please update feed and public key before packaging updates." >&2
+            return 1
+        fi
         update_keys="    <key>SUFeedURL</key>
     <string>$FEED_URL</string>
     <key>SUPublicEDKey</key>
@@ -31,6 +35,7 @@ make_bundle() {
     cp "$ROOT"/assets/hand_*.png "$app/Contents/Resources/"
     cp "$ROOT"/assets/sounds/tap_*.wav "$ROOT/assets/AppIcon.icns" "$ROOT/assets/Assets.car" "$app/Contents/Resources/"
     cp "$ROOT"/assets/menubar_*.png "$app/Contents/Resources/"
+    cp "$ROOT/assets/LookHerePlease.sdef" "$app/Contents/Resources/"
     cp "$ROOT/LICENSE" "$app/Contents/Resources/LICENSE.txt"
 
     local fw
@@ -53,6 +58,10 @@ make_bundle() {
     <string>$EXECUTABLE_NAME</string>
     <key>TinyHandControlVersion</key>
     <integer>1</integer>
+    <key>NSAppleScriptEnabled</key>
+    <true/>
+    <key>OSAScriptingDefinition</key>
+    <string>LookHerePlease.sdef</string>
     <key>CFBundleIconFile</key>
     <string>AppIcon</string>
     <key>CFBundleIconName</key>
@@ -70,11 +79,13 @@ make_bundle() {
     <key>LSApplicationCategoryType</key>
     <string>public.app-category.productivity</string>
     <key>NSHumanReadableCopyright</key>
-    <string>© $(date +%Y) Kamran Ahmed. MIT License.</string>
+    <string>© $(date +%Y) Austin Presley. Based on TinyHand by Kamran Ahmed. MIT License.</string>
 $update_keys
 </dict>
 </plist>
 PLIST
+    # Fail closed for missing, changed or stale plugin inputs. Never use a dev path at runtime.
+    python3 "$ROOT/scripts/streamdeck-package.py" embed "$app" "$ROOT/dist/streamdeck"
 }
 
 sign_app() {

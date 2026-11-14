@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TinyHand fork changes since November 9</title>
+<style>
+html,body{margin:0;background:transparent;color:var(--foreground);font-family:var(--font-sans,system-ui)}
+#fork-update{display:grid;gap:16px}
+#fork-update p,#fork-update h2{margin:0}
+#fork-update h2{font-size:inherit;font-weight:500}
+#fork-update .snapshot{color:var(--muted-foreground)}
+#fork-update table{border-collapse:collapse;width:100%;table-layout:fixed}
+#fork-update th,#fork-update td{text-align:left;vertical-align:top;padding:12px 12px 12px 0;border-bottom:1px solid var(--border);overflow-wrap:anywhere}
+#fork-update th{font-weight:500;color:var(--muted-foreground)}
+#fork-update th:first-child{width:26%}
+#fork-update th:last-child{width:24%}
+#fork-update a{color:var(--foreground);text-underline-offset:3px}
+#fork-update small{display:block;color:var(--muted-foreground);font-size:inherit;margin-top:4px}
+#fork-update .recommendation{color:var(--foreground)}
+#fork-update details>summary{padding:12px 0;font-weight:500}
+@media(max-width:500px){
+ #fork-update thead{display:none}
+ #fork-update table,#fork-update tbody,#fork-update tr,#fork-update td{display:block;width:auto}
+ #fork-update tr{padding:12px 0;border-bottom:1px solid var(--border)}
+ #fork-update td{border:0;padding:0 0 6px}
+ #fork-update td:first-child{font-weight:500}
+ #fork-update td:last-child{padding-bottom:0;color:var(--muted-foreground)}
+}
+</style>
+</head>
+<body>
+<main id="fork-update">
+<p class="snapshot">November 9 → November 14, 2026 · 42 → 73 public forks · 56 → 107 fork branches</p>
+<section aria-labelledby="new-donors">
+<h2 id="new-donors">Newly discovered macOS donors</h2>
+<table aria-label="New macOS forks and their usefulness to Look Here Please">
+<thead><tr><th scope="col">Fork</th><th scope="col">Changes we had not reviewed</th><th scope="col">My recommendation</th></tr></thead>
+<tbody>
+<tr><td><a href="https://github.com/ulentini/tinyhand/commit/01d7b76e771f8bcb3ec4caa5fe3353a205e6d2de">ulentini</a></td><td>Tap-audio recovery during screen sharing.<small>Now merged upstream as <a href="https://github.com/nilbuild/tinyhand/commit/ca1550d948b43c89e893d9b2a90af67c70bce314">ca1550d</a>.</small></td><td class="recommendation">Take the upstream fix first.</td></tr>
+<tr><td><a href="https://github.com/jorgenbruntveit/tinyhand/commit/bb3cc6d3f3202e9337b0f29ebc25325edfc247ae">jorgenbruntveit</a></td><td>Restore overlays across full-screen Spaces. Optional ink trail erases from the start of a line.</td><td class="recommendation">Prioritize Spaces. Consider trail fading.</td></tr>
+<tr><td><a href="https://github.com/trussosw/tinyhand/commit/491831508c062b125186ae1c111f775ff86781ab">trussosw</a></td><td>Sleep idle pointer timers, cap logs, expand drawing controls and add a temporary pointer ring.</td><td class="recommendation">Adapt timer sleep. Review remaining controls for overlap.</td></tr>
+<tr><td><a href="https://github.com/CatalystMonish/tinyhand/commit/d2db2444805f92a5d13654bfbd3029176ea10a36">CatalystMonish</a></td><td>Recognize rough freehand shapes and snap them into clean shapes on macOS.</td><td class="recommendation">Strong next feature. Keep it optional.</td></tr>
+<tr><td><a href="https://github.com/xynova/tinyhand/commit/c7bbac616dde0decf97f3522445646a390bcdaf7">xynova</a></td><td>Temporary hand gestures, a Line art hand and gesture assets for custom hands.</td><td class="recommendation">Useful customization. Adapt to our user-assigned shortcuts.</td></tr>
+<tr><td><a href="https://github.com/Ayas4y/tinyhand/commit/ab6355eb76dae4b4c232132a81474ad0f9a3b171">Ayas4y</a></td><td>Rust rewrite with macOS and Windows implementations.</td><td class="recommendation">Watch for ideas. Keep our native Swift app.</td></tr>
+<tr><td><a href="https://github.com/gitrandynow/tinyhand/commit/e3c168d7131d3f76b1d7004657e8b9658bfe9094">gitrandynow</a></td><td>Remove Sparkle automatic updates.</td><td class="recommendation">Skip for our product.</td></tr>
+</tbody>
+</table>
+</section>
+<section aria-labelledby="updated-donors">
+<h2 id="updated-donors">Previously reviewed forks with newly observed work</h2>
+<table aria-label="Updated macOS forks">
+<thead><tr><th scope="col">Fork</th><th scope="col">Changes we had not reviewed</th><th scope="col">My recommendation</th></tr></thead>
+<tbody>
+<tr><td><a href="https://github.com/esreverse/quitehandy/commit/121d9d4edd12a05e8bdc46fc7adf0eae0420fd9c">esreverse / QuiteHandy</a><small>Previously TinyPointer</small></td><td>Whiteboard, flashlight controls, loupe improvements, stamp upgrades, undo/redo and interface controls.</td><td>Review individual ideas. We already have Spotlight and annotation history.</td></tr>
+<tr><td><a href="https://github.com/tumaranja/tinyhand/commit/b21dc52a6d6646f9608f81bea1e4c271bb1f3cff">tumaranja</a></td><td>Adjustable tap swing, with a lift and downward strike.</td><td>Useful optional motion control. Separate from pointer-follow responsiveness.</td></tr>
+<tr><td><a href="https://github.com/omiusgm/playpointer/commit/6895f5b964f45a49b5f3d85ab7f8997bd149497e">omiusgm / PlayPointer</a></td><td>Guided creation and import of custom pointers.</td><td>Worth reviewing for a clearer custom-pointer flow.</td></tr>
+<tr><td><a href="https://github.com/rjiang-bb/aihand/commit/ae77ac64bd366a39a6795649cb54074991b63082">rjiang-bb / AiHand</a></td><td>Preserve underlying hover state while drawing. Also adds worktrees, SSH, chat, branch sessions and previews.</td><td>Prototype hover-preserving drawing. Agent workspaces are outside our scope.</td></tr>
+<tr><td><a href="https://github.com/alcibiadesc/tinyhand/commit/75121410ec7bece5c19a91982e5d8c589370c6d4">alcibiadesc</a></td><td>Toolbar preference rewrite and placement on the Pointers settings page.</td><td>Already covered by our toolbar controls.</td></tr>
+</tbody>
+</table>
+</section>
+<p class="snapshot">Source review only. Fork builds have not been run. Windows, Linux and classic Mac ports are excluded from recommendations.</p>
+</main>
+</body>
+</html>

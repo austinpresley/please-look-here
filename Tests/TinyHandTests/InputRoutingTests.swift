@@ -12,7 +12,6 @@ private func event(_ type: CGEventType, button: Int64 = 0, point: CGPoint = CGPo
 @Suite(.serialized) @MainActor struct InputRoutingTests {
     @Test func drawRouteSurvivesDeactivationUntilRelease() throws {
         let tap = InputTap()
-        tap.hardwareFlags = { [] }
         tap.setActive(true)
         let down = try event(.leftMouseDown)
         #expect(tap.handle(type: .leftMouseDown, event: down) == nil)
@@ -25,29 +24,52 @@ private func event(_ type: CGEventType, button: Int64 = 0, point: CGPoint = CGPo
         #expect(tap.handle(type: .leftMouseDown, event: newDown) != nil)
     }
 
+    @Test func modifiersNeverTemporarilyEnableInteraction() throws {
+        // A legacy stored key must have no effect on event routing.
+        Preferences.storage.set("option", forKey: "interactKey")
+        defer { Preferences.storage.removeObject(forKey: "interactKey") }
+        let tap = InputTap()
+        tap.setActive(true)
+        for flags: CGEventFlags in [.maskAlternate, .maskCommand, .maskControl, [.maskAlternate, .maskShift]] {
+            let down = try event(.leftMouseDown, flags: flags)
+            #expect(tap.handle(type: .leftMouseDown, event: down) == nil)
+            #expect(down.flags == flags)
+            let up = try event(.leftMouseUp, flags: flags)
+            #expect(tap.handle(type: .leftMouseUp, event: up) == nil)
+            #expect(up.flags == flags)
+        }
+    }
+
+    @Test func interactiveInputPreservesModifiersAndNativeDragAcrossModeChange() throws {
+        let tap = InputTap()
+        let flags: CGEventFlags = [.maskAlternate, .maskCommand, .maskShift]
+        let down = try event(.leftMouseDown, flags: flags)
+        #expect(tap.handle(type: .leftMouseDown, event: down) != nil)
+        #expect(down.flags == flags)
+        tap.setActive(true)
+        let drag = try event(.leftMouseDragged, flags: flags)
+        #expect(tap.handle(type: .leftMouseDragged, event: drag) != nil)
+        #expect(drag.type == .leftMouseDragged && drag.flags == flags)
+        let up = try event(.leftMouseUp, flags: flags)
+        #expect(tap.handle(type: .leftMouseUp, event: up) != nil)
+        #expect(up.flags == flags)
+        let next = try event(.leftMouseDown)
+        #expect(tap.handle(type: .leftMouseDown, event: next) == nil)
+        #expect(tap.handle(type: .leftMouseUp, event: try event(.leftMouseUp)) == nil)
+    }
+
     @Test func differentButtonsKeepIndependentRoutes() throws {
         let tap = InputTap()
-        tap.hardwareFlags = { [] }
-        tap.interactKey = .maskAlternate
         tap.setActive(true)
-        let left = try event(.leftMouseDown)
-        let right = try event(.rightMouseDown, button: 1, flags: [.maskAlternate, .maskShift])
-        #expect(tap.handle(type: .leftMouseDown, event: left) == nil)
-        #expect(tap.handle(type: .rightMouseDown, event: right) != nil)
-        #expect(!right.flags.contains(.maskAlternate))
-        #expect(right.flags.contains(.maskShift))
-        tap.interactKey = .maskCommand
-        let rightUp = try event(.rightMouseUp, button: 1, flags: [.maskAlternate, .maskShift])
-        #expect(tap.handle(type: .rightMouseUp, event: rightUp) != nil)
-        #expect(!rightUp.flags.contains(.maskAlternate))
-        #expect(rightUp.flags.contains(.maskShift))
-        let leftUp = try event(.leftMouseUp)
-        #expect(tap.handle(type: .leftMouseUp, event: leftUp) == nil)
+        #expect(tap.handle(type: .leftMouseDown, event: try event(.leftMouseDown)) == nil)
+        tap.setActive(false)
+        #expect(tap.handle(type: .rightMouseDown, event: try event(.rightMouseDown, button: 1)) != nil)
+        #expect(tap.handle(type: .leftMouseUp, event: try event(.leftMouseUp)) == nil)
+        #expect(tap.handle(type: .rightMouseUp, event: try event(.rightMouseUp, button: 1)) != nil)
     }
 
     @Test func toolbarPressRemainsNativeOutsideItsBounds() throws {
         let tap = InputTap()
-        tap.hardwareFlags = { [] }
         tap.setActive(true)
         tap.passThroughRects = [CGRect(x: 0, y: 0, width: 50, height: 50)]
         let down = try event(.leftMouseDown, point: CGPoint(x: 20, y: 20))
@@ -61,7 +83,6 @@ private func event(_ type: CGEventType, button: Int64 = 0, point: CGPoint = CGPo
 
     @Test func capturedDragBecomesMovementWithoutNativeDragging() throws {
         let tap = InputTap()
-        tap.hardwareFlags = { [] }
         tap.setActive(true)
         _ = tap.handle(type: .leftMouseDown, event: try event(.leftMouseDown))
         let drag = try event(.leftMouseDragged)
@@ -72,7 +93,6 @@ private func event(_ type: CGEventType, button: Int64 = 0, point: CGPoint = CGPo
 
     @Test func staleCallbacksCannotRecreateAReleasedGesture() async throws {
         let tap = InputTap()
-        tap.hardwareFlags = { [] }
         var downs = 0, ups = 0
         tap.onMouseDown = { _, _, _, _ in downs += 1 }
         tap.onMouseUp = { _, _ in ups += 1 }

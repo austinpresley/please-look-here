@@ -1,6 +1,22 @@
 import AppKit
 
 final class InputTap {
+    private let controls = ControlInput()
+    var onDismissControls: (() -> Void)?
+    var onControlStatusClick: ((Bool) -> Void)?
+    func configureControls(open: Bool, nativeMenu: Bool, regions: [CGRect]) {
+        if open { _ = install() }
+        lock.withLock {
+            controls.configure(open: open, nativeMenu: nativeMenu, regions: regions)
+            updateEnabled()
+        }
+    }
+    let radial = RadialInput()
+    func configureRadial(trigger: RadialTrigger?, eligible: Bool) {
+        radial.configure(trigger: trigger, eligible: eligible, flags: CGEventSource.flagsState(.combinedSessionState))
+        if trigger != nil && eligible { _ = install() }
+        lock.withLock { updateEnabled() }
+    }
     enum Feedback {
         case draw, interact
     }
@@ -9,15 +25,7 @@ final class InputTap {
     var onMouseUp: ((Int64, Feedback) -> Void)?
     var onLeftDragged: ((CGPoint) -> Void)?
     var onPassThroughPress: ((CGPoint) -> Void)?
-    var hardwareFlags: () -> CGEventFlags = { CGEventSource.flagsState(.hidSystemState) }
-
-    private enum Route {
-        case draw
-        case interact(CGEventFlags)
-    }
-
     private struct Press {
-        let route: Route
         let generation: UInt
     }
 
@@ -26,31 +34,16 @@ final class InputTap {
     private var generation: UInt = 0
     private var presses: [Int64: Press] = [:]
     private var _passThroughRects: [CGRect] = []
-    private var _interactKey: CGEventFlags = []
     private var _maxWaitMs: Double = 0
     private var eventCount = 0
     private var eventTypes: [String: Int] = [:]
     var diagnostics: [String: Any] {
-        lock.withLock { ["installed": tap != nil, "enabled": tap.map { CGEvent.tapIsEnabled(tap: $0) } ?? false, "active": active, "events": eventCount, "types": eventTypes] }
+        lock.withLock { ["installed": tap != nil, "enabled": tap.map { CGEvent.tapIsEnabled(tap: $0) } ?? false, "active": active, "events": eventCount, "types": eventTypes, "radial": radial.diagnostics, "controls": controls.diagnostics, "capturedButtons": presses.keys.sorted()] }
     }
 
     var passThroughRects: [CGRect] {
         get { lock.withLock { _passThroughRects } }
         set { lock.withLock { _passThroughRects = newValue } }
-    }
-
-    var interactKey: CGEventFlags {
-        get { lock.withLock { _interactKey } }
-        set { lock.withLock { _interactKey = newValue } }
-    }
-
-    var interactPressing: Bool {
-        lock.withLock {
-            active && presses.values.contains {
-                if case .interact = $0.route { return $0.generation == generation }
-                return false
-            }
-        }
     }
 
     var maxWaitMs: Double { lock.withLock { _maxWaitMs } }
@@ -73,7 +66,12 @@ final class InputTap {
             (1 << CGEventType.otherMouseUp.rawValue) |
             (1 << CGEventType.leftMouseDragged.rawValue) |
             (1 << CGEventType.rightMouseDragged.rawValue) |
-            (1 << CGEventType.otherMouseDragged.rawValue)
+            (1 << CGEventType.otherMouseDragged.rawValue) |
+            (1 << CGEventType.mouseMoved.rawValue) |
+            (1 << CGEventType.flagsChanged.rawValue) |
+            (1 << CGEventType.keyDown.rawValue) |
+            (1 << CGEventType.keyUp.rawValue) |
+            (1 << CGEventType.scrollWheel.rawValue)
 
         let refcon = Unmanaged.passUnretained(self).toOpaque()
         guard let tap = CGEvent.tapCreate(
@@ -132,8 +130,8 @@ final class InputTap {
 
     private func updateEnabled() {
         guard let tap = tap else { return }
-        // Finish any press that started in Draw, even after Esc or a mode change.
-        let desired = active || !presses.isEmpty
+        // Finish any press that started in Draw, even after turning the pointer off or changing mode.
+        let desired = active || !presses.isEmpty || radial.needsTap || controls.needsTap
         if CGEvent.tapIsEnabled(tap: tap) != desired { CGEvent.tapEnable(tap: tap, enable: desired) }
     }
 
@@ -162,6 +160,35 @@ final class InputTap {
                 }
             }
 
+            if type != .tapDisabledByTimeout && type != .tapDisabledByUserInput {
+                // A newly opened surface cannot steal repeats or the release of
+                // an existing owner, including a radial Escape held after cancel.
+                if radial.ownsPair(type, event: event) {
+                    _ = radial.handle(type, event: event, dragging: false)
+                    updateEnabled(); return nil
+                }
+                let repeatedDrawButton: Int64?
+                switch type {
+                case .leftMouseDown: repeatedDrawButton = 0
+                case .rightMouseDown: repeatedDrawButton = 1
+                case .otherMouseDown: repeatedDrawButton = event.getIntegerValueField(.mouseEventButtonNumber)
+                default: repeatedDrawButton = nil
+                }
+                if let button = repeatedDrawButton, presses[button] != nil { return nil }
+                // Query only on a native-menu press, not on pointer movement.
+                // Window Server bounds avoid a stale main-thread menu snapshot
+                // during submenu opening. Only our own native menu rectangles
+                // enter routing; no other application's metadata is retained.
+                let menus: [CGRect]? = controls.needsMenuRegions(type) ? Self.nativeMenuRects() : nil
+                let control = controls.handle(type, event: event, menuRegions: menus)
+                if let secondary = control.statusClick { DispatchQueue.main.async { [weak self] in self?.onControlStatusClick?(secondary) } }
+                if control.dismiss { DispatchQueue.main.async { [weak self] in self?.onDismissControls?() } }
+                if control.consume { updateEnabled(); return nil }
+                let dragging = type == .flagsChanged && (!presses.isEmpty || (0..<32).contains {
+                    CGEventSource.buttonState(.combinedSessionState, button: CGMouseButton(rawValue: UInt32($0))!)
+                })
+                if radial.handle(type, event: event, dragging: dragging) { updateEnabled(); return nil }
+            }
             switch type {
             case .tapDisabledByTimeout:
                 updateEnabled()
@@ -198,44 +225,35 @@ final class InputTap {
                     notify(generation) { $0.onPassThroughPress?(location) }
                     return forwarded
                 }
-                let key = _interactKey
-                if !key.isEmpty && (event.flags.contains(key) || hardwareFlags().contains(key)) {
-                    presses[button] = Press(route: .interact(key), generation: generation)
-                    event.flags.remove(key)
-                    notify(generation) { $0.onMouseDown?(button, .interact, location, flags) }
-                    return forwarded
-                }
-                presses[button] = Press(route: .draw, generation: generation)
+                presses[button] = Press(generation: generation)
                 notify(generation) { $0.onMouseDown?(button, .draw, location, flags) }
                 return nil
 
             case .leftMouseUp, .rightMouseUp, .otherMouseUp:
                 guard let press = presses.removeValue(forKey: button) else { return forwarded }
                 if !active && presses.isEmpty { updateEnabled() }
-                switch press.route {
-                case .draw:
-                    notify(press.generation) { $0.onMouseUp?(button, .draw) }
-                    return nil
-                case .interact(let key):
-                    event.flags.remove(key)
-                    notify(press.generation) { $0.onMouseUp?(button, .interact) }
-                    return forwarded
-                }
+                notify(press.generation) { $0.onMouseUp?(button, .draw) }
+                return nil
 
             default:
                 guard let press = presses[button] else { return forwarded }
-                switch press.route {
-                case .draw:
-                    if type == .leftMouseDragged {
-                        let point = event.location
-                        notify(press.generation) { $0.onLeftDragged?(point) }
-                    }
-                    event.type = .mouseMoved
-                case .interact(let key):
-                    event.flags.remove(key)
+                if type == .leftMouseDragged {
+                    let point = event.location
+                    notify(press.generation) { $0.onLeftDragged?(point) }
                 }
+                event.type = .mouseMoved
                 return forwarded
             }
+        }
+    }
+
+    private static func nativeMenuRects() -> [CGRect]? {
+        guard let windows = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]] else { return nil }
+        return windows.compactMap { info in
+            guard (info[kCGWindowOwnerPID as String] as? Int32) == ProcessInfo.processInfo.processIdentifier,
+                  (info[kCGWindowLayer as String] as? Int) == Int(CGWindowLevelForKey(.popUpMenuWindow)),
+                  let bounds = info[kCGWindowBounds as String] as? NSDictionary else { return nil }
+            return CGRect(dictionaryRepresentation: bounds as CFDictionary)
         }
     }
 }

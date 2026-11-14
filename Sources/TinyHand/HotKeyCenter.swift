@@ -50,7 +50,9 @@ final class HotKeyCenter {
             modifiers,
             hkID,
             GetApplicationEventTarget(),
-            0,
+            // Shared registrations can succeed without receiving events when
+            // another app owns the key. Exclusive registration reports a conflict.
+            OptionBits(kEventHotKeyExclusive),
             &ref
         )
         guard status == noErr, let ref = ref else {

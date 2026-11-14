@@ -48,9 +48,9 @@ final class WelcomeWindow: NSObject {
     }
 
     private func refresh() {
-        title.stringValue = forDrawing ? (granted ? "Drawing is ready" : "Allow drawing") : "Point while you work"
-        subtitle.stringValue = forDrawing ? "Draw adds annotations. Point stays available." : "Use apps normally with the hand visible.\nSwitch to Draw when you want to annotate."
-        button.title = forDrawing ? (granted ? "Start Drawing" : "Open Settings") : "Start Pointing"
+        title.stringValue = forDrawing ? (granted ? "Drawing is ready" : "Allow drawing") : "Look Here Please"
+        subtitle.stringValue = forDrawing ? "Turn Interact off to draw on screen.\nInteract stays available without permission." : "Use apps normally with Interact on.\nTurn it off when you want to draw."
+        button.title = forDrawing ? (granted ? "Start Drawing" : "Open Settings") : "Show Pointer"
         tip.isHidden = !forDrawing || granted || askedAt.map { Date().timeIntervalSince($0) < 10 } ?? true
     }
 
@@ -77,6 +77,7 @@ final class WelcomeWindow: NSObject {
     private func build() {
         let size = CGSize(width: 340, height: 300)
         let w = Card(contentRect: CGRect(origin: .zero, size: size), styleMask: [.borderless], backing: .buffered, defer: false)
+        w.title = "Look Here Please"
         w.isOpaque = false
         w.backgroundColor = .clear
         w.hasShadow = true

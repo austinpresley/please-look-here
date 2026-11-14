@@ -1,0 +1,28 @@
+B-1.png
+Built-in image generation, logo-brand concept.
+The saved PNG was normalized to 1024x1024 with sips after generation.
+
+EXACT INITIAL GENERATION PROMPT
+
+Create B-1, original flat app-icon concept art for Look Here Please. Square 1024x1024 PNG, opaque full-bleed coral #E64029.
+
+Use ONLY uniform solid fills: coral background, cream #FFF2D6 glove, amber #FFCC75 ping, plum #47293D cuff. Each color is perfectly constant across its entire shape. Crisp vector-cut-paper geometry with absolutely no texture, shading, glow, lighting, relief or gradients.
+
+Inside the centered 76% of the square, draw one large chunky cream cartoon pointing glove on a diagonal from lower left to upper right. Exactly one extended index finger, three fingers curled into a compact rounded fist, thumb tucked against the fist below the index. No second raised finger. A short thick plum cuff at the wrist. No finger crease lines. Warm, deadpan-polite, slightly silly; original proportions inspired by a classroom glove pointer, never any familiar character glove.
+
+At roughly 64% across and 36% down, the index fingertip TOUCHES the lower-left edge of an amber solid dot. Two concentric amber rings centered on that dot sit behind the hand. Fat rings and broad coral gaps; no thin strokes anywhere. The glove, dot, and rings form one close connected composition spanning 70% of the canvas, wholly within x15%-85% and y15%-85%. Keep the fist big enough to read at 16px.
+
+A bold modern sign pictogram, only a few clean solid layers. The coral background extends to all four square corners. No rounded tile, inset panel, margin, border, shadow, mockup, UI, text, letters, numbers, logos, emoji, SF Symbols or 3D.
+
+EXACT REVISION PROMPT
+
+Refine the supplied B-1 concept, preserving the cream glove pointing diagonally up-right with its fingertip touching an amber dot and two concentric amber rings, on full-bleed coral.
+
+Make the hand ONE continuous solid cream silhouette: remove the thin coral crease inside the fist entirely. Exactly one extended INDEX finger; other fingers curled into the rounded fist, thumb tucked against it. Keep the short thick plum cuff. Do not add a stick to this variant. Scale the entire glove-cuff-ping assembly down 12% about the canvas center so it occupies about 70% of the square and is entirely inside the centered 80%. Preserve fingertip-to-dot physical contact.
+
+Use only four perfectly uniform flat RGB fills: coral #E64029, cream #FFF2D6, amber #FFCC75, plum #47293D. No texture, grain, paper, shading, gradients, lighting, relief or random tonal variation anywhere, including the glove and rings. Crisp pure vector-logo rendering, antialiasing only at shape boundaries. Ring strokes and gaps are broad. The background remains opaque coral all the way to each square edge and corner, no rounded tile, inset panel, margin, border, frame or shadow. No text, letters, numbers, logos, UI, emoji, SF Symbols or mockup. Output one square 1024x1024 PNG.
+
+REFERENCE HISTORY
+
+The initial selected generation used a text prompt. Revisions used the then-current B-1.png as a reference image. Before generation, .github/logo.png, assets/hand_glove.png and assets/hand_blue.png were visually inspected. An earlier discarded B-1 attempt additionally passed the two pointer assets as reference images.
+

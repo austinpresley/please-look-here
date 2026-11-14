@@ -6,7 +6,7 @@ if let index = CommandLine.arguments.firstIndex(of: "--input-probe") {
 }
 
 if CommandLine.arguments.contains("--help") {
-    print("TinyHand --ctl '<JSON>'\nLocal control: {\"version\":1,\"operation\":\"status\"}\nOperations: \(ControlBridge.operations.joined(separator: ", "))\nUse the app bundle's executable. The compatible app must already be running.\nProtocol: docs/control-protocol.md")
+    print("Look Here Please\nUsage: <app>/Contents/MacOS/TinyHand --ctl '<JSON>'\nLocal control: {\"version\":1,\"operation\":\"status\"}\nOperations: \(ControlBridge.operations.joined(separator: ", "))\nUse the app bundle's executable. The compatible app must already be running.\nProtocol: docs/control-protocol.md")
     exit(0)
 }
 if CommandLine.arguments.contains("--version") {
@@ -44,7 +44,7 @@ if let idx = CommandLine.arguments.firstIndex(of: "--toolbar-test") {
         print("rendered \(out)")
     }
     if CommandLine.arguments.contains("--hint") {
-        bar.showHint([("Click", "to tap"), ("Drag", "to draw"), ("Hold ⌥", "to click for real"), ("Esc", "to exit")])
+        bar.showHint([("Click", "to tap"), ("Drag", "to draw"), ("Interact", "to use apps"), ("Toolbar ×", "to exit")])
         if let data = bar.snapshotHint()?.representation(using: .png, properties: [:]) {
             let hintOut = out.replacingOccurrences(of: ".png", with: "-hint.png")
             try? data.write(to: URL(fileURLWithPath: hintOut))

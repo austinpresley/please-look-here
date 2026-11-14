@@ -1,65 +1,106 @@
 {
-  "fill": {
-    "automatic-gradient": "display-p3:0.09585,0.00000,0.11138,1.00000",
-    "orientation": {
-      "start": {
-        "x": 0.5,
-        "y": 0
-      },
-      "stop": {
-        "x": 0.5,
-        "y": 0.7
-      }
-    }
-  },
   "groups": [
     {
       "layers": [
         {
-          "fill": {
-            "solid": "display-p3:0.94531,0.91748,0.84717,1.00000"
-          },
-          "glass": false,
           "image-name": "front.svg",
-          "name": "front",
-          "position": {
-            "scale": 19,
-            "translation-in-points": [
-              0,
-              0
-            ]
-          }
+          "name": "Pointing glove",
+          "glass": true,
+          "fill-specializations": [
+            {
+              "value": {
+                "solid": "srgb:1.00000,0.95000,0.84000,1.00000"
+              }
+            },
+            {
+              "appearance": "dark",
+              "value": {
+                "solid": "srgb:1.00000,0.95000,0.84000,1.00000"
+              }
+            },
+            {
+              "appearance": "tinted",
+              "value": {
+                "solid": "srgb:1.00000,1.00000,1.00000,1.00000"
+              }
+            }
+          ]
         },
         {
-          "fill": {
-            "solid": "display-p3:0.55000,0.42000,0.56000,1.00000"
-          },
-          "glass": false,
           "image-name": "back.svg",
-          "name": "back",
-          "position": {
-            "scale": 19,
-            "translation-in-points": [
-              0,
-              0
-            ]
-          }
+          "name": "Cuff",
+          "glass": true,
+          "fill-specializations": [
+            {
+              "value": {
+                "solid": "srgb:0.28000,0.16000,0.24000,1.00000"
+              }
+            },
+            {
+              "appearance": "dark",
+              "value": {
+                "solid": "srgb:0.28000,0.16000,0.24000,1.00000"
+              }
+            },
+            {
+              "appearance": "tinted",
+              "value": {
+                "solid": "srgb:1.00000,1.00000,1.00000,1.00000"
+              }
+            }
+          ]
+        },
+        {
+          "image-name": "attention.svg",
+          "name": "Attention dot",
+          "glass": true,
+          "fill-specializations": [
+            {
+              "value": {
+                "solid": "srgb:1.00000,0.80000,0.46000,1.00000"
+              }
+            },
+            {
+              "appearance": "dark",
+              "value": {
+                "solid": "srgb:1.00000,0.80000,0.46000,1.00000"
+              }
+            },
+            {
+              "appearance": "tinted",
+              "value": {
+                "solid": "srgb:1.00000,1.00000,1.00000,1.00000"
+              }
+            }
+          ]
         }
       ],
       "shadow": {
         "kind": "neutral",
-        "opacity": 0.5
+        "opacity": 0.35
       },
       "translucency": {
         "enabled": true,
-        "value": 0.5
+        "value": 0.35
       }
     }
   ],
   "supported-platforms": {
-    "circles": [
-      "watchOS"
-    ],
-    "squares": "shared"
-  }
+    "squares": [
+      "macOS"
+    ]
+  },
+  "fill-specializations": [
+    {
+      "value": {
+        "automatic-gradient": "srgb:0.90000,0.25000,0.16000,1.00000"
+      }
+    },
+    {
+      "appearance": "dark",
+      "value": {
+        "automatic-gradient": "srgb:0.22000,0.10000,0.16000,1.00000"
+      }
+    }
+  ]
 }

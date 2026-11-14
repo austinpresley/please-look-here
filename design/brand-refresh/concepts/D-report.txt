@@ -1,0 +1,84 @@
+Look Here Please: direction D, the manicule
+
+Generated with the built-in image generation tool. Nine generation calls total, including one discarded D-1 first attempt and four cleanup edits. Both supplied reference images were inspected before generation. No code assets were substituted.
+
+All four final files are opaque 1024x1024 PNGs. The tool returned 1254x1254 images; sips resized them to 1024x1024. D-3 additionally received a centered 1152x1152 crop before resizing to keep its mark within the requested approximate scale. Full-size images and 64, 32 and 16 px copies were visually inspected after each generation. Thumbnail checks are in /tmp/D-N-SIZE.png.
+
+Strongest: D-4. The cream hand has the clearest contrast against plum, its coral cuff supplies a small warm accent, and the single pointing silhouette stays clear without a separate target or stick.
+
+Limitation: faint generated grain and tonal variation remain in the full-size color fields despite explicit flat-fill cleanup edits. These are concept drawings, not perfectly uniform 2-to-4-color production masters. The short folded thumb is described chiefly by an interior hook in all four images. At 16 px the folded-finger details merge. No text, baked-in rounded tile, engraving hatching, extra hand, extra extended finger, or 3D rendering was observed in the selected concepts.
+
+D-1.png
+
+Assessment: Clear pointing hand at 32 px; at 16 px the index and cuff remain distinct, while the interior creases merge.
+
+Exact creation prompt:
+
+Create a clean flat vector-style original manicule drawing as a 1024x1024 PNG. Three perfectly uniform solid color fields only: coral #E64029 background covering the entire square edge to edge; cream #FFF2D6 hand; plum #47293D cuff and creases. Smooth crisp edges. No grain, noise, paper texture, gradient, lighting, highlight, shading or 3D.
+Composition: one large hand and cuff together spans 72% of the canvas width, from x=144 to x=880 on the 1024px canvas, vertically centered. Leave background visible on every side. Keep the complete subject inside the centered 80% safe area. Do not draw any tile, rounded square, border, shadow, mockup or UI.
+Subject: an original chunky friendly modern manicule in side view, pointing right and 12 degrees upward. Exactly one long extended INDEX finger, rounded tip. Three other fingers folded into a plump compact fist. Short thumb folded snugly across the top of the curled fingers, indicated by one bold plum curve, never sticking up. Two short thick plum creases for the curled fingers. Broad crisp plum shirt cuff at the left wrist; no sleeve beyond it.
+Warm, slightly silly sign-painting character. Strong readable one-color silhouette at 16px. No text, letters, numbers, dot, ornament, extra hand, second extended finger, gun gesture, copied historic glyph, emoji, SF Symbol or existing app icon.
+
+Exact cleanup edit prompt:
+
+Edit the supplied D-1 manicule concept for flat-color clarity and icon-safe composition. Preserve this exact friendly side-view pointing hand, shallow upward-right long index finger, folded thumb, three curled fingers, and plum cuff. Exactly one hand and one extended INDEX finger.
+Reduce the whole hand and cuff slightly, to 72% of the square's width, and center the composition. Keep all of it within the centered 80% safe area. Keep the original bold proportions.
+Use only three perfectly uniform solid fills: full-bleed coral #E64029 background, cream #FFF2D6 hand, plum #47293D cuff and bold interior creases. Remove every trace of grain, noise, mottling, texture, gradients, shading and highlights. Each region must be one constant flat color, like clean filled vector paths, with only anti-aliasing at edges. No lighting or 3D.
+Output a square 1024x1024 opaque PNG. Background covers the entire canvas edge to edge. No dot, text, letters, numbers, extra fingers, new objects, hatching, rounded tile, border, outer shadow, mockup or UI.
+
+D-2.png
+
+Assessment: The finger-to-dot relationship reads at 32 px; at 16 px the gesture survives but the amber target is a tiny speck.
+
+Exact creation prompt:
+
+Original manicule app-icon concept art, square 1024x1024 PNG. A completely flat, crisp graphic in four solid colors. Uniform coral #E64029 fills the entire square edge to edge.
+One cream #FFF2D6 plump side-view pointing fist with a broad plum #47293D cuff, rotated 40 degrees toward the upper right. The index finger alone extends in a long rounded confident pointing shape. All three other fingers curl into the palm. The short thumb rests across the top of those folded fingers, shown by a single bold plum curved crease, tucked in with no raised thumb. Two short bold plum strokes distinguish folded fingers. No arm beyond the cuff.
+A small solid amber #FFCC75 circular dot sits directly ahead of the index fingertip on exactly the same pointing axis, separated by a narrow clear gap. It reads as the finger's target. No ring, glow or rays. Hand plus dot spans about 72% of canvas width. Whole composition centered, inside the centered 80% safe area.
+Modern chunky sign-painter shapes, warm, deadpan-polite, slightly comic; clear as a one-color silhouette, legible at 16px. Original drawing, not a historical typeface glyph, emoji, SF Symbol or existing logo.
+No text, letters, numbers, second hand, extra extended finger, gun gesture, peace sign, engraving, hatching, grain, noise, distressing, paper texture, gradients, shading, lighting, highlights, 3D, rounded tile, border, outer shadow, mockup or UI.
+
+Exact cleanup edit prompt:
+
+Edit the supplied D-2 manicule concept only to clean up the color fields. Preserve the exact composition and scale: one cream side-view pointing fist and plum cuff on coral, aimed diagonally upper right at one small amber circular target just ahead of the fingertip. Preserve the dot's tight alignment with the long index finger. Preserve the folded thumb, three curled fingers and three bold plum interior creases. Exactly one hand and one extended INDEX finger. Keep the whole composition inside the centered 80% safe area, spanning about 72% of canvas width.
+Remove every trace of grain, noise, texture, mottling, gradients, lighting, highlight and shading. Use exactly four constant SOLID flat colors: coral #E64029 background, cream #FFF2D6 hand, plum #47293D cuff and finger creases, amber #FFCC75 target. These should look like clean vector paths with perfectly uniform interiors and crisp anti-aliased boundaries.
+Square 1024x1024 opaque PNG. Coral background fills every edge and every corner. No new objects, lettering, numbers, extra hands or fingers, hatching, 3D, tile, rounded rectangle, border, shadow, glow, mockup or UI.
+
+D-3.png
+
+Assessment: The hand-on-a-stick gag reads at 32 px; at 16 px the stick becomes a small diagonal tail and the hand's creases soften.
+
+Exact creation prompt:
+
+Create one original modern manicule mounted on a short pointer stick, as square 1024x1024 PNG app icon concept art.
+Perfectly flat coral #E64029 fills the entire background edge to edge. Exactly one chunky cream #FFF2D6 cartoon hand in side view points toward the upper right at a shallow 15-degree angle. One long rounded INDEX finger extends. Three other fingers curl into a plump fist. A short thumb folds against the top of the curled fingers; one bold plum #47293D curved crease describes it, with two short plum finger creases. The thumb is not raised. Friendly confident sign-painter curves.
+At the wrist a crisp plum cuff acts as the collar joining the hand directly to a short amber #FFCC75 stick. NO sleeve and NO forearm. The narrow straight stick projects down-left from the center of the cuff and ends in a blunt rounded cap, all visible. Make the stick clearly narrower than the cuff, about one quarter its thickness and only one third as long as the hand. This is a toy classroom hand-on-a-stick pointer, not a hand holding a stick.
+The complete connected silhouette spans 72% of canvas width, centered inside the middle 80% of the square. Large hand, small stick. Four solid colors, vector-like bold shapes, crisp edges, strong silhouette at 16px.
+No text, letters, numbers, dot, second hand, extra extended finger, gun gesture, emoji, copied historical glyph, engraving, hatching, grain, noise, texture, gradients, shading, 3D, rounded-square tile, frame, shadow, mockup or UI.
+
+Exact cleanup edit prompt:
+
+Edit the supplied D-3 concept. Preserve its exact one-hand pointing anatomy, shallow upward-right index finger, folded thumb, three curled fingers, plum cuff collar and short amber pointer stick. Do a flat-color and composition cleanup.
+Shrink the entire connected hand/cuff/stick uniformly so its total width is exactly 72% of the square, then center it both horizontally and vertically. Keep every part inside the centered 80% safe area. Keep the hand large relative to the short stick.
+Flatten the artwork into exactly FOUR uniform SOLID color regions: coral #E64029 background, cream #FFF2D6 hand, plum #47293D cuff and finger creases, amber #FFCC75 stick. Each region is a single constant color with no grain, pixel noise, mottling, texture, gradients, lighting or shading. Think clean filled vector paths rendered to PNG. Sharp anti-aliased boundaries only, completely flat interiors.
+1024x1024 square PNG, opaque full-bleed coral background through every corner. One hand, one extended INDEX finger, all other fingers folded. No new objects. No lettering, numbers, hatching, 3D, rounded-square tile, border, shadow or mockup.
+
+D-4.png
+
+Assessment: Strongest contrast and cleanest pointing silhouette at 32 px; at 16 px the index still reads clearly, while the coral cuff becomes a small accent.
+
+Exact creation prompt:
+
+Design an original manicule mark for a playful Mac utility, as a 1024x1024 PNG. A warm deadpan pointing hand with the clarity of an excellent painted shop sign.
+Use exactly three flat solid colors: full-bleed deep plum #47293D background to all four square edges, cream #FFF2D6 hand, bright coral #E64029 cuff. No texture, grain, gradients, shading, highlights or 3D. Clean vector-style shapes.
+One cream side-view fist points right and 20 degrees upward. Exactly one extended INDEX finger, unusually long with a generously rounded tip. A short broad thumb folds across the top of the other three tightly curled fingers, close against the fist, never sticking up. One large plum hook-shaped interior cut defines that folded thumb, and two blunt plum interior cuts define the curled fingers. Give the compact palm a plump slightly squared heel and confident asymmetrical outline. Crisp short coral shirt cuff at the left wrist, with an angled outer edge; no forearm or sleeve.
+The complete hand and cuff fills 70% of the canvas width, vertically centered, completely inside the centered 80% safe area. Make the silhouette unmistakable at 16px. Fewer bigger shapes, no delicate detail. Friendly, chunky, slightly comic, contemporary.
+No dot, text, letters, numbers, extra hand, extra extended finger, gun gesture, peace sign, copied manicule type glyph, emoji, SF Symbol, existing app icon, engraving, hatching, distressing, rounded-square tile, border, drop shadow, mockup or UI.
+
+Exact cleanup edit prompt:
+
+Edit the supplied D-4 manicule concept. Preserve the exact single-hand pointing gesture, anatomy, long index, folded thumb and curled fingers, short coral cuff, and plum/cream/coral color balance. Center the whole hand and cuff and make their combined width about 70% of the square, with all shapes inside the centered 80% safe area.
+Remove all texture and tonal variation. Use EXACTLY THREE absolutely uniform flat fills: background plum #47293D, hand cream #FFF2D6, cuff coral #E64029; finger creases use the same plum as the background. No added colors or light effects. Each flat interior region is constant color, with zero grain, noise, mottling, gradient, highlight or shading. Crisp vector-like boundaries, bold shapes that read at 16px.
+Square 1024x1024 opaque PNG. The plum background fills every pixel along all four edges and corners. Exactly one extended INDEX finger. Thumb stays folded against the fist. No new objects, text, symbols, numbers, hatching, 3D, tile, rounded rectangle, border, shadow, mockup or UI.
+
+

@@ -1,0 +1,28 @@
+B-4.png
+Built-in image generation, logo-brand concept.
+The saved PNG was normalized to 1024x1024 with sips after generation.
+
+EXACT INITIAL GENERATION PROMPT
+
+Create B-4, an original app-icon concept for Look Here Please, a warm, deadpan-polite and slightly silly pointer utility. 1024x1024 PNG. Pure flat digital vector graphic using four uniform solid colors, with a deep PLUM #47293D background filling the square edge to edge. No texture, grain, gradients, lighting or 3D.
+
+Reverse the diagonal: one very chunky CREAM #FFF2D6 cartoon glove on a short stout AMBER #FFCC75 stick enters from the LOWER RIGHT, pointing toward the UPPER LEFT. Exactly one hand. Only its INDEX finger extends; three other fingers curled into a rounded fist and thumb completely tucked against the fist. No second raised digit and no fine internal finger lines. Original glove shape, exaggerated but unmistakably pointing, not a known character.
+
+At x400 y365, the rounded cream fingertip physically TOUCHES a solid CORAL #E64029 dot. ONE bold thick coral concentric ring centered on that dot creates a compact ping. Use one ring instead of two so the gesture reads clearly at 16px. Broad plum gap between dot and ring. Finger crosses in front of the ring and meets the dot, no floating space at contact. The connected ping-hand-stick composition spans roughly 70% of the canvas, entirely within the centered 80%.
+
+The broad cream silhouette, coral ping and amber short stick must read as a funny classroom pointer actually tapping a spot. Bold modern sign-system pictogram that could be redrawn in a few solid layers. Smooth mathematically clean edges and perfectly even flat color fields. No thin strokes, rounded-square tile, inset panel, margin, border, shadow, mockup, UI, text, letters, numbers, logos, emoji or SF Symbol.
+
+EXACT REVISION PROMPT
+
+Edit the supplied B-4 icon concept. Preserve its reversed diagonal, deep plum background, cream glove on a short amber pointer stick pointing upper-left, and solid coral dot with ONE coral concentric ring. Exactly one hand with exactly one extended INDEX finger, the other fingers curled and thumb tucked firmly against the fist.
+
+Make the fist more compact and unmistakably gloved: three softly rounded curled-finger knuckles along its lower-left side, a single smooth rounded back-of-hand contour on its upper-right side, no extra lobes or extra digits. Make the short amber stick join through a simple broad amber cuff. Keep the fingertip physically touching the coral dot. Thicken the single coral ring by about 25% and enlarge its dot slightly for 16px legibility. Scale the complete connected mark down 10% around canvas center to fit inside the central 80%, occupying about 70%.
+
+Replace ALL texture and tonal variation with exact uniform solid fills: plum #47293D background, cream #FFF2D6 hand, coral #E64029 dot/ring, amber #FFCC75 stick/cuff. Pure digital vector-logo rendering, perfectly even RGB color fields, antialias only at edges. No texture, grain, shading, light, gradient, relief, 3D, internal crease lines or thin outlines.
+
+Full-bleed opaque square artwork, every corner filled by plum. No rounded-square tile, inset panel, margins, border, frame, shadow, mockup, UI, text, letters, numbers, logos, emoji, SF Symbol or familiar character glove. Output one 1024x1024 PNG.
+
+REFERENCE HISTORY
+
+The initial selected generation used a text prompt. Revisions used the then-current B-4.png as a reference image. Before generation, .github/logo.png, assets/hand_glove.png and assets/hand_blue.png were visually inspected. An earlier discarded B-1 attempt additionally passed the two pointer assets as reference images.
+

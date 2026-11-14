@@ -189,12 +189,49 @@ struct PillButton: View {
 }
 
 
-struct ShortcutField: NSViewRepresentable {
-    let shortcut: Shortcut
+struct ShortcutField: View {
+    let shortcut: Shortcut?
     let model: SettingsModel
     var label = "Shortcut"
     var allowsPlainKeys = false
-    let apply: (Shortcut) -> Bool
+    let apply: (Shortcut?) -> Bool
+    @State private var assignmentError: String?
+
+    var body: some View {
+        VStack(alignment: .trailing, spacing: Space.xs) {
+            HStack(spacing: Space.sm) {
+                ShortcutRecordingField(shortcut: shortcut, model: model, label: label,
+                                       allowsPlainKeys: allowsPlainKeys) { value in
+                    let accepted = apply(value)
+                    assignmentError = accepted ? nil : model.shortcutError
+                    return accepted
+                }
+                .frame(width: 132, height: 32)
+                Button("Clear") {
+                    if apply(nil) {
+                        model.shortcutError = nil
+                        assignmentError = nil
+                    }
+                }
+                .disabled(shortcut == nil)
+                .help("Clear the shortcut for \(label)")
+                .accessibilityLabel("Clear \(label) shortcut")
+            }
+            if let assignmentError {
+                Text(assignmentError).font(.callout).foregroundStyle(.red)
+                    .frame(width: 224, alignment: .leading)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+}
+
+private struct ShortcutRecordingField: NSViewRepresentable {
+    let shortcut: Shortcut?
+    let model: SettingsModel
+    var label = "Shortcut"
+    var allowsPlainKeys = false
+    let apply: (Shortcut?) -> Bool
 
     func makeNSView(context: Context) -> ShortcutRecorder {
         let r = ShortcutRecorder(shortcut: shortcut)
@@ -203,7 +240,7 @@ struct ShortcutField: NSViewRepresentable {
         r.onRecording = { model.onRecording?($0) }
         r.onChange = { s in
             let ok = apply(s)
-            model.shortcutError = ok ? nil : "\(s.display) is unavailable or already assigned. Choose another shortcut."
+            if ok { model.shortcutError = nil }
             return ok
         }
         return r

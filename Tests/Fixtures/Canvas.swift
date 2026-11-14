@@ -20,6 +20,15 @@ final class FixtureCanvas: NSView {
 
 final class FixtureDelegate: NSObject, NSApplicationDelegate {
     private var window: NSWindow!
+    private var eventCounts: [String: Int] = [:]
+    private var lastFlags: [String: UInt] = [:]
+    private var monitor: Any?
+    private func writeProbeState() {
+        guard let path = ProcessInfo.processInfo.environment["TINYHAND_FIXTURE_STATE"], path.hasPrefix("/tmp/s013-") else { return }
+        let state: [String: Any] = ["events": eventCounts, "lastFlags": lastFlags, "frontmost": NSApp.isActive, "window": window.windowNumber,
+                                    "frame": [window.frame.minX, window.frame.minY, window.frame.width, window.frame.height]]
+        if let data = try? JSONSerialization.data(withJSONObject: state, options: [.sortedKeys]) { try? data.write(to: URL(fileURLWithPath: path), options: .atomic) }
+    }
     func applicationDidFinishLaunching(_ notification: Notification) {
         let frame = NSScreen.screens.first?.frame ?? CGRect(x: 0, y: 0, width: 1440, height: 900)
         let appMenu = NSMenu()
@@ -30,7 +39,11 @@ final class FixtureDelegate: NSObject, NSApplicationDelegate {
         window = FixtureWindow(contentRect: frame, styleMask: .borderless, backing: .buffered, defer: false)
         window.title = "TinyHand test canvas"
         window.isOpaque = true; window.backgroundColor = .white
-        window.level = NSWindow.Level(rawValue: NSWindow.Level.screenSaver.rawValue + 1)
+        // Menu bar tests keep native popover/menu window levels unchanged. This
+        // isolated fixture still covers ordinary app windows without covering menus.
+        let menuBarFixture = ProcessInfo.processInfo.environment["TINYHAND_FIXTURE_MENU_BAR"] == "1"
+            && ProcessInfo.processInfo.environment["TINYHAND_FIXTURE_STATE"]?.hasPrefix("/tmp/s013-s023-") == true
+        window.level = menuBarFixture ? .floating : NSWindow.Level(rawValue: NSWindow.Level.screenSaver.rawValue + 1)
         window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         window.isReleasedWhenClosed = false
         let canvas = FixtureCanvas(frame: CGRect(origin: .zero, size: frame.size))
@@ -62,6 +75,15 @@ final class FixtureDelegate: NSObject, NSApplicationDelegate {
         NSApp.activate(ignoringOtherApps: true)
         window.makeKeyAndOrderFront(nil)
         window.makeFirstResponder(nil)
+        if ProcessInfo.processInfo.environment["TINYHAND_FIXTURE_STATE"] != nil {
+            monitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .leftMouseUp, .rightMouseDown, .rightMouseUp, .otherMouseDown, .otherMouseUp, .leftMouseDragged, .rightMouseDragged, .otherMouseDragged, .flagsChanged, .keyDown, .keyUp]) { [weak self] event in
+                self?.eventCounts[String(event.type.rawValue), default: 0] += 1
+                self?.lastFlags[String(event.type.rawValue)] = event.modifierFlags.rawValue
+                self?.writeProbeState()
+                return event
+            }
+            writeProbeState()
+        }
     }
 }
 

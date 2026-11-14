@@ -1,0 +1,21 @@
+{
+  "title": "Review new TinyHand fork commits",
+  "scheduledTaskId": "scheduled-task:command:mcp:61690d56-6a22-49f3-9c33-b7b64cddb2ba:schedule-task:please-look-here-tinyhand-weekly-forks-20261114",
+  "projectId": "mcp:37ad5579-13ef-4e43-b611-5699f50cd636",
+  "boundThreadId": "48e1ce26-d811-4eb9-baec-7f05ec503e4b",
+  "enabled": true,
+  "schedule": {
+    "type": "fixed_time",
+    "timeOfDay": "09:00",
+    "weekdays": [
+      1
+    ]
+  },
+  "timeZone": "America/New_York",
+  "firstNextRunAt": "2026-11-16T14:00:00.000Z",
+  "createdAt": "2026-11-14",
+  "originalBaselineDate": "2026-11-09",
+  "originalBaseline": "docs/research/tinyhand-fork-evidence.md",
+  "watchState": "docs/research/tinyhand-fork-watch-state.json",
+  "prompt": "Check https://github.com/nilbuild/tinyhand and every public fork once this weekly task fires. Work in /Volumes/Project-Vault/PROJECTS/Please Look Here; if Project Vault is not mounted, report that and stop. Use the research skill and delegate its background research as required. Read docs/research/tinyhand-fork-evidence.md, tinyhand-fork-ranking.md, tinyhand-fork-update-2026-11-14.md, the newest dated fork update, and docs/research/tinyhand-fork-watch-state.json before doing work. Enumerate all paginated fork lists recursively, including renamed repos and forks of forks, then every public branch. Read live GitHub API and git source diffs, not just pushed_at timestamps or commit titles. Compare branch tips and reachable commit SHAs to the saved snapshot; detect branch rewrites/deletions; deduplicate identical SHAs and patches and exclude upstream-only syncs, our own repo, and previously reported changes from fork-only recommendations. Also inspect original upstream changes since the saved upstream tip, and include useful fixes now merged upstream in a separate section so donor work is not lost merely because upstream adopted it. New forks may contain old commits, so distinguish newly observed commits from recently authored ones. Review newly observed non-upstream source changes against CURRENT local app, docs/STORIES.md, docs/INTEGRATION.md, and previous reports. Report new useful Mac features/fixes, why they help Look Here Please, direct pinned commit/source links, integration effort/risk, already implemented overlaps, and platform-only items separately. If nothing is worth adding, say so briefly and include coverage counts. Save a dated docs/research/tinyhand-fork-update-YYYY-MM-DD.md and update the durable watch snapshot only for successfully inspected branches; retain explicit unresolved coverage on failures so the next run retries them. Save raw evidence in a stable local cache. Do not modify app implementation, merge donors, open PRs, or run hosted GitHub Actions/CI. Any necessary tests/builds/packaging must run locally on Austin's Mac. Deliver the completed report using the austin-deliveries skill, retain local originals, and include the verified HTTPS link. Return results in this thread. Avoid overlapping a prior still-active fork check."
+}

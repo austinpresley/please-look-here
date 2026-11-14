@@ -70,7 +70,7 @@ struct SettingsView: View {
                 if let icon = NSImage(named: "AppIcon") ?? NSApp.applicationIconImage {
                     Image(nsImage: icon).resizable().frame(width: 24, height: 24)
                 }
-                Text("TinyHand").font(.system(size: 12, weight: .semibold))
+                Text("Look Here Please").font(.system(size: 12, weight: .semibold))
                 Spacer()
             }
             .padding(.horizontal, 12)

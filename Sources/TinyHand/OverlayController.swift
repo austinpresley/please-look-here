@@ -11,6 +11,8 @@ final class OverlayController {
     private let armView: ArmView
     private let inputTap = InputTap()
     private let toolbar = Toolbar()
+    let radial = RadialMenu()
+    private let accessibility: () -> Bool
     private let tapSound = TapSound()
     private let displayLink = PointerDisplayLink()
     private let textEditor = TextAnnotationEditor()
@@ -31,13 +33,15 @@ final class OverlayController {
     private var menuOpeningUntil = Date.distantPast
     private var lastMenuScan = Date.distantPast
     private var revealUntil = Date.distantPast
+    private var previousShowToolbar = Preferences.showToolbar
     private var needsDrawingPermission = false
     private var desiredDrawInput = false
-    private var escHotKey: UInt32?
     private var shortcutContext = ""
     private var captureTask: Task<Void, Never>?
     private var captureID: UUID?
     private var preferencesObserver: Any?
+    private var catalogTimer: Timer?
+    private var previousCatalog: [PointerCatalog.Entry] = []
     private(set) var isActive = false
     private(set) var isCapturing = false
     private(set) var lastCaptureURL: URL?
@@ -47,6 +51,12 @@ final class OverlayController {
     var onSoundChanged: (() -> Void)?
     var onNeedsPermission: (() -> Void)?
     var onShortcutContextChanged: (() -> Void)?
+    var onDismissControls: (() -> Void)?
+    var onControlStatusClick: ((Bool) -> Void)?
+    func presentControls(_ open: Bool, nativeMenu: Bool, regions: [CGRect]) {
+        suspendInput(open)
+        inputTap.configureControls(open: open && accessibility(), nativeMenu: nativeMenu, regions: regions.map(Self.cgRect))
+    }
     var extraPassThrough: (() -> [CGRect])?
 
     var mode: PointerMode { Preferences.pointerMode }
@@ -59,16 +69,19 @@ final class OverlayController {
     var inputDiagnostics: [String: Any] { inputTap.diagnostics }
     var toolbarVisible: Bool { toolbar.revealed }
     var toolbarFrame: CGRect { toolbar.frame }
+    var pointerVisible: Bool { isActive && !armView.pointerHidden }
+    var shadowDiagnostics: [String: Any] { armView.shadowDiagnostics }
     var canUsePresentationShortcuts: Bool {
         isActive && !ownMenuOpen && !textEditor.isShowing && !isCapturing && NSApp.keyWindow == nil && Date() >= menuOpeningUntil && menuRects.isEmpty
     }
     var canUseDrawingShortcuts: Bool { canUsePresentationShortcuts && mode == .draw }
-    var windowsForTesting: [NSWindow] { [window] + toolbar.windows }
+    var windowsForTesting: [NSWindow] { [window] + toolbar.windows + [radial.window] }
     var debugState: String {
         "active=\(isActive) mode=\(mode.rawValue) tool=\(Preferences.drawingTool.rawValue) held=\(armView.held) downPoint=\(downPoint != nil) drawing=\(armView.ink.isDrawing) strokes=\(inkStrokes) motion=\(Preferences.pointerMotion.rawValue) clock=\(motionClock)"
     }
 
-    init() {
+    init(accessibility: @escaping () -> Bool = { AXIsProcessTrusted() }) {
+        self.accessibility = accessibility
         let frame = NSScreen.main?.frame ?? CGRect(x: 0, y: 0, width: 1440, height: 900)
         window = OverlayWindow(contentRect: frame, styleMask: .borderless, backing: .buffered, defer: false)
         window.isOpaque = false; window.backgroundColor = .clear; window.hasShadow = false
@@ -77,6 +90,22 @@ final class OverlayController {
         window.collectionBehavior = [.canJoinAllSpaces, .stationary, .ignoresCycle, .fullScreenAuxiliary]
         armView = ArmView(frame: CGRect(origin: .zero, size: frame.size))
         window.contentView = armView
+        inputTap.radial.onEvent = { [weak self] event in
+            guard let self else { return }
+            switch event {
+            case .open(let cg):
+                guard self.radialEligible else { self.inputTap.radial.end(); return }
+                self.radial.open(at: Self.appKitPoint(cg), style: self.style, mode: self.mode, canUndo: self.canUndo, canRedo: self.canRedo, hasInk: self.inkStrokes > 0)
+                self.updateToolbarVisibility()
+            case .move(let cg): self.radial.move(to: Self.appKitPoint(cg))
+            case .release: self.radial.release()
+            case .click(let cg): self.radial.click(at: Self.appKitPoint(cg))
+            case .cancel: self.radial.close()
+            }
+        }
+        inputTap.onDismissControls = { [weak self] in self?.onDismissControls?() }
+        inputTap.onControlStatusClick = { [weak self] in self?.onControlStatusClick?($0) }
+        radial.onClose = { [weak self] in self?.inputTap.radial.end(); self?.updateToolbarVisibility() }
         inputTap.onMouseDown = { [weak self] button, feedback, point, flags in self?.pressed(button, feedback: feedback, at: point, flags: flags) }
         inputTap.onMouseUp = { [weak self] button, feedback in self?.released(button, feedback: feedback) }
         inputTap.onLeftDragged = { [weak self] point in self?.dragged(to: point) }
@@ -101,23 +130,37 @@ final class OverlayController {
         toolbar.onFixPermission = { [weak self] in self?.onNeedsPermission?() }
         preferencesObserver = NotificationCenter.default.addObserver(forName: Preferences.changed, object: nil, queue: .main) { [weak self] _ in self?.syncPreferences() }
         syncPreferences()
+        catalogTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
+            guard let self else { return }
+            CustomHands.reload()
+            if self.previousCatalog != PointerCatalog.entries { self.syncPreferences() }
+        }
     }
 
+    deinit {
+        catalogTimer?.invalidate()
+        if let preferencesObserver { NotificationCenter.default.removeObserver(preferencesObserver) }
+    }
+
+    var drawingAllowed: Bool { accessibility() }
     var soundOn: Bool {
         get { style == .laser ? Preferences.laserSound : Preferences.handSound }
         set {
             if style == .laser { Preferences.laserSound = newValue } else { Preferences.handSound = newValue }
         }
     }
-    func pick(_ style: PointerStyle) {
+    @discardableResult
+    func pick(_ style: PointerStyle) -> Bool {
+        guard (try? PointerCatalog.validateSelection(style)) != nil else { return false }
         armView.setStyle(style)
         PointerStyle.saved = armView.style
         toolbar.select(armView.style)
         syncSound()
         onActiveChanged?()
+        return true
     }
     func cyclePointer(by delta: Int) {
-        let pinned = Preferences.pinnedStyles
+        let pinned = PointerCatalog.quickStyles
         guard !pinned.isEmpty else { return }
         let index = pinned.firstIndex(of: style) ?? 0
         pick(pinned[min(max(index + delta, 0), pinned.count - 1)])
@@ -125,12 +168,12 @@ final class OverlayController {
     @discardableResult
     func setMode(_ requested: PointerMode) -> Bool {
         guard !isCapturing else { return false }
-        if requested == .draw && (!AXIsProcessTrusted() || !inputTap.install()) {
+        if requested == .draw && (!accessibility() || !inputTap.install()) {
             needsDrawingPermission = true
             if Preferences.pointerMode != .point { Preferences.pointerMode = .point }
             toolbar.setMode(.point)
             toolbar.setNeedsPermission(true)
-            if isActive { toolbar.show(); toolbar.setRevealed(true) }
+            updateToolbarVisibility()
             onNeedsPermission?()
             return false
         }
@@ -157,13 +200,20 @@ final class OverlayController {
     func undo() { releaseDrawing(); armView.ink.undo() }
     func redo() { releaseDrawing(); armView.ink.redo() }
     func clearInk() { releaseDrawing(); armView.ink.clear() }
-    func toggleToolbar() { Preferences.showToolbar.toggle(); revealUntil = Date().addingTimeInterval(3); tick() }
+    func toggleToolbar() { Preferences.showToolbar.toggle() }
     func resetTapWait() { inputTap.resetWait() }
     func toolbarButtonCenter(_ style: PointerStyle) -> CGPoint? { toolbar.center(of: style) }
 
     private func syncPreferences() {
+        PointerCatalog.reconcile()
+        if radial.visible { radial.close() }
+        previousCatalog = PointerCatalog.entries
+        if previousShowToolbar != Preferences.showToolbar {
+            previousShowToolbar = Preferences.showToolbar
+            revealUntil = Preferences.showToolbar ? Date().addingTimeInterval(3) : .distantPast
+        }
+        updateToolbarVisibility()
         armView.updateInkColor()
-        inputTap.interactKey = Preferences.interactKey.cgFlags
         if armView.style != PointerStyle.saved { armView.setStyle(PointerStyle.saved) }
         toolbar.select(armView.style)
         toolbar.setMode(mode)
@@ -171,7 +221,7 @@ final class OverlayController {
         tapSound.load(Preferences.tapSound)
         syncSound()
         if isActive {
-            if mode == .draw && !AXIsProcessTrusted() {
+            if mode == .draw && !accessibility() {
                 needsDrawingPermission = true
                 Preferences.pointerMode = .point
                 return
@@ -192,8 +242,14 @@ final class OverlayController {
         toolbar.setUndoEnabled(canUndo)
         onActiveChanged?()
     }
+    private var radialEligible: Bool {
+        isActive && accessibility() && !ownMenuOpen && !textEditor.isShowing && !isCapturing
+            && NSApp.keyWindow == nil && Date() >= menuOpeningUntil && menuRects.isEmpty
+    }
     private func syncInput() {
-        let enabled = isActive && mode == .draw && !ownMenuOpen && !textEditor.isShowing && !isCapturing && Date() >= menuOpeningUntil
+        inputTap.configureRadial(trigger: Preferences.radialTrigger, eligible: radialEligible)
+        let enabled = isActive && mode == .draw && !ownMenuOpen && !textEditor.isShowing && !isCapturing
+            && NSApp.keyWindow == nil && Date() >= menuOpeningUntil
         if desiredDrawInput && !enabled { releaseDrawing(); heldButtons.removeAll(); armView.held = false }
         desiredDrawInput = enabled
         inputTap.setActive(enabled)
@@ -208,7 +264,7 @@ final class OverlayController {
     @discardableResult
     func activate() -> Bool {
         guard !isActive else { return mode != .draw || inputTap.isInstalled }
-        if mode == .draw, !AXIsProcessTrusted() {
+        if mode == .draw, !accessibility() {
             Preferences.pointerMode = .point
             needsDrawingPermission = true
         }
@@ -226,9 +282,8 @@ final class OverlayController {
         revealUntil = Date().addingTimeInterval(3)
         lastMotion = Date()
         tick()
-        toolbar.show()
         toolbar.setNeedsPermission(needsDrawingPermission)
-        toolbar.setRevealed(Preferences.showToolbar || needsDrawingPermission)
+        updateToolbarVisibility()
         scheduleMotion()
         refreshShortcutContext()
         onActiveChanged?()
@@ -239,6 +294,8 @@ final class OverlayController {
     func deactivate() {
         guard isActive else { return }
         isActive = false
+        radial.close()
+        inputTap.configureRadial(trigger: Preferences.radialTrigger, eligible: false)
         captureTask?.cancel()
         captureTask = nil
         captureID = nil
@@ -258,9 +315,8 @@ final class OverlayController {
         toolbar.hide()
         normalCursor = false
         armView.pointerHidden = false
-        ownMenuOpen = false
+        // The menu bar presentation owns its lease, independently of activation.
         inputTap.passThroughRects = []
-        setEscape(false)
         CursorHider.show()
         refreshShortcutContext()
         onActiveChanged?()
@@ -327,6 +383,7 @@ final class OverlayController {
         if !isActive { _ = activate() }
         guard let screen = currentScreen() else { return }
         releaseDrawing()
+        radial.close()
         isCapturing = true
         let captureID = UUID()
         self.captureID = captureID
@@ -460,31 +517,35 @@ final class OverlayController {
         scheduleMotion()
     }
 
+    private func updateToolbarVisibility(mouse: CGPoint = NSEvent.mouseLocation) {
+        let near = toolbar.frame.insetBy(dx: -48, dy: -32).contains(mouse)
+        toolbar.setRevealed(isActive && Preferences.showToolbar && !radial.visible && !armView.ink.isDrawing
+                            && (near || Date() < revealUntil))
+    }
+
     private func updateZones(mouse: CGPoint, screen: NSScreen) {
         let f = toolbar.frame
-        let near = f.insetBy(dx: -48, dy: -32).contains(mouse)
-        let drawing = armView.ink.isDrawing
-        toolbar.setRevealed(needsDrawingPermission || (Preferences.showToolbar && !drawing && (near || Date() < revealUntil)))
+        updateToolbarVisibility(mouse: mouse)
         if Date().timeIntervalSince(lastMenuScan) > (Date() < menuOpeningUntil ? 0.03 : 0.1) {
             lastMenuScan = Date()
             menuRects = Self.openMenus()
         }
         let menuBar = Self.menuBarRect(screen)
         let overMenu = menuBar.contains(mouse) || menuRects.contains { $0.contains(Self.cgPoint(mouse)) } || ownMenuOpen
-        let ownFrames = NSApp.windows.filter { $0.isVisible && $0 !== window && !toolbar.windows.contains($0) }.map(\.frame)
+        let ownFrames = NSApp.windows.filter { $0.isVisible && $0 !== window && $0 !== radial.window && !toolbar.windows.contains($0) }.map(\.frame)
         let overOwnWindow = ownFrames.contains { $0.contains(mouse) }
-        let key = Preferences.interactKey.cgFlags
-        let heldInteract = mode == .draw && ((!key.isEmpty && CGEventSource.flagsState(.hidSystemState).contains(key)) || inputTap.interactPressing)
-        let normal = overMenu || overOwnWindow || textEditor.isShowing || (heldInteract && !Preferences.interactKeepsHand)
+        let pressing = (0..<32).contains { CGEventSource.buttonState(.hidSystemState, button: CGMouseButton(rawValue: UInt32($0))!) }
+        let normal = !radial.visible && (overMenu || overOwnWindow || textEditor.isShowing
+            || mode.hidesPointer(whilePressing: pressing, keepsHand: Preferences.interactKeepsHand))
         if normal != normalCursor && !isCapturing {
             normalCursor = normal
             armView.pointerHidden = normal
             if normal { CursorHider.show() } else { CursorHider.hide() }
         }
         let overDock = DockArea.contains(Self.cgPoint(mouse))
-        let catchesDock = mode == .draw && inputTap.isInstalled && !normal && !heldInteract
+        let catchesDock = mode == .draw && inputTap.isInstalled && !normal
         window.ignoresMouseEvents = !(overDock && catchesDock)
-        if !normal && !isCapturing { CursorHider.reassert(fighting: overDock, urgent: heldInteract || overMenu) }
+        if !normal && !isCapturing { CursorHider.reassert(fighting: overDock, urgent: overMenu) }
         var rects = (extraPassThrough?() ?? []).map(Self.cgRect)
         rects += ownFrames.map(Self.cgRect)
         rects.append(Self.cgRect(menuBar))
@@ -492,18 +553,17 @@ final class OverlayController {
         if toolbar.revealed { rects.append(Self.cgRect(f)) }
         inputTap.passThroughRects = rects
         syncInput()
-        setEscape(!ownMenuOpen && menuRects.isEmpty && Date() >= menuOpeningUntil && !textEditor.isShowing && NSApp.keyWindow == nil)
     }
     private func checkPermission() {
         guard Date().timeIntervalSince(lastPermissionCheck) > 1 else { return }
         lastPermissionCheck = Date()
-        if mode == .draw && !AXIsProcessTrusted() {
+        if mode == .draw && !accessibility() {
             needsDrawingPermission = true
             releaseDrawing()
             Preferences.pointerMode = .point
             toolbar.setNeedsPermission(true)
-            toolbar.showMessage("Drawing access changed. Point mode is still available.")
-        } else if needsDrawingPermission && AXIsProcessTrusted() {
+            toolbar.showMessage("Drawing access changed. Interact stays on so you can use apps normally.")
+        } else if needsDrawingPermission && accessibility() {
             needsDrawingPermission = false
             toolbar.setNeedsPermission(false)
         }
@@ -513,13 +573,6 @@ final class OverlayController {
         guard key != shortcutContext else { return }
         shortcutContext = key
         onShortcutContextChanged?()
-    }
-    private func setEscape(_ enabled: Bool) {
-        if enabled && isActive && escHotKey == nil {
-            escHotKey = HotKeyCenter.shared.register(keyCode: UInt32(kVK_Escape), modifiers: 0) { [weak self] in self?.exit() }
-        } else if !enabled, let id = escHotKey {
-            HotKeyCenter.shared.unregister(id); escHotKey = nil
-        }
     }
     private func currentScreen() -> NSScreen? {
         let mouse = NSEvent.mouseLocation

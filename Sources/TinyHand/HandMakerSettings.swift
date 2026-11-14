@@ -97,7 +97,7 @@ struct MakeHandPage: View {
                     PlainField(placeholder: "My hand", text: Binding(get: { model.handName }, set: { model.handName = String($0.prefix(16)) }))
                         .frame(width: 220)
                 }
-                Text("It should show the back of the hand, like the ones in TinyHand. If you see the palm, try another image.")
+                Text("It should show the back of the hand, like the ones in Look Here Please. If you see the palm, try another image.")
                     .font(.system(size: 11))
                     .foregroundColor(.secondary)
                     .fixedSize(horizontal: false, vertical: true)

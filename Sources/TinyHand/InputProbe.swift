@@ -24,9 +24,11 @@ enum InputProbe {
         }
         guard let command = arguments.first else { return 2 }
         switch command {
-        case "drag", "click", "control-click":
+        case "drag", "click", "control-click", "hold":
             let numbers = arguments.dropFirst().compactMap(Double.init)
-            guard numbers.count == (command == "drag" ? 4 : 2) else { return 2 }
+            let count = command == "drag" ? 4 : command == "hold" ? 3 : 2
+            guard numbers.count == count, numbers.allSatisfy(\.isFinite) else { return 2 }
+            if command == "hold", !(0.1...5).contains(numbers[2]) { return 2 }
             let start = CGPoint(x: numbers[0], y: numbers[1])
             guard fixtureBounds.contains(where: { $0.contains(start) }) else { return 2 }
             if command == "drag", !fixtureBounds.contains(where: { $0.contains(CGPoint(x: numbers[2], y: numbers[3])) }) { return 2 }
@@ -40,7 +42,10 @@ enum InputProbe {
                     mouse(.leftMouseDragged, CGPoint(x: start.x + (end.x - start.x) * t, y: start.y + (end.y - start.y) * t))
                 }
                 mouse(.leftMouseUp, end)
-            } else { mouse(.leftMouseUp, start, flags: flags) }
+            } else {
+                if command == "hold" { usleep(useconds_t(numbers[2] * 1_000_000)) }
+                mouse(.leftMouseUp, start, flags: flags)
+            }
         case "key":
             guard arguments.count == 2,
                   NSWorkspace.shared.frontmostApplication?.processIdentifier == fixture.processIdentifier else {
@@ -48,11 +53,10 @@ enum InputProbe {
                 return 2
             }
             let name = arguments[1]
-            let shortcut: Shortcut
-            if name == "undo" { shortcut = Shortcut(keyCode: UInt32(kVK_ANSI_Z), modifiers: UInt32(cmdKey), display: "⌘Z") }
-            else if name == "redo" { shortcut = Shortcut(keyCode: UInt32(kVK_ANSI_Z), modifiers: UInt32(cmdKey | shiftKey), display: "⇧⌘Z") }
-            else if let action = PresentationAction(rawValue: name) { shortcut = Preferences.shortcut(for: action) }
-            else { return 2 }
+            guard let action = PresentationAction(rawValue: name), let shortcut = Preferences.shortcut(for: action) else {
+                print("Shortcut is unassigned; no key was posted")
+                return 2
+            }
             let modifiers: [(Int, UInt32, CGEventFlags)] = [(kVK_Control, UInt32(controlKey), .maskControl), (kVK_Option, UInt32(optionKey), .maskAlternate), (kVK_Shift, UInt32(shiftKey), .maskShift), (kVK_Command, UInt32(cmdKey), .maskCommand)]
             var held: CGEventFlags = []
             for (code, mask, flag) in modifiers where shortcut.modifiers & mask != 0 {

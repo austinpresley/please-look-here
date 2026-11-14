@@ -6,11 +6,13 @@ import SwiftUI
 final class SettingsModel: ObservableObject {
     @Published var section: SettingsSection = .general
     @Published var pinMessage: String?
+    @Published var pointerMessage: String?
+    @Published var pointerErrorID: String?
     @Published private var revision = 0
 
-    var applyToggleShortcut: ((Shortcut) -> Bool)?
-    var applyClearShortcut: ((Shortcut) -> Bool)?
-    var applyPresentationShortcut: ((PresentationAction, Shortcut) -> Bool)?
+    var applyToggleShortcut: ((Shortcut?) -> Bool)?
+    var applyClearShortcut: ((Shortcut?) -> Bool)?
+    var applyPresentationShortcut: ((PresentationAction, Shortcut?) -> Bool)?
     var applyMode: ((PointerMode) -> Bool)?
     @Published var generalMessage: String?
     var onContentHeightChanged: ((CGFloat) -> Void)?
@@ -96,7 +98,7 @@ final class SettingsModel: ObservableObject {
             draftError = problem.message
         } catch {
             draft = nil
-            draftError = "TinyHand couldn't read that file."
+            draftError = "Look Here Please couldn't read that file."
         }
     }
 
@@ -115,7 +117,7 @@ final class SettingsModel: ObservableObject {
                 Preferences.pinnedStyles = pinned
                 handMessage = "\(style.title) is in your toolbar."
             } else {
-                handMessage = "\(style.title) is ready. Click it to add it to the toolbar."
+                handMessage = "\(style.title) is ready. Remove a toolbar pin, then press + to add it."
             }
             PointerStyle.saved = style
             NotificationCenter.default.post(name: Preferences.changed, object: nil)
@@ -123,17 +125,15 @@ final class SettingsModel: ObservableObject {
             handIdea = ""
             makingHand = false
         } catch {
-            draftError = "TinyHand couldn't save that hand."
+            draftError = "Look Here Please couldn't save that hand."
         }
     }
 
     func removeHand(_ style: PointerStyle) {
         let pinned = Preferences.pinnedStyles.filter { $0 != style }
         Preferences.pinnedStyles = pinned.isEmpty ? PointerStyle.defaultPinned : pinned
-        if PointerStyle.saved == style {
-            PointerStyle.saved = .lavender
-        }
         CustomHands.remove(style)
+        PointerCatalog.reconcile()
         handMessage = nil
         NotificationCenter.default.post(name: Preferences.changed, object: nil)
         revision += 1
@@ -141,6 +141,30 @@ final class SettingsModel: ObservableObject {
 
     func refresh() {
         revision += 1
+    }
+
+    func setPointerEnabled(_ enabled: Bool, for style: PointerStyle) {
+        do {
+            try PointerCatalog.setEnabled(enabled, for: style)
+            pointerMessage = nil
+            pointerErrorID = nil
+        } catch let problem as PointerCatalog.Problem {
+            pointerMessage = problem.message
+            pointerErrorID = style.rawValue
+        } catch { pointerMessage = "Unable to change this pointer." }
+        revision += 1
+    }
+
+    func selectPointer(_ style: PointerStyle) {
+        do {
+            try PointerCatalog.validateSelection(style)
+            Preferences.performBatch { PointerStyle.saved = style }
+            pointerMessage = nil
+            pointerErrorID = nil
+        } catch let problem as PointerCatalog.Problem {
+            pointerMessage = problem.message
+            pointerErrorID = style.rawValue
+        } catch { pointerMessage = "Unable to select this pointer." }
     }
 
     func chooseCaptureFolder() {
@@ -217,17 +241,17 @@ final class SettingsModel: ObservableObject {
     func resetAll() {
         let alert = NSAlert()
         alert.messageText = "Reset all settings?"
-        alert.informativeText = "Shortcuts, toolbar pointers, size, shadow, drawing and sound go back to how they were at first. Open at login and Accessibility stay as they are."
+        alert.informativeText = "All pointers are enabled and shortcut assignments are cleared. Toolbar pointers, size, shadow, drawing and sound return to their initial settings. Custom hands, Open at login and Accessibility stay as they are."
         alert.addButton(withTitle: "Reset")
         alert.addButton(withTitle: "Cancel")
         guard alert.runModal() == .alertFirstButtonReturn else {
             return
         }
         Preferences.resetAll()
-        _ = applyToggleShortcut?(.toggleDefault)
-        _ = applyClearShortcut?(.clearDefault)
         shortcutError = nil
         pinMessage = nil
+        pointerMessage = nil
+        pointerErrorID = nil
         revision += 1
     }
 

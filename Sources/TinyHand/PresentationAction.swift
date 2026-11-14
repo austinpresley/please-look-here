@@ -2,34 +2,28 @@ import Carbon.HIToolbox
 
 enum PresentationAction: String, CaseIterable {
     case mode, capture, toolbar, nextPointer, previousPointer, sound, matchInk
-    case pen, rectangle, arrow, text, number
+    case pen, rectangle, arrow, text, number, undo, redo, settings, exitPointer
 
     var title: String {
         switch self {
-        case .mode: return "Switch Point / Draw"
+        case .mode: return "Toggle Interact"
         case .capture: return "Take Screenshot"
         case .toolbar: return "Show / Hide Toolbar"
         case .nextPointer: return "Next Pointer"
         case .previousPointer: return "Previous Pointer"
         case .sound: return "Toggle Tap Sound"
         case .matchInk: return "Match Ink to Pointer"
+        case .undo: return "Undo Annotation"
+        case .redo: return "Redo Annotation"
+        case .settings: return "Open Settings"
+        case .exitPointer: return "Turn Pointer Off"
         default: return "\(rawValue.capitalized) Tool"
         }
     }
 
     var tool: DrawingTool? { DrawingTool(rawValue: rawValue) }
-    var drawOnly: Bool { tool != nil }
-    var defaultShortcut: Shortcut {
-        let modified = UInt32(controlKey | optionKey)
-        let keys: [PresentationAction: (Int, String)] = [
-            .mode: (kVK_ANSI_D, "D"), .capture: (kVK_ANSI_S, "S"), .toolbar: (kVK_ANSI_T, "T"),
-            .nextPointer: (kVK_RightArrow, "→"), .previousPointer: (kVK_LeftArrow, "←"),
-            .sound: (kVK_ANSI_M, "M"), .matchInk: (kVK_ANSI_A, "A"), .pen: (kVK_ANSI_F, "F"),
-            .rectangle: (kVK_ANSI_R, "R"), .arrow: (kVK_ANSI_A, "A"), .text: (kVK_ANSI_T, "T"), .number: (kVK_ANSI_N, "N")
-        ]
-        let key = keys[self]!
-        return Shortcut(keyCode: UInt32(key.0), modifiers: drawOnly ? 0 : modified, display: (drawOnly ? "" : "⌃⌥") + key.1)
-    }
+    var drawOnly: Bool { tool != nil || self == .undo || self == .redo }
+
 }
 
 enum ShortcutRules {

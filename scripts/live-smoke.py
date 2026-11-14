@@ -8,9 +8,27 @@ import subprocess
 import time
 
 root = Path(__file__).resolve().parents[1]
-binary = root / 'dist/TinyHand Integration.app/Contents/MacOS/TinyHand'
-env = dict(os.environ, TINYHAND_TEST_MODE='1', TINYHAND_DEFAULTS_SUITE='com.austinpresley.tinyhand.integration.testing')
+binary = Path.home() / 'Applications/Look Here Please.app/Contents/MacOS/TinyHand'
+env = dict(os.environ, TINYHAND_TEST_MODE='1', TINYHAND_DEFAULTS_SUITE=os.environ.get('TINYHAND_DEFAULTS_SUITE', 'com.austinpresley.tinyhand.integration.testing'))
+output = Path(os.environ.get('TINYHAND_VERIFICATION_DIR', root / 'dist/verification'))
+output.mkdir(parents=True, exist_ok=True)
 results = []
+
+# This suite exercises explicitly assigned shortcuts, never factory defaults.
+assert 'test-shortcuts' in json.loads(subprocess.check_output(
+    [str(binary), '--ctl', '{"version":1,"operation":"status"}'], text=True))['state']['capabilities']
+verification = json.loads(subprocess.check_output([str(binary), '--ctl', json.dumps({
+    'version': 1, 'operation': 'test-shortcuts', 'request': {}})], text=True))['shortcuts']
+assert verification.get('defaultsSuite') == env['TINYHAND_DEFAULTS_SUITE'], 'Use the same isolated suite for app and probes'
+for command, code, modifiers, display in [
+    ('pen', 3, 0, 'F'), ('rectangle', 15, 0, 'R'), ('arrow', 0, 0, 'A'),
+    ('number', 45, 0, 'N'), ('undo', 6, 6144, '⌃⌥Z'), ('redo', 6, 6656, '⌃⌥⇧Z'),
+    ('toolbar', 17, 6144, '⌃⌥T'), ('mode', 2, 6144, '⌃⌥D'), ('capture', 1, 6144, '⌃⌥S'),
+]:
+    response = json.loads(subprocess.check_output([str(binary), '--ctl', json.dumps({
+        'version': 1, 'operation': 'test-shortcuts', 'request': {'command': command,
+        'shortcut': {'keyCode': code, 'modifiers': modifiers, 'display': display}}})], text=True))
+    assert response['shortcuts']['accepted'], response
 
 def ctl(operation, **fields):
     response = subprocess.run([str(binary), '--ctl', json.dumps({'version': 1, 'operation': operation, **fields})], capture_output=True, text=True, timeout=6)
@@ -27,7 +45,7 @@ def passed(name):
     results.append(name)
 
 ctl('configure', settings={'fade': 0, 'handSound': False, 'captureCopies': False, 'captureSaves': True,
-                          'captureFolder': str(root / 'dist/verification/captures'), 'showToolbar': True})
+                          'captureFolder': str(output / 'captures'), 'showToolbar': True})
 ctl('mode', mode='point')
 ctl('on')
 probe('click', 116, 150)
@@ -80,7 +98,7 @@ probe('key', 'mode')
 assert ctl('status')['mode'] == 'point'
 probe('key', 'mode')
 assert ctl('status')['mode'] == 'draw'
-passed('native Point / Draw shortcut')
+passed('native Interact shortcut')
 state = ctl('status')
 x, y, width, height = state['toolbarFrame']
 screen_height = max(w['height'] for w in state['windows'])
@@ -116,6 +134,6 @@ state = ctl('status')
 assert state['mode'] == 'point' and not state['input']['active'] and not state['input']['enabled'], state['input']
 assert state['settings']['toolbarPosition'] == state['toolbarFrame'][:2], state
 passed('mode change mid-drag drains the captured release')
-path = root / 'dist/verification/live-smoke.json'
+path = output / 'live-smoke.json'
 path.write_text(json.dumps({'passed': results, 'capture': state['lastCapture'], 'finalState': state}, indent=2))
 print('Saved', path, flush=True)
