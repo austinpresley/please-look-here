@@ -62,5 +62,13 @@ case "press":
 case "fixture-front":
     guard let fixture = NSRunningApplication.runningApplications(withBundleIdentifier: "com.austinpresley.tinyhand.fixture").first else { exit(2) }
     emit(["ok": fixture.activate(options: [])])
+case "fixture-fullscreen":
+    guard args.count == 2, ["on", "off"].contains(args[1]),
+          let fixture = NSRunningApplication.runningApplications(withBundleIdentifier: "com.austinpresley.tinyhand.fixture").first else { exit(2) }
+    let target = AXUIElementCreateApplication(fixture.processIdentifier)
+    let windows = read(target, kAXWindowsAttribute) as? [AXUIElement] ?? []
+    guard let window = windows.first(where: { string($0, kAXTitleAttribute) == "TinyHand test canvas" }) else { exit(2) }
+    let result = AXUIElementSetAttributeValue(window, "AXFullScreen" as CFString, args[1] == "on" ? kCFBooleanTrue : kCFBooleanFalse)
+    emit(["ok": result == .success, "result": result.rawValue]); exit(result == .success ? 0 : 1)
 default: exit(2)
 }

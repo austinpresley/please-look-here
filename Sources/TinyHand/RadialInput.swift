@@ -37,10 +37,11 @@ final class RadialInput {
         }
     }
     func end() { lock.withLock { open = false } }
-    func resetForSystem() {
+    func suspendForSystem(releasingButton: Int64?, key: Int64?) {
         lock.withLock {
             cancel(); eligible = false; held = false
-            buttons.removeAll(); keys.removeAll()
+            if let releasingButton { buttons.remove(releasingButton) }
+            if let key { keys.remove(key) }
         }
     }
     private func send(_ event: Event) {

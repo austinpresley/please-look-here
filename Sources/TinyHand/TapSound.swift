@@ -132,7 +132,7 @@ final class TapSound: @unchecked Sendable {
         guard let ticket = gate.ticket() else { return }
         queue.async { @Sendable [weak self] in
             guard let self, self.gate.accepts(ticket) else { return }
-            self.playNow()
+            self.playNow(ticket: ticket)
         }
     }
     func silence() {
@@ -140,8 +140,10 @@ final class TapSound: @unchecked Sendable {
         queue.async { @Sendable [weak self] in self?.teardown() }
     }
 
-    private func playNow() {
+    private func playNow(ticket: Int) {
         guard let buffer = buffers[choice], start(), let driver else { return }
+        // Device startup may block. Mute/off can invalidate this press meanwhile.
+        guard gate.accepts(ticket) else { teardown(); return }
         let receipt = Receipt(), token = generation
         driver.play(buffer) { @Sendable in receipt.finish() }
         let duration = Double(buffer.frameLength) / buffer.format.sampleRate

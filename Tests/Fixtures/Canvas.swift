@@ -42,6 +42,7 @@ final class FixtureDelegate: NSObject, NSApplicationDelegate {
     private func writeProbeState() {
         guard let path = ProcessInfo.processInfo.environment["TINYHAND_FIXTURE_STATE"], path.hasPrefix("/tmp/s013-") else { return }
         let state: [String: Any] = ["events": eventCounts, "lastFlags": lastFlags, "frontmost": NSApp.isActive, "window": window.windowNumber,
+                                    "fullScreen": window.styleMask.contains(.fullScreen),
                                     "frame": [window.frame.minX, window.frame.minY, window.frame.width, window.frame.height]]
         if let data = try? JSONSerialization.data(withJSONObject: state, options: [.sortedKeys]) { try? data.write(to: URL(fileURLWithPath: path), options: .atomic) }
     }
@@ -52,7 +53,9 @@ final class FixtureDelegate: NSObject, NSApplicationDelegate {
         let submenu = NSMenu()
         submenu.addItem(withTitle: "Quit Test Canvas", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         appItem.submenu = submenu; appMenu.addItem(appItem); NSApp.mainMenu = appMenu
-        window = FixtureWindow(contentRect: frame, styleMask: .borderless, backing: .buffered, defer: false)
+        let fullScreenFixture = ProcessInfo.processInfo.environment["TINYHAND_FIXTURE_FULLSCREEN"] == "1"
+            && ProcessInfo.processInfo.environment["TINYHAND_FIXTURE_STATE"]?.hasPrefix("/tmp/s013-fork-upgrades-space-") == true
+        window = FixtureWindow(contentRect: frame, styleMask: fullScreenFixture ? [.titled, .resizable, .closable] : .borderless, backing: .buffered, defer: false)
         window.title = "TinyHand test canvas"
         window.isOpaque = true; window.backgroundColor = .white
         // Menu bar tests keep native popover/menu window levels unchanged. This
@@ -61,6 +64,7 @@ final class FixtureDelegate: NSObject, NSApplicationDelegate {
             && ProcessInfo.processInfo.environment["TINYHAND_FIXTURE_STATE"]?.hasPrefix("/tmp/s013-s023-") == true
         window.level = menuBarFixture ? .floating : NSWindow.Level(rawValue: NSWindow.Level.screenSaver.rawValue + 1)
         window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+        if fullScreenFixture { window.level = .normal; window.collectionBehavior = [.fullScreenPrimary] }
         window.isReleasedWhenClosed = false
         let canvas = FixtureCanvas(frame: CGRect(origin: .zero, size: frame.size))
         window.contentView = canvas
@@ -91,6 +95,11 @@ final class FixtureDelegate: NSObject, NSApplicationDelegate {
         NSApp.activate(ignoringOtherApps: true)
         window.makeKeyAndOrderFront(nil)
         window.makeFirstResponder(nil)
+        if fullScreenFixture {
+            for name in [NSWindow.didEnterFullScreenNotification, NSWindow.didExitFullScreenNotification] {
+                NotificationCenter.default.addObserver(forName: name, object: window, queue: .main) { [weak self] _ in self?.writeProbeState() }
+            }
+        }
         if ProcessInfo.processInfo.environment["TINYHAND_FIXTURE_STATE"] != nil {
             monitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .leftMouseUp, .rightMouseDown, .rightMouseUp, .otherMouseDown, .otherMouseUp, .leftMouseDragged, .rightMouseDragged, .otherMouseDragged, .flagsChanged, .keyDown, .keyUp]) { [weak self] event in
                 self?.eventCounts[String(event.type.rawValue), default: 0] += 1

@@ -161,9 +161,13 @@ final class InputTap {
                 // a stale popover or quick controls consume an unlock press.
                 active = false
                 generation &+= 1
-                presses.removeAll()
-                controls.resetForSystem()
-                radial.resetForSystem()
+                let key = type == .keyDown ? event.getIntegerValueField(.keyboardEventKeycode) : nil
+                let button: Int64? = type == .keyDown ? nil : type == .leftMouseDown ? 0 : type == .rightMouseDown ? 1 : event.getIntegerValueField(.mouseEventButtonNumber)
+                // This new system press owns its own release. Unrelated pairs
+                // whose downs we captured still drain without leaking an up.
+                if let button { presses.removeValue(forKey: button) }
+                controls.suspendForSystem(releasingButton: button, key: key)
+                radial.suspendForSystem(releasingButton: button, key: key)
                 updateEnabled()
                 DispatchQueue.main.async { [weak self] in self?.onScreenLocked?() }
                 return forwarded

@@ -329,6 +329,7 @@ final class ControlBridge {
     private func state() -> [String: Any] {
         ["running": true, "active": overlay.isActive, "style": overlay.style.rawValue,
          "mode": overlay.mode.rawValue, "interact": overlay.mode.isInteractive, "pointerVisible": overlay.pointerVisible,
+         "onActiveSpace": overlay.onActiveSpace,
          "tool": Preferences.drawingTool.rawValue, "canUndo": overlay.canUndo, "canRedo": overlay.canRedo,
          "input": overlay.inputDiagnostics,
          "toolbarVisible": overlay.toolbarVisible, "toolbarFrame": [overlay.toolbarFrame.minX, overlay.toolbarFrame.minY, overlay.toolbarFrame.width, overlay.toolbarFrame.height],

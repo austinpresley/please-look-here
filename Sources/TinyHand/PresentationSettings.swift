@@ -33,7 +33,7 @@ struct GeneralPage: View {
                         if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") { NSWorkspace.shared.open(url) }
                     }
                 }
-                Row("Screenshots", detail: ScreenCapture.hasPermission ? "Screen Recording is allowed." : "Requested when you take your first screenshot.") {
+                Row("Screenshots and magnification", detail: ScreenCapture.hasPermission ? "Screen Recording is allowed." : "Requested when you first take a screenshot or turn on magnification.") {
                     PillButton(title: "Review…") { ScreenCapture.openPermissionSettings() }
                 }
             }

@@ -10,6 +10,32 @@ private func event(_ type: CGEventType, button: Int64 = 0, point: CGPoint = CGPo
 }
 
 @Suite(.serialized) @MainActor struct InputRoutingTests {
+    @Test func lockFallbackForwardsNewUnlockInputAndDrainsUnrelatedDrawingRelease() throws {
+        var locked = false
+        let tap = InputTap(sessionLocked: { locked })
+        tap.setActive(true)
+        #expect(tap.handle(type: .leftMouseDown, event: try event(.leftMouseDown)) == nil)
+        locked = true
+        let unlock = try #require(CGEvent(keyboardEventSource: nil, virtualKey: 49, keyDown: true))
+        #expect(tap.handle(type: .keyDown, event: unlock) != nil)
+        #expect(tap.handle(type: .leftMouseUp, event: try event(.leftMouseUp)) == nil)
+        let keyUp = try #require(CGEvent(keyboardEventSource: nil, virtualKey: 49, keyDown: false))
+        #expect(tap.handle(type: .keyUp, event: keyUp) != nil)
+    }
+
+    @Test func lockFallbackRetainsUnrelatedControlsKeyOwner() throws {
+        var locked = false
+        let tap = InputTap(sessionLocked: { locked })
+        tap.configureControls(open: true, nativeMenu: false, regions: [])
+        let escape = try #require(CGEvent(keyboardEventSource: nil, virtualKey: 53, keyDown: true))
+        #expect(tap.handle(type: .keyDown, event: escape) == nil)
+        locked = true
+        #expect(tap.handle(type: .rightMouseDown, event: try event(.rightMouseDown, button: 1)) != nil)
+        let escapeUp = try #require(CGEvent(keyboardEventSource: nil, virtualKey: 53, keyDown: false))
+        #expect(tap.handle(type: .keyUp, event: escapeUp) == nil)
+        #expect(tap.handle(type: .rightMouseUp, event: try event(.rightMouseUp, button: 1)) != nil)
+    }
+
     @Test func drawRouteSurvivesDeactivationUntilRelease() throws {
         let tap = InputTap()
         tap.setActive(true)

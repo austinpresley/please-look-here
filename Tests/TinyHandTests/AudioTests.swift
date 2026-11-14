@@ -9,6 +9,7 @@ private final class AudioProbe {
     private var callbacks: [() -> Void] = []
     var delay: useconds_t = 0
     var render = true
+    var blockStart: (() -> Void)?
     func note(_ value: String) { lock.withLock { events.append("\(Thread.isMainThread ? "main" : "background"):\(value)") } }
     func remember(_ callback: @escaping () -> Void) { lock.withLock { callbacks.append(callback) } }
     func changed() { let callback = lock.withLock { callbacks.last }; callback?() }
@@ -18,7 +19,7 @@ private final class ProbeAudioDriver: TapAudioDriver {
     let probe: AudioProbe
     var isRunning = false
     init(_ probe: AudioProbe, changed: @escaping () -> Void) { self.probe = probe; probe.remember(changed) }
-    func start() throws { probe.note("start"); if probe.delay > 0 { usleep(probe.delay) }; isRunning = true }
+    func start() throws { probe.note("start"); probe.blockStart?(); if probe.delay > 0 { usleep(probe.delay) }; isRunning = true }
     func play(_ buffer: AVAudioPCMBuffer, rendered: @escaping () -> Void) { probe.note("play"); if probe.render { rendered() } }
     func stop() { probe.note("stop"); isRunning = false }
 }
@@ -84,6 +85,19 @@ private final class ProbeAudioDriver: TapAudioDriver {
         try await Task.sleep(nanoseconds: 30_000_000)
         sound.play()
         sound.enabled = false
+        await sound.drain()
+        #expect(!probe.recorded.contains("background:play"))
+    }
+    @Test func mutingDuringTheFirstPlaybackStartupPreventsThatPlayback() async {
+        let probe = AudioProbe(), release = DispatchSemaphore(value: 0)
+        let sound = TapSound(driverFactory: { _, change in ProbeAudioDriver(probe, changed: change) })
+        defer { release.signal() }
+        await withCheckedContinuation { (started: CheckedContinuation<Void, Never>) in
+            probe.blockStart = { started.resume(); release.wait() }
+            sound.play()
+        }
+        sound.enabled = false
+        release.signal()
         await sound.drain()
         #expect(!probe.recorded.contains("background:play"))
     }

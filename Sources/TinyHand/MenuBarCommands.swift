@@ -96,7 +96,7 @@ final class MenuBarCommands: NSObject {
             let item = items[slot.action.rawValue]
             item?.title = "Show \(slot.title) · \(HandGestureCatalog.hasCustom(slot, style: overlay.style) ? "Custom" : slot.stockTitle)"
             item?.state = overlay.activeGesture == slot ? .on : .off
-            item?.isEnabled = overlay.style.assetName != nil && !overlay.isCapturing
+            item?.isEnabled = overlay.style.assetName != nil && !overlay.isCapturing && HandGestureCatalog.image(slot, style: overlay.style) != nil
             item?.toolTip = "Show this pose for two seconds. Assign a hold shortcut in Settings."
         }
         for item in colors.items { item.state = item.representedObject as? String == Preferences.inkChoice.rawValue ? .on : .off }

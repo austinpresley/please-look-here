@@ -207,7 +207,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             for action in PresentationAction.allCases where !action.drawOnly || overlay.canUseDrawingShortcuts {
                 if let shortcut = Preferences.shortcut(for: action) {
                     if let slot = action.gesture {
-                        guard overlay.style.assetName != nil else { continue }
+                        guard overlay.style.assetName != nil, HandGestureCatalog.image(slot, style: overlay.style) != nil else { continue }
                         bindings.append(("\(action.rawValue):\(overlay.style.rawValue)", shortcut,
                             { [weak self] in _ = self?.overlay.beginGesture(slot, owner: action.rawValue, shortcut: shortcut) },
                             { [weak self] in self?.overlay.endGesture(action.rawValue) }))

@@ -70,4 +70,21 @@ import Testing
         #expect(!MotionPacing.shouldSleep(stillFor: 30, settling: false, held: true, drawing: false))
         #expect(!MotionPacing.shouldSleep(stillFor: 30, settling: false, held: false, drawing: true))
     }
+
+    @Test func nativePressReleasedOverOurOwnUIStopsBlockingGestures() throws {
+        _ = NSApplication.shared
+        Preferences.pointerMode = .point; Preferences.handSound = false
+        let overlay = OverlayController()
+        defer { overlay.deactivate() }
+        #expect(overlay.activate())
+        #expect(overlay.canUseHandGestures)
+        let down = try #require(NSEvent.mouseEvent(with: .leftMouseDown, location: .zero, modifierFlags: [],
+            timestamp: 0, windowNumber: 0, context: nil, eventNumber: 1, clickCount: 1, pressure: 1))
+        overlay.observeForVerification(down, own: false)
+        #expect(!overlay.canUseHandGestures)
+        let up = try #require(NSEvent.mouseEvent(with: .leftMouseUp, location: .zero, modifierFlags: [],
+            timestamp: 0.1, windowNumber: 0, context: nil, eventNumber: 2, clickCount: 1, pressure: 0))
+        overlay.observeForVerification(up, own: true)
+        #expect(overlay.canUseHandGestures)
+    }
 }

@@ -51,6 +51,7 @@ def fixture_events():
 def snapshot(name):
     path = out / (name + '.png')
     path.unlink(missing_ok=True)
+    time.sleep(0.1)  # Allow the committed layer changes to reach Window Server.
     ctl('test-presentation', request={'event': 'snapshot', 'path': str(path)})
     deadline = time.monotonic() + 6
     while time.monotonic() < deadline:
@@ -168,6 +169,34 @@ try:
     overlap = key_stages('gesture-overlap', {'down': 'first', 'second': 'second', 'second-after-first-release': 'second', 'released': ''})
     modifier = key_stages('key-release-modifiers', {'down': 'first', 'modifiers-up': '', 'released': ''})
     passed('real gesture hotkeys handle overlap and modifier/key release', overlap + modifier)
+
+    broken = Path(settings['TH_HANDS_DIR']) / 'Gestures/glove-first.png'
+    broken.parent.mkdir(parents=True, exist_ok=True)
+    assert not broken.exists(), 'Use a clean isolated gesture folder'
+    broken.write_bytes(b'broken imported artwork')
+    try:
+        deadline = time.monotonic() + 4
+        while time.monotonic() < deadline:
+            observed = request('test-shortcuts', request={})['shortcuts']
+            if observed['registeredCount'] == 1:
+                break
+            time.sleep(0.1)
+        else:
+            raise AssertionError(observed)
+        assert observed['assignments']['gesture1']['keyCode'] == 18
+        probe('key', 'gesture1')
+        assert ctl('status')['gesture'] == ''
+    finally:
+        broken.unlink(missing_ok=True)
+    deadline = time.monotonic() + 4
+    while time.monotonic() < deadline:
+        observed = request('test-shortcuts', request={})['shortcuts']
+        if observed['registeredCount'] == 2:
+            break
+        time.sleep(0.1)
+    else:
+        raise AssertionError(observed)
+    passed('corrupt pose artwork releases its exclusive shortcut and restoration re-registers it')
 
     ctl('configure', settings={'magnifierZoom': 3, 'magnifierDiameter': 240})
     probe('move', x, y)

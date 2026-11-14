@@ -86,6 +86,7 @@ final class OverlayController {
     var toolbarVisible: Bool { toolbar.revealed }
     var toolbarFrame: CGRect { toolbar.frame }
     var pointerVisible: Bool { isActive && !armView.pointerHidden }
+    var onActiveSpace: Bool { window.isOnActiveSpace }
     var shadowDiagnostics: [String: Any] { armView.shadowDiagnostics }
     var contactSoundPending: Bool { contactFeedback.pending }
     var canUsePresentationShortcuts: Bool {
@@ -171,7 +172,10 @@ final class OverlayController {
             if self.previousCatalog != PointerCatalog.entries { self.syncPreferences() }
             let gestureSignature = HandGestureCatalog.signature(for: self.style)
             if self.previousGestureSignature != gestureSignature {
-                self.previousGestureSignature = gestureSignature; self.cancelHandGestures()
+                self.previousGestureSignature = gestureSignature
+                self.cancelHandGestures(notify: false)
+                self.onShortcutContextChanged?()
+                self.onActiveChanged?()
             }
             // A sleeping pointer still notices permissions, app windows and menus
             // at low frequency. This service does not restart motion rendering.
@@ -253,7 +257,9 @@ final class OverlayController {
     func clearInk() { releaseDrawing(); armView.ink.clear() }
     func toggleToolbar() { Preferences.showToolbar.toggle() }
     @discardableResult func beginGesture(_ slot: HandGestureSlot, owner: String, shortcut: Shortcut? = nil) -> Bool {
-        guard canUseHandGestures, HandGestureCatalog.image(slot, style: style) != nil else { return false }
+        guard canUseHandGestures,
+              !(0..<32).contains(where: { CGEventSource.buttonState(.hidSystemState, button: CGMouseButton(rawValue: UInt32($0))!) }),
+              HandGestureCatalog.image(slot, style: style) != nil else { return false }
         gestures.begin(slot, owner: owner, shortcut: shortcut)
         applyGesture(); return true
     }
@@ -609,6 +615,9 @@ final class OverlayController {
         if let local = NSEvent.addLocalMonitorForEvents(matching: mask, handler: { [weak self] event in self?.observed(event, own: true); return event }) { monitors.append(local) }
     }
     private func observed(_ event: NSEvent, own: Bool) {
+        // A native drag can start in another app and end over our controls.
+        // Local release still finishes its visual press and idle/gesture lease.
+        if mode == .point && [.leftMouseUp, .rightMouseUp, .otherMouseUp].contains(event.type) { armView.held = false }
         if event.type == .flagsChanged { gestures.retainModifiers(event.modifierFlags); applyGesture() }
         if event.type == .keyUp { gestures.releaseKey(UInt32(event.keyCode)); applyGesture() }
         if event.type == .keyDown && event.keyCode == 53 { cancelHandGestures() }
@@ -627,6 +636,9 @@ final class OverlayController {
         }
         wake()
     }
+    #if DEBUG
+    func observeForVerification(_ event: NSEvent, own: Bool) { observed(event, own: own) }
+    #endif
     private func wake() {
         guard isActive else { return }
         lastMotion = Date()

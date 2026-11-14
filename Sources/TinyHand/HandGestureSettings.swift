@@ -49,7 +49,10 @@ struct HandGestureShortcutSettings: View {
             Text("Hold an assigned shortcut to show a pose. Release to restore the hand. The menu bar can show either pose for two seconds. Artwork is set per hand in Pointers.")
                 .font(.callout).foregroundStyle(.secondary).padding(Space.lg)
             ForEach(HandGestureSlot.allCases, id: \.self) { slot in
-                Row("Hold \(slot.title)", detail: "Starts unassigned. Works while an available hand is on.") {
+                let available = PointerStyle.saved.assetName != nil && HandGestureCatalog.image(slot, style: PointerStyle.saved) != nil
+                Row("Hold \(slot.title)", detail: available
+                    ? "Starts unassigned. Works while an available hand is on."
+                    : "Choose a hand with available artwork. Import or restore the pose in Pointers.") {
                     ShortcutField(shortcut: Preferences.shortcut(for: slot.action), model: model, label: slot.action.title) {
                         model.applyPresentationShortcut?(slot.action, $0) ?? false
                     }

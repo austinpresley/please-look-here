@@ -72,4 +72,21 @@ import Testing
         #expect(prompt.contains("alpha channel") && prompt.contains("Do not draw a checkerboard"))
         #expect(!HandMaker.prompt(for: "  ").contains("[describe"))
     }
+    @Test func corruptExternalArtworkStaysUnavailableWithoutDeletingTheAssignment() throws {
+        let destination = HandGestureCatalog.url(for: .second, style: .glove)
+        let before = try? Data(contentsOf: destination)
+        try FileManager.default.createDirectory(at: destination.deletingLastPathComponent(), withIntermediateDirectories: true)
+        defer {
+            if let before { try? before.write(to: destination, options: .atomic) }
+            else { try? HandGestureCatalog.restore(.second, style: .glove) }
+            Preferences.setShortcut(nil, for: .gesture2)
+        }
+        let key = Shortcut(keyCode: 19, modifiers: UInt32(controlKey | optionKey), display: "Control-Option-2")
+        Preferences.setShortcut(key, for: .gesture2)
+        try Data("broken artwork".utf8).write(to: destination, options: .atomic)
+        #expect(HandGestureCatalog.image(.second, style: .glove) == nil)
+        #expect(Preferences.shortcut(for: .gesture2) == key)
+        try HandGestureCatalog.restore(.second, style: .glove)
+        #expect(HandGestureCatalog.image(.second, style: .glove) != nil)
+    }
 }
