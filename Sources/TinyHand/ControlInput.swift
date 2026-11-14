@@ -11,6 +11,7 @@ final class ControlInput {
     private var statusButtons: [Int64: Bool] = [:]
     var needsTap: Bool { open || !buttons.isEmpty || !keys.isEmpty }
     var diagnostics: [String: Any] { ["open": open, "nativeMenu": nativeMenu, "buttons": buttons.sorted(), "keys": keys.sorted()] }
+    func ownsKey(_ code: Int64) -> Bool { keys.contains(code) }
 
     func configure(open: Bool, nativeMenu: Bool, regions: [CGRect]) {
         self.open = open; self.nativeMenu = nativeMenu; self.regions = regions

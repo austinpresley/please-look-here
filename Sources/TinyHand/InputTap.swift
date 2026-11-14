@@ -163,14 +163,16 @@ final class InputTap {
                 generation &+= 1
                 let key = type == .keyDown ? event.getIntegerValueField(.keyboardEventKeycode) : nil
                 let button: Int64? = type == .keyDown ? nil : type == .leftMouseDown ? 0 : type == .rightMouseDown ? 1 : event.getIntegerValueField(.mouseEventButtonNumber)
+                let ownedRepeat = key.map { event.getIntegerValueField(.keyboardEventAutorepeat) != 0
+                    && (controls.ownsKey($0) || radial.ownsPair(type, event: event)) } ?? false
                 // This new system press owns its own release. Unrelated pairs
                 // whose downs we captured still drain without leaking an up.
                 if let button { presses.removeValue(forKey: button) }
-                controls.suspendForSystem(releasingButton: button, key: key)
-                radial.suspendForSystem(releasingButton: button, key: key)
+                controls.suspendForSystem(releasingButton: button, key: ownedRepeat ? nil : key)
+                radial.suspendForSystem(releasingButton: button, key: ownedRepeat ? nil : key)
                 updateEnabled()
                 DispatchQueue.main.async { [weak self] in self?.onScreenLocked?() }
-                return forwarded
+                return ownedRepeat ? nil : forwarded
             }
             if event.timestamp > 0 {
                 let wait = Double(DispatchTime.now().uptimeNanoseconds &- event.timestamp) / 1_000_000

@@ -35,6 +35,38 @@ private func event(_ type: CGEventType, button: Int64 = 0, point: CGPoint = CGPo
         #expect(tap.handle(type: .keyUp, event: escapeUp) == nil)
         #expect(tap.handle(type: .rightMouseUp, event: try event(.rightMouseUp, button: 1)) != nil)
     }
+    @Test func lockFallbackKeepsOwnedControlsEscapeRepeatsAndRelease() throws {
+        var locked = false
+        let tap = InputTap(sessionLocked: { locked })
+        tap.configureControls(open: true, nativeMenu: false, regions: [])
+        let down = try #require(CGEvent(keyboardEventSource: nil, virtualKey: 53, keyDown: true))
+        #expect(tap.handle(type: .keyDown, event: down) == nil)
+        locked = true
+        for _ in 0..<3 {
+            let repeatDown = try #require(CGEvent(keyboardEventSource: nil, virtualKey: 53, keyDown: true))
+            repeatDown.setIntegerValueField(.keyboardEventAutorepeat, value: 1)
+            #expect(tap.handle(type: .keyDown, event: repeatDown) == nil)
+        }
+        let up = try #require(CGEvent(keyboardEventSource: nil, virtualKey: 53, keyDown: false))
+        #expect(tap.handle(type: .keyUp, event: up) == nil)
+    }
+
+    @Test func lockFallbackKeepsOwnedRadialEscapeRepeatsAndRelease() throws {
+        var locked = false
+        let tap = InputTap(sessionLocked: { locked })
+        tap.configureRadial(trigger: .option, eligible: true)
+        let flag = try #require(CGEvent(keyboardEventSource: nil, virtualKey: 58, keyDown: true))
+        flag.type = .flagsChanged; flag.flags = .maskAlternate
+        #expect(tap.handle(type: .flagsChanged, event: flag) != nil)
+        let down = try #require(CGEvent(keyboardEventSource: nil, virtualKey: 53, keyDown: true))
+        #expect(tap.handle(type: .keyDown, event: down) == nil)
+        locked = true
+        let repeatDown = try #require(CGEvent(keyboardEventSource: nil, virtualKey: 53, keyDown: true))
+        repeatDown.setIntegerValueField(.keyboardEventAutorepeat, value: 1)
+        #expect(tap.handle(type: .keyDown, event: repeatDown) == nil)
+        let up = try #require(CGEvent(keyboardEventSource: nil, virtualKey: 53, keyDown: false))
+        #expect(tap.handle(type: .keyUp, event: up) == nil)
+    }
 
     @Test func drawRouteSurvivesDeactivationUntilRelease() throws {
         let tap = InputTap()

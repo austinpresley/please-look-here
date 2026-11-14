@@ -101,4 +101,32 @@ private final class ProbeAudioDriver: TapAudioDriver {
         await sound.drain()
         #expect(!probe.recorded.contains("background:play"))
     }
+    @Test func presentationContextChangesCancelAudioAlreadyQueuedBehindStartup() async throws {
+        _ = NSApplication.shared
+        for context in ["mode", "style", "controls"] {
+            PointerStyle.saved = .glove
+            Preferences.pointerMode = .point; Preferences.handSound = true; Preferences.tapSwing = 0
+            let probe = AudioProbe(), release = DispatchSemaphore(value: 0)
+            let sound = TapSound(driverFactory: { _, change in ProbeAudioDriver(probe, changed: change) })
+            let overlay = OverlayController(tapSound: sound)
+            await withCheckedContinuation { (started: CheckedContinuation<Void, Never>) in
+                probe.blockStart = { started.resume(); release.wait() }
+                sound.enabled = true; sound.warm()
+            }
+            PointerStyle.saved = .glove; Preferences.handSound = true; Preferences.pointerMode = .point
+            #expect(overlay.activate())
+            let down = try #require(NSEvent.mouseEvent(with: .leftMouseDown, location: .zero, modifierFlags: [],
+                timestamp: 0, windowNumber: 0, context: nil, eventNumber: 1, clickCount: 1, pressure: 1))
+            overlay.observeForVerification(down, own: false)
+            switch context {
+            case "mode": _ = overlay.setMode(.point)
+            case "style": _ = overlay.pick(.coral)
+            default: overlay.suspendInput(true)
+            }
+            release.signal()
+            await sound.drain()
+            #expect(!probe.recorded.contains("background:play"), "Queued tap survived \(context) change")
+            overlay.deactivate()
+        }
+    }
 }

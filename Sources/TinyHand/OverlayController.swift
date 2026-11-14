@@ -16,7 +16,7 @@ final class OverlayController {
     private let screenRecording: () -> Bool
     private let requestRecording: () -> Void
     private let magnifier: MagnifierController
-    private let tapSound = TapSound()
+    private let tapSound: TapSound
     private let contactFeedback = TapContactFeedback()
     private var previousTapSwing = Preferences.tapSwing
     private var gestures = HandGestureSession()
@@ -101,10 +101,12 @@ final class OverlayController {
     init(accessibility: @escaping () -> Bool = { AXIsProcessTrusted() },
          screenRecording: @escaping () -> Bool = { ScreenCapture.hasPermission },
          requestRecording: @escaping () -> Void = { ScreenCapture.requestPermission() },
+         tapSound: TapSound = TapSound(),
          magnifier: MagnifierController = MagnifierController()) {
         self.accessibility = accessibility
         self.screenRecording = screenRecording
         self.requestRecording = requestRecording
+        self.tapSound = tapSound
         self.magnifier = magnifier
         let frame = NSScreen.main?.frame ?? CGRect(x: 0, y: 0, width: 1440, height: 900)
         window = OverlayWindow(contentRect: frame, styleMask: .borderless, backing: .buffered, defer: false)
@@ -297,7 +299,7 @@ final class OverlayController {
         }
     }
     func presentationContextChanged() {
-        if NSApp.keyWindow != nil { cancelHandGestures() }
+        if NSApp.keyWindow != nil { cancelTapFeedback(); cancelHandGestures() }
         refreshMagnifier(); refreshShortcutContext()
     }
     func snapshotPresentation(to url: URL) {
@@ -433,7 +435,6 @@ final class OverlayController {
         cancelTapFeedback()
         cancelHandGestures(notify: false)
         isMagnifying = false; magnifier.suspend(); toolbar.setMagnifying(false)
-        tapSound.silence()
         radial.close()
         inputTap.configureRadial(trigger: Preferences.radialTrigger, eligible: false)
         captureTask?.cancel()
@@ -473,6 +474,7 @@ final class OverlayController {
     }
     func recoverPresentation() {
         guard isActive else { return }
+        cancelTapFeedback()
         cancelHandGestures()
         releaseDrawing(); radial.close(); onDismissControls?()
         rejoinPresentationWindows()
@@ -652,7 +654,7 @@ final class OverlayController {
             self.tapSound.play()
         }
     }
-    private func cancelTapFeedback() { contactFeedback.cancel(); armView.cancelTapAnimation() }
+    private func cancelTapFeedback() { contactFeedback.cancel(); armView.cancelTapAnimation(); tapSound.silence() }
     private func scheduleMotion() {
         guard isActive else { return }
         if MotionPacing.shouldSleep(stillFor: Date().timeIntervalSince(lastMotion),
@@ -686,7 +688,7 @@ final class OverlayController {
         let mouse = NSEvent.mouseLocation
         if currentFrame != screen.frame {
             let moved = currentFrame != nil
-            if moved { releaseDrawing(); armView.ink.reset() }
+            if moved { cancelTapFeedback(); cancelHandGestures(); releaseDrawing(); armView.ink.reset() }
             currentFrame = screen.frame
             window.setFrame(screen.frame, display: false)
             armView.frame = CGRect(origin: .zero, size: screen.frame.size)
@@ -733,7 +735,11 @@ final class OverlayController {
         let normal = !radial.visible && (overMenu || overOwnWindow || textEditor.isShowing
             || mode.hidesPointer(whilePressing: pressing, keepsHand: Preferences.interactKeepsHand))
         if normal != normalCursor && !isCapturing {
-            if normal { cancelTapFeedback(); cancelHandGestures() }
+            if normal {
+                if overMenu || overOwnWindow || textEditor.isShowing { cancelTapFeedback() }
+                else { contactFeedback.cancel(); armView.cancelTapAnimation() }
+                cancelHandGestures()
+            }
             normalCursor = normal
             armView.pointerHidden = normal
             if normal { CursorHider.show() } else { CursorHider.hide() }
@@ -772,6 +778,7 @@ final class OverlayController {
     private func refreshShortcutContext() {
         let key = "\(canUsePresentationShortcuts)-\(canUseDrawingShortcuts)"
         guard key != shortcutContext else { return }
+        if !canUsePresentationShortcuts { cancelTapFeedback() }
         shortcutContext = key
         onShortcutContextChanged?()
     }
