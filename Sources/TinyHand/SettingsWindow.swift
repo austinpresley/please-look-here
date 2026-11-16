@@ -19,6 +19,10 @@ final class SettingsWindow: NSObject, NSWindowDelegate {
         get { model.shortcutError }
         set { model.shortcutError = newValue }
     }
+    var shortcutConflicts: [String: String] {
+        get { model.shortcutConflicts }
+        set { model.shortcutConflicts = newValue }
+    }
     var applyMode: ((PointerMode) -> Bool)? {
         didSet { model.applyMode = applyMode }
     }

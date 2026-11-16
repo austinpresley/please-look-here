@@ -37,6 +37,9 @@ final class MenuBarControls: NSObject, NSPopoverDelegate, NSMenuDelegate {
         guard let button = statusItem?.button, let window = button.window else { return nil }
         return window.convertToScreen(button.convert(button.bounds, to: nil))
     }
+    var shortcutConflicts: [String: String] = [:] {
+        didSet { commands.shortcutConflicts = shortcutConflicts }
+    }
     var shortcutDiagnostics: [[String: Any]] { commands.diagnostics }
 
     init(overlay: OverlayController, perform: @escaping ([String: Any]) -> String, checkForUpdates: @escaping () -> Void) {

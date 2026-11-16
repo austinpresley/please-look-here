@@ -90,10 +90,10 @@ struct ShortcutsPage: View {
             HandGestureShortcutSettings(model: model)
             Card(title: "Pointer and drawing") {
                 Row("Turn pointer on or off") {
-                    ShortcutField(shortcut: Preferences.toggleShortcut, model: model, label: "Turn pointer on or off") { model.applyToggleShortcut?($0) ?? false }
+                    ShortcutField(shortcut: Preferences.toggleShortcut, model: model, command: "toggle", label: "Turn pointer on or off") { model.applyToggleShortcut?($0) ?? false }
                 }
                 Row("Clear Drawing") {
-                    ShortcutField(shortcut: Preferences.clearShortcut, model: model, label: "Clear Drawing") { model.applyClearShortcut?($0) ?? false }
+                    ShortcutField(shortcut: Preferences.clearShortcut, model: model, command: "clear", label: "Clear Drawing") { model.applyClearShortcut?($0) ?? false }
                 }
                 ForEach(PresentationAction.allCases.filter { !$0.drawOnly && $0.gesture == nil }, id: \.self) { action in shortcutRow(action) }
             }
@@ -107,7 +107,7 @@ struct ShortcutsPage: View {
     }
     private func shortcutRow(_ action: PresentationAction) -> some View {
         Row(action.title) {
-            ShortcutField(shortcut: Preferences.shortcut(for: action), model: model, label: action.title, allowsPlainKeys: action.tool != nil) {
+            ShortcutField(shortcut: Preferences.shortcut(for: action), model: model, command: action.rawValue, label: action.title, allowsPlainKeys: action.tool != nil) {
                 model.applyPresentationShortcut?(action, $0) ?? false
             }
         }

@@ -269,7 +269,7 @@ final class OverlayController {
         gestures.begin(slot, owner: owner, shortcut: shortcut)
         applyGesture(); return true
     }
-    func endGesture(_ owner: String) { gestures.end(owner); applyGesture() }
+    func endGesture(_ owner: String, notify: Bool = true) { gestures.end(owner); applyGesture(notify: notify) }
     func cancelHandGestures(notify: Bool = true) {
         let hadGesture = activeGesture != nil
         gestures.cancel(); gesturePreview.cancel(); pendingGesturePreview = nil
@@ -284,10 +284,10 @@ final class OverlayController {
         pendingGesturePreview = slot; gesturePreviewDeadline = Date().addingTimeInterval(2)
         wake(); return true
     }
-    private func applyGesture() {
+    private func applyGesture(notify: Bool = true) {
         let previous = armView.activeGesture
         if !armView.setGesture(gestures.active) { gestures.cancel(); _ = armView.setGesture(nil) }
-        if previous != armView.activeGesture { onActiveChanged?() }
+        if previous != armView.activeGesture && notify { onActiveChanged?() }
     }
     private func refreshGestures() {
         if pendingGesturePreview != nil && Date() > gesturePreviewDeadline { pendingGesturePreview = nil }

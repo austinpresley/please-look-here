@@ -143,6 +143,26 @@ import Testing
         #expect(tap.handle(type: .keyUp, event: event(.keyUp)) == nil)
         #expect(tap.handle(type: .keyDown, event: event(.keyDown, key: 8)) != nil)
     }
+    @Test func shortcutConflictNamesCommandAndOpensShortcutsWithoutChangingAssignments() throws {
+        _ = NSApplication.shared
+        let overlay = OverlayController()
+        let commands = MenuBarCommands(overlay: overlay)
+        let shortcut = Shortcut(keyCode: 8, modifiers: 4096, display: "⌃C")
+        Preferences.setShortcut(shortcut, for: .capture)
+        var request: [String: Any] = [:]
+        commands.perform = { request = $0 }
+        commands.shortcutConflicts = ["capture": "⌃C is unavailable. Choose another shortcut."]
+        let route = try #require(commands.menu.items.first { $0.title == "Review Shortcut Conflict…" })
+        #expect(!route.isHidden && route.isEnabled)
+        #expect(route.toolTip?.contains("Take Screenshot: ⌃C") == true)
+        NSApp.sendAction(try #require(route.action), to: route.target, from: route)
+        #expect(request["operation"] as? String == "settings")
+        #expect(request["section"] as? String == "shortcuts")
+        #expect(Preferences.shortcut(for: .capture) == shortcut)
+        commands.shortcutConflicts = [:]
+        #expect(route.isHidden)
+        Preferences.setShortcut(nil, for: .capture)
+    }
     @Test func nativeSecondaryCommandsObserveActualStateAndSavedShortcuts() throws {
         _ = NSApplication.shared
         Preferences.resetAll()

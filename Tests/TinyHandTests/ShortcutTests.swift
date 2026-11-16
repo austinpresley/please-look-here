@@ -80,6 +80,54 @@ import Testing
         #expect(PresentationAction.redo.drawOnly)
     }
 
+    @Test func oneConflictKeepsUnrelatedCommandsRegisteredAndRetriesOnlyTheFailure() {
+        var attempted: [String] = [], removed: [UInt32] = []
+        var conflicting = true
+        var next: UInt32 = 0
+        let keys = HotKeyBindings(register: { binding in
+            attempted.append(binding.command)
+            if binding.command == "capture" && conflicting { return nil }
+            next += 1; return next
+        }, unregister: { removed.append($0) })
+        let bindings = ["toggle", "capture", "nextPointer"].enumerated().map { index, command in
+            HotKeyBindings.Binding(command, shortcut: Shortcut(keyCode: UInt32(index), modifiers: 2048, display: "⌥\(index)"), press: {})
+        }
+        #expect(!keys.update(bindings))
+        #expect(keys.count == 2 && keys.failures == ["capture": bindings[1].shortcut])
+        #expect(removed.isEmpty)
+        attempted.removeAll()
+        #expect(!keys.update(bindings))
+        #expect(attempted == ["capture"] && removed.isEmpty)
+        // Opening Settings suspends context-scoped commands, but keeps their conflict visible.
+        let saved = Dictionary(uniqueKeysWithValues: bindings.map { ($0.command, $0.shortcut) })
+        _ = keys.update([bindings[0]], assignments: saved)
+        #expect(keys.failures["capture"] == bindings[1].shortcut)
+        conflicting = false; attempted.removeAll(); removed.removeAll()
+        #expect(keys.update(bindings))
+        #expect(attempted == ["capture", "nextPointer"])
+        #expect(keys.count == 3 && keys.failures.isEmpty && removed.isEmpty)
+    }
+
+    @Test func rejectedReplacementCanRestoreExactAssignmentWithoutDroppingOtherKeys() {
+        var next: UInt32 = 0, removed: [UInt32] = []
+        let original = custom
+        let rejected = Shortcut(keyCode: 7, modifiers: 2048, display: "Exact saved display")
+        let keys = HotKeyBindings(register: { binding in
+            guard binding.shortcut != rejected else { return nil }
+            next += 1; return next
+        }, unregister: { removed.append($0) })
+        let toggle = HotKeyBindings.Binding("toggle", shortcut: original, press: {})
+        let clear = HotKeyBindings.Binding("clear", shortcut: Shortcut(keyCode: 8, modifiers: 2048, display: "⌥C"), press: {})
+        #expect(keys.update([toggle, clear]))
+        #expect(!keys.update([.init("toggle", shortcut: rejected, press: {}), clear]))
+        #expect(removed == [1] && keys.count == 1)
+        #expect(keys.update([toggle, clear]))
+        #expect(keys.count == 2 && removed == [1] && keys.failures.isEmpty)
+        // Gesture artwork identity invalidates only that registration.
+        #expect(keys.update([.init("toggle", identity: "other-hand", shortcut: original, press: {}), clear]))
+        #expect(removed == [1, 3])
+    }
+
     private var custom: Shortcut {
         Shortcut(keyCode: UInt32(kVK_ANSI_K), modifiers: UInt32(controlKey | optionKey), display: "⌃⌥K")
     }

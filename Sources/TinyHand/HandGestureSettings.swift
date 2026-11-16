@@ -53,7 +53,7 @@ struct HandGestureShortcutSettings: View {
                 Row("Hold \(slot.title)", detail: available
                     ? "Starts unassigned. Works while an available hand is on."
                     : "Choose a hand with available artwork. Import or restore the pose in Pointers.") {
-                    ShortcutField(shortcut: Preferences.shortcut(for: slot.action), model: model, label: slot.action.title) {
+                    ShortcutField(shortcut: Preferences.shortcut(for: slot.action), model: model, command: slot.action.rawValue, label: slot.action.title) {
                         model.applyPresentationShortcut?(slot.action, $0) ?? false
                     }
                 }

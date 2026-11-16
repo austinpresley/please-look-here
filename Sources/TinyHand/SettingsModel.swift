@@ -19,6 +19,7 @@ final class SettingsModel: ObservableObject {
     var onRecording: ((Bool) -> Void)?
     var updater: Updater?
     @Published var shortcutError: String?
+    @Published var shortcutConflicts: [String: String] = [:]
 
     private var observer: Any?
     private var handsObserver: Any?

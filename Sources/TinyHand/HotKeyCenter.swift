@@ -86,3 +86,62 @@ final class HotKeyCenter {
         }
     }
 }
+
+/// Keeps successful commands registered when another command conflicts. Native
+/// registration is injected so conflict and rollback tests never seize real keys.
+final class HotKeyBindings {
+    struct Binding {
+        let command: String
+        let identity: String
+        let shortcut: Shortcut
+        let press: () -> Void
+        let release: (() -> Void)?
+        let onRemove: () -> Void
+        init(_ command: String, identity: String? = nil, shortcut: Shortcut,
+             press: @escaping () -> Void, release: (() -> Void)? = nil, onRemove: @escaping () -> Void = {}) {
+            self.command = command; self.identity = identity ?? command
+            self.shortcut = shortcut; self.press = press; self.release = release; self.onRemove = onRemove
+        }
+    }
+    private struct Registered { let binding: Binding; let id: UInt32 }
+    private var registered: [String: Registered] = [:]
+    private(set) var failures: [String: Shortcut] = [:]
+    private let register: (Binding) -> UInt32?
+    private let unregister: (UInt32) -> Void
+    var count: Int { registered.count }
+
+    init(register: @escaping (Binding) -> UInt32? = {
+        HotKeyCenter.shared.register(keyCode: $0.shortcut.keyCode, modifiers: $0.shortcut.modifiers,
+                                     action: $0.press, onRelease: $0.release)
+    }, unregister: @escaping (UInt32) -> Void = { HotKeyCenter.shared.unregister($0) }) {
+        self.register = register; self.unregister = unregister
+    }
+    func remove(_ command: String) {
+        if let old = registered.removeValue(forKey: command) { unregister(old.id); old.binding.onRemove() }
+        failures[command] = nil
+    }
+    func removeAll(preservingFailures: Bool = false) {
+        let retained = failures
+        for command in Array(registered.keys) { remove(command) }
+        failures = preservingFailures ? retained : [:]
+    }
+    @discardableResult
+    func update(_ bindings: [Binding], assignments: [String: Shortcut]? = nil) -> Bool {
+        let desired = Dictionary(uniqueKeysWithValues: bindings.map { ($0.command, $0) })
+        for (command, old) in registered {
+            guard let new = desired[command], new.identity == old.binding.identity,
+                  new.shortcut == old.binding.shortcut else { remove(command); continue }
+        }
+        // Context-inactive commands keep their diagnostic until their saved
+        // assignment changes or a later native registration succeeds.
+        let saved = assignments ?? desired.mapValues(\.shortcut)
+        failures = failures.filter { saved[$0.key] == $0.value }
+        for binding in bindings where registered[binding.command] == nil {
+            if let id = register(binding) {
+                registered[binding.command] = Registered(binding: binding, id: id)
+                failures[binding.command] = nil
+            } else { failures[binding.command] = binding.shortcut }
+        }
+        return failures.isEmpty
+    }
+}

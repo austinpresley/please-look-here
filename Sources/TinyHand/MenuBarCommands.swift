@@ -7,6 +7,7 @@ final class MenuBarCommands: NSObject {
     var perform: (([String: Any]) -> Void)?
     var openControls: (() -> Void)?
     var checkForUpdates: (() -> Void)?
+    var shortcutConflicts: [String: String] = [:] { didSet { refresh() } }
     private var requests: [NSMenuItem: [String: Any]] = [:]
     private var items: [String: NSMenuItem] = [:]
     private let pointers = NSMenu(title: "Choose Pointer")
@@ -46,6 +47,7 @@ final class MenuBarCommands: NSObject {
         add("toolbar", "Show Toolbar", "configure", ["settings": ["showToolbar": true]], to: presentation)
         menu.addItem(.separator())
         add("permission", "Allow Drawing…", "settings", ["section": "general"], to: menu)
+        add("shortcutConflicts", "Review Shortcuts…", "settings", ["section": "shortcuts"], to: menu)
         add("settings", "Settings…", "settings", to: menu)
         if Updater.isAvailable {
             let update = NSMenuItem(title: "Check for Updates…", action: #selector(update), keyEquivalent: "")
@@ -72,6 +74,13 @@ final class MenuBarCommands: NSObject {
         requests[item] = fields.merging(["version": 1, "operation": op]) { _, b in b }
     }
     func refresh() {
+        let conflicts = shortcutConflicts.sorted { $0.key < $1.key }.map { command, message in
+            let title = PresentationAction(rawValue: command)?.title ?? (command == "toggle" ? "Turn Pointer On or Off" : "Clear Drawing")
+            return "\(title): \(message)"
+        }
+        items["shortcutConflicts"]?.isHidden = conflicts.isEmpty
+        items["shortcutConflicts"]?.title = conflicts.count == 1 ? "Review Shortcut Conflict…" : "Review \(conflicts.count) Shortcut Conflicts…"
+        items["shortcutConflicts"]?.toolTip = conflicts.joined(separator: "\n")
         let appearance = NSApp.effectiveAppearance
         for menu in allMenus where menu.appearance?.name != appearance.name { menu.appearance = appearance }
         let styles = PointerCatalog.selectableStyles

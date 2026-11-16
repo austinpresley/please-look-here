@@ -191,7 +191,8 @@ struct PillButton: View {
 
 struct ShortcutField: View {
     let shortcut: Shortcut?
-    let model: SettingsModel
+    @ObservedObject var model: SettingsModel
+    var command: String?
     var label = "Shortcut"
     var allowsPlainKeys = false
     let apply: (Shortcut?) -> Bool
@@ -217,8 +218,8 @@ struct ShortcutField: View {
                 .help("Clear the shortcut for \(label)")
                 .accessibilityLabel("Clear \(label) shortcut")
             }
-            if let assignmentError {
-                Text(assignmentError).font(.callout).foregroundStyle(.red)
+            if let error = assignmentError ?? command.flatMap({ model.shortcutConflicts[$0] }) {
+                Text(error).font(.callout).foregroundStyle(.red)
                     .frame(width: 224, alignment: .leading)
                     .fixedSize(horizontal: false, vertical: true)
             }

@@ -15,8 +15,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
               let response = try? JSONSerialization.jsonObject(with: self.control.handle(data)) as? [String: Any] else { return "Action unavailable" }
         return response["ok"] as? Bool == true ? "" : ((response["error"] as? [String: Any])?["message"] as? String ?? "Action unavailable")
     }, checkForUpdates: { [weak self] in self?.updater.checkForUpdates() })
-    private var hotKeys: [UInt32] = []
-    private var keySignature = ""
+    private let hotKeys = HotKeyBindings()
     private var recordingShortcut = false
     private var observer: Any?
     lazy var control = ControlBridge(overlay: overlay, accessibility: {
@@ -126,7 +125,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func apply(_ value: Shortcut?, action: PresentationAction?, toggle: Bool) -> Bool {
-        let previous = action.map { Preferences.shortcut(for: $0) } ?? (toggle ? Preferences.toggleShortcut : Preferences.clearShortcut)
+        let command = action?.rawValue ?? (toggle ? "toggle" : "clear")
+        let previous: Shortcut?
+        if let action { previous = Preferences.shortcut(for: action) }
+        else { previous = toggle ? Preferences.toggleShortcut : Preferences.clearShortcut }
         if let value {
             let other = [(Preferences.toggleShortcut, action == nil && toggle), (Preferences.clearShortcut, action == nil && !toggle)]
                 + PresentationAction.allCases.map { (Preferences.shortcut(for: $0), action == $0) }
@@ -138,18 +140,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 settings.shortcutError = "\(value.display) is reserved for standard app commands. Choose another shortcut."
                 return false
             }
-            unregisterHotKeys()
+            // Release only this command while validating its replacement.
+            hotKeys.remove(command)
             guard let probe = HotKeyCenter.shared.register(keyCode: value.keyCode, modifiers: value.modifiers, action: {}) else {
                 settings.shortcutError = "\(value.display) is unavailable. Another app or macOS may be using it. Choose another shortcut."
                 _ = registerHotKeys()
                 return false
             }
             HotKeyCenter.shared.unregister(probe)
-        }
+        } else { hotKeys.remove(command) }
         if let action { Preferences.setShortcut(value, for: action) }
         else if toggle { Preferences.toggleShortcut = value }
         else { Preferences.clearShortcut = value }
-        guard registerHotKeys() else {
+        _ = registerHotKeys()
+        guard hotKeys.failures[command] == nil else {
             if let action { Preferences.setShortcut(previous, for: action) }
             else if toggle { Preferences.toggleShortcut = previous }
             else { Preferences.clearShortcut = previous }
@@ -184,52 +188,59 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         menuBar.refresh()
         return ["accepted": accepted, "defaultsSuite": suite, "assignments": Preferences.shortcutState,
-                "registeredCount": hotKeys.count, "error": settings.shortcutError ?? "",
+                "registeredCount": hotKeys.count, "conflicts": settings.shortcutConflicts, "error": settings.shortcutError ?? "",
                 "menu": menuBar.shortcutDiagnostics]
     }
 
     private func unregisterHotKeys() {
         overlay.cancelHandGestures(notify: false)
-        hotKeys.forEach(HotKeyCenter.shared.unregister)
         hotKeys.removeAll()
-        keySignature = ""
+        publishShortcutConflicts()
     }
     @discardableResult
     private func registerHotKeys() -> Bool {
-        if recordingShortcut { unregisterHotKeys(); return true }
-        var bindings: [(String, Shortcut, () -> Void, (() -> Void)?)] = []
+        if recordingShortcut {
+            overlay.cancelHandGestures(notify: false)
+            hotKeys.removeAll(preservingFailures: true)
+            publishShortcutConflicts()
+            return true
+        }
+        var bindings: [HotKeyBindings.Binding] = []
         if let shortcut = Preferences.toggleShortcut {
-            bindings.append(("toggle", shortcut, { [weak self] in self?.overlay.toggle() }, nil))
+            bindings.append(.init("toggle", shortcut: shortcut, press: { [weak self] in self?.overlay.toggle() }))
         }
         if let shortcut = Preferences.clearShortcut {
-            bindings.append(("clear", shortcut, { [weak self] in self?.overlay.clearInk() }, nil))
+            bindings.append(.init("clear", shortcut: shortcut, press: { [weak self] in self?.overlay.clearInk() }))
         }
         if overlay.canUsePresentationShortcuts {
             for action in PresentationAction.allCases where !action.drawOnly || overlay.canUseDrawingShortcuts {
                 if let shortcut = Preferences.shortcut(for: action) {
                     if let slot = action.gesture {
                         guard overlay.style.assetName != nil, HandGestureCatalog.image(slot, style: overlay.style) != nil else { continue }
-                        bindings.append(("\(action.rawValue):\(overlay.style.rawValue)", shortcut,
-                            { [weak self] in _ = self?.overlay.beginGesture(slot, owner: action.rawValue, shortcut: shortcut) },
-                            { [weak self] in self?.overlay.endGesture(action.rawValue) }))
-                    } else { bindings.append((action.rawValue, shortcut, { [weak self] in self?.perform(action) }, nil)) }
+                        bindings.append(.init(action.rawValue, identity: "\(action.rawValue):\(overlay.style.rawValue)", shortcut: shortcut,
+                            press: { [weak self] in _ = self?.overlay.beginGesture(slot, owner: action.rawValue, shortcut: shortcut) },
+                            release: { [weak self] in self?.overlay.endGesture(action.rawValue) },
+                            onRemove: { [weak self] in self?.overlay.endGesture(action.rawValue, notify: false) }))
+                    } else { bindings.append(.init(action.rawValue, shortcut: shortcut, press: { [weak self] in self?.perform(action) })) }
                 }
             }
         }
-        let signature = bindings.map { "\($0.0):\($0.1.keyCode):\($0.1.modifiers)" }.joined(separator: "|")
-        if signature == keySignature { return true }
-        unregisterHotKeys()
-        for (_, shortcut, action, release) in bindings {
-            guard let id = HotKeyCenter.shared.register(keyCode: shortcut.keyCode, modifiers: shortcut.modifiers, action: action, onRelease: release) else {
-                unregisterHotKeys()
-                settings.shortcutError = "\(shortcut.display) could not be registered. Another app or macOS may be using it. Review Shortcuts in Settings."
-                Log.write("shortcut unavailable: \(shortcut.display)")
-                return false
-            }
-            hotKeys.append(id)
+        let previousFailures = hotKeys.failures
+        var assignments: [String: Shortcut] = [:]
+        assignments["toggle"] = Preferences.toggleShortcut
+        assignments["clear"] = Preferences.clearShortcut
+        for action in PresentationAction.allCases { assignments[action.rawValue] = Preferences.shortcut(for: action) }
+        let success = hotKeys.update(bindings, assignments: assignments)
+        publishShortcutConflicts()
+        for (command, shortcut) in hotKeys.failures where previousFailures[command] != shortcut {
+            Log.write("shortcut unavailable: \(command) \(shortcut.display)")
         }
-        keySignature = signature
-        return true
+        return success
+    }
+    private func publishShortcutConflicts() {
+        let conflicts = hotKeys.failures.mapValues { "\($0.display) is unavailable. Another app or macOS may be using it. Choose another shortcut." }
+        settings.shortcutConflicts = conflicts
+        menuBar.shortcutConflicts = conflicts
     }
 
     private func editingMenu() -> NSMenu {
