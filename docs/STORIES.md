@@ -1,5 +1,14 @@
 # Look Here Please backlog
 
+## App review improvements, 15 November 2026
+
+Austin authorized all 18 recommendations from the joint app review. The active
+milestone is [S-036 through S-053](app-review-implementation-2026-11-15.md).
+Use Sol 6.1 High subagents, with no Max setting. Pointer cycling must wrap in
+both directions through enabled choices, including Stream Deck. This milestone
+supersedes the older queue's limits on the selected later ideas. All validation
+and packaging stay local; hosted CI remains disabled.
+
 ## Selected fork upgrades, 14 November 2026
 
 Austin authorized shortlist items 1, 2, 3, 4, 7, 9, 10, 12, 13 and 14 for autonomous implementation. The current milestone is [S-026 through S-035](fork-upgrades-2026-11-14.md), with its acceptance criteria, UX decisions and progress. Preserve the existing local review app and its user data. All validation and release packaging run locally; hosted CI stays disabled.
