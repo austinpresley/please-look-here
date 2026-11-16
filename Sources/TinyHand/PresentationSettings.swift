@@ -190,14 +190,14 @@ struct DrawingPage: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Space.xxl) {
             Card(title: "Tools") {
-                Row("Selected tool", detail: "With Interact off, use the tool row or its keyboard shortcut.") {
+                Row("Selected tool") {
                     Picker("Drawing tool", selection: model.binding({ Preferences.drawingTool }, { Preferences.drawingTool = $0 })) {
                         ForEach(DrawingTool.allCases, id: \.self) { Label($0.title, systemImage: $0.symbol).tag($0) }
                     }.labelsHidden().fixedSize()
+                    .help("With Interact off, use the toolbar or assigned tool shortcuts. Number: drag to move, click to remove. Text: Return adds, Escape cancels.")
                 }
-                Row("Number markers", detail: "With Interact off, choose Number or Control-click. Drag a marker to move it; click it to remove it.") { EmptyView() }
-                Row("Text labels", detail: "Click where the label belongs. Return adds text; Escape cancels.") { EmptyView() }
             }
+            DrawingPreview(configuration: .current)
             Card(title: "Stroke") {
                 Row("Line width") {
                     HStack(spacing: Space.sm) {
