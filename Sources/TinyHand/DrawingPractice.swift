@@ -47,6 +47,7 @@ final class DrawingPracticeSession: ObservableObject {
         self.policy = policy
         ink = Ink(clock: clock, lifetimePolicy: { policy.value })
         applyStyle()
+        ink.onChanged = { [weak self] in self?.objectWillChange.send() }
     }
 
     @discardableResult

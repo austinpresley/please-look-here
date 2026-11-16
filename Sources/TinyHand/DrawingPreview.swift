@@ -15,11 +15,11 @@ struct DrawingPreview: View {
                 HStack(spacing: Space.sm) {
                     Picker("Practice mode", selection: $session.mode) {
                         ForEach(DrawingPracticeSession.Mode.allCases, id: \.self) { Text($0.rawValue).tag($0) }
-                    }.pickerStyle(.segmented).frame(width: 172)
+                    }.labelsHidden().pickerStyle(.segmented).frame(width: 172)
                     Spacer(minLength: Space.sm)
                     Button("Replay Sample") { replay += 1 }
-                    Button("Undo") { session.undo() }.help("Undo the last practice annotation")
-                    Button("Clear") { session.clear() }.help("Clear only this practice canvas")
+                    Button("Undo") { session.undo() }.disabled(!session.ink.canUndo).help("Undo the last practice annotation")
+                    Button("Clear") { session.clear() }.disabled(session.ink.count == 0).help("Clear only this practice canvas")
                 }
                 .gridProbe("drawingPreview.controls", area: "drawingPreview")
                 DrawingPracticeCanvas(session: session, configuration: configuration, replay: replay)

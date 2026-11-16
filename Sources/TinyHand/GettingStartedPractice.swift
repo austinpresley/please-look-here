@@ -84,6 +84,7 @@ final class GettingStartedPracticeSession: ObservableObject {
     let drawing: DrawingPracticeSession
     let pointerConfiguration: PointerPreviewConfiguration
     let drawingConfiguration: DrawingPracticeConfiguration
+    private var drawingChanges: AnyCancellable?
 
     init(pointerConfiguration: PointerPreviewConfiguration) {
         self.pointerConfiguration = pointerConfiguration
@@ -91,7 +92,7 @@ final class GettingStartedPracticeSession: ObservableObject {
             opacity: 1, smoothing: .light, fadeStyle: .permanent, fadeDelay: 3, trailDelay: 1, trailSpeed: 100)
         drawing = DrawingPracticeSession(configuration: drawingConfiguration)
         drawing.mode = .interact
-        drawing.ink.onChanged = { [weak self] in
+        drawingChanges = drawing.objectWillChange.sink { [weak self] in
             guard let self else { return }
             self.annotationCount = self.drawing.ink.document.annotations.count
         }

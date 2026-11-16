@@ -17,11 +17,12 @@ struct PointerPreview: View {
                 HStack(spacing: Space.sm) {
                     Picker("Sample background", selection: $background) {
                         ForEach(PointerPreviewBackground.allCases, id: \.self) { Text($0.rawValue).tag($0) }
-                    }.pickerStyle(.segmented).frame(maxWidth: 240)
+                    }.labelsHidden().pickerStyle(.segmented).frame(width: 232)
                     Spacer(minLength: Space.sm)
                     Button("Preview Tap") { tap += 1 }
                     Button("Preview Motion") { motion += 1 }.disabled(reduceMotion)
                 }
+                .fixedSize(horizontal: false, vertical: true)
                 .gridProbe("pointerPreview.controls", area: "pointerPreview")
                 PointerPreviewCanvas(configuration: configuration, tap: tap, motion: motion)
                     .frame(height: 180)

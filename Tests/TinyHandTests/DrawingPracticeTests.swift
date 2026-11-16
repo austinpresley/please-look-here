@@ -1,4 +1,5 @@
 import AppKit
+import Combine
 import Testing
 @testable import TinyHand
 
@@ -9,6 +10,20 @@ import Testing
                                      fadeDelay: 1, trailDelay: 0.2, trailSpeed: 600)
     }
     private let bounds = CGRect(x: 0, y: 0, width: 480, height: 148)
+
+    @Test func localEditsPublishHistoryAndVisibilityForControls() {
+        let session = DrawingPracticeSession(configuration: configuration())
+        var changes = 0
+        let subscription = session.objectWillChange.sink { changes += 1 }
+        session.begin(at: .zero)
+        session.extend(to: CGPoint(x: 100, y: 60))
+        session.end()
+        #expect(changes > 0 && session.ink.canUndo && session.ink.count == 1)
+        let beforeUndo = changes
+        session.undo()
+        #expect(changes > beforeUndo && session.ink.count == 0)
+        withExtendedLifetime(subscription) {}
+    }
 
     @Test func practiceEditsAndConfigurationLeaveLiveHistoryAndPreferencesAlone() throws {
         let suite = try #require(ProcessInfo.processInfo.environment["TINYHAND_DEFAULTS_SUITE"])
