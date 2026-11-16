@@ -16,6 +16,7 @@ final class ArmView: NSView {
     private var baseAsset: HandAsset?
     private(set) var activeGesture: HandGestureSlot?
 
+    private var previewConfiguration: PointerPreviewConfiguration?
     private var handLenFrac: CGFloat = Preferences.pointerSize
     private var showShadow = Preferences.showShadow
     private var shadowStyle = Preferences.shadowStyle
@@ -65,7 +66,13 @@ final class ArmView: NSView {
         }
     }
 
-    override init(frame frameRect: NSRect) {
+    override convenience init(frame frameRect: NSRect) {
+        self.init(frame: frameRect, previewConfiguration: nil)
+    }
+
+    /// A preview receives explicit values and never subscribes to live preference changes.
+    init(frame frameRect: NSRect, previewConfiguration: PointerPreviewConfiguration?) {
+        self.previewConfiguration = previewConfiguration
         super.init(frame: frameRect)
         let root = CALayer()
         root.masksToBounds = false
@@ -101,24 +108,40 @@ final class ArmView: NSView {
         dotCore.fillColor = CGColor(srgbRed: 1, green: 0.86, blue: 0.82, alpha: 0.95)
         dotLayer.addSublayer(dotCore)
 
-        setStyle(PointerStyle.saved)
+        setStyle(previewConfiguration?.style ?? PointerStyle.saved)
+        if let previewConfiguration { applyPreviewConfiguration(previewConfiguration) }
         contactShadow.didUpdate = { [weak self] in
             guard let self, let cursor = self.lastCursor else { return }
             self.lastPose = []
             self.aim(cursor: cursor)
         }
-        NotificationCenter.default.addObserver(forName: Preferences.changed, object: nil, queue: .main) { [weak self] _ in
-            self?.updatePointerConfiguration()
+        if previewConfiguration == nil {
+            NotificationCenter.default.addObserver(forName: Preferences.changed, object: nil, queue: .main) { [weak self] _ in
+                self?.updatePointerConfiguration()
+            }
         }
     }
 
     private func updatePointerConfiguration() {
-        let configuration = Preferences.pointerConfiguration(for: style.rawValue)
-        handLenFrac = CGFloat(configuration.size)
-        showShadow = configuration.shadow
-        shadowStyle = configuration.shadowStyle
-        lastPose = []
-        lastLaserPose = []
+        if let configuration = previewConfiguration {
+            handLenFrac = configuration.size
+            showShadow = configuration.shadow
+            shadowStyle = configuration.shadowStyle
+        } else {
+            let configuration = Preferences.pointerConfiguration(for: style.rawValue)
+            handLenFrac = CGFloat(configuration.size)
+            showShadow = configuration.shadow
+            shadowStyle = configuration.shadowStyle
+        }
+        lastPose = []; lastLaserPose = []
+    }
+
+    func applyPreviewConfiguration(_ configuration: PointerPreviewConfiguration) {
+        guard previewConfiguration != nil else { return }
+        previewConfiguration = configuration
+        if style != configuration.style { setStyle(configuration.style) }
+        updatePointerConfiguration()
+        displayImageHeight = 0
     }
 
     func updateInkColor() {
@@ -173,19 +196,23 @@ final class ArmView: NSView {
 
     func press() {
         pressAmount = 1
-        swing.begin(at: CACurrentMediaTime(), range: CGFloat(Preferences.tapSwing),
+        swing.begin(at: CACurrentMediaTime(), range: CGFloat(previewConfiguration?.tapSwing ?? Preferences.tapSwing),
                     reduceMotion: NSWorkspace.shared.accessibilityDisplayShouldReduceMotion || style.assetName == nil)
         shadowResponse.press(at: CACurrentMediaTime())
     }
     func reachTapContact() { swing.reachContact(at: CACurrentMediaTime()) }
     func cancelTapAnimation() { swing.cancel(); pressAmount = 0; lastPose = [] }
 
+    // A compact sample uses a fixed reference height so hands and contact shadows
+    // stay readable at the same settings as the full desktop renderer.
+    private var renderingHeight: CGFloat { previewConfiguration == nil ? bounds.height : max(720, bounds.height) }
+
     func aim(cursor: CGPoint) {
         lastCursor = cursor
         gestureMarker.position = cursor
-        let screenH = bounds.height
+        let screenH = renderingHeight
         let targetX = min(max(cursor.x + gripLeanFrac * bounds.width, bounds.width * 0.15), bounds.width * 1.05)
-        let gx = Preferences.pointerMotion.gripPosition(previous: gripX, target: targetX)
+        let gx = (previewConfiguration?.motion ?? Preferences.pointerMotion).gripPosition(previous: gripX, target: targetX)
         gripX = gx
         gripTarget = targetX
         if NSWorkspace.shared.accessibilityDisplayShouldReduceMotion { swing.cancel() }
@@ -291,7 +318,7 @@ final class ArmView: NSView {
 
     private func aimLaser(cursor: CGPoint) {
         let press = pressAmount
-        let r = max(4, bounds.height * 0.0038 * handLenFrac / 0.13) * (1 + 0.2 * press)
+        let r = max(previewConfiguration == nil ? 4 : 1, renderingHeight * 0.0038 * handLenFrac / 0.13) * (1 + 0.2 * press)
         let laserPose = [r, cursor.x, cursor.y].map { ($0 * 100).rounded() }
         guard laserPose != lastLaserPose else {
             return
@@ -312,7 +339,7 @@ final class ArmView: NSView {
     private func updateDisplayImage(_ a: HandAsset) {
         let full = a.image
         let scale = window?.backingScaleFactor ?? 2
-        let restPts = handLenFrac * bounds.height / (a.wrist - a.handTop)
+        let restPts = handLenFrac * renderingHeight / (a.wrist - a.handTop)
         let step = 64
         let needed = (Int((restPts * scale).rounded(.up)) + step - 1) / step * step
         let height = needed >= full.height * 9 / 10 ? full.height : max(step, needed)

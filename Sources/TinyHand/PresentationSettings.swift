@@ -125,6 +125,7 @@ struct AppearancePage: View {
                     }.labelsHidden().pickerStyle(.segmented).frame(width: 192)
                 }
             }
+            PointerPreview(configuration: .current)
             Card(title: "Pointer Defaults") {
                 Row("Size", detail: "Relative to the display height. Also sets Spotlight's circle size and Presentation pointer's thickness.") {
                     HStack(spacing: Space.sm) {
