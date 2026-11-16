@@ -23,12 +23,15 @@ enum ToolChoice: String, CaseIterable {
     }
 }
 
+enum PointerDirection: String { case forward, backward }
+
 /// Immutable queued command, captured at the press rather than at dispatch.
 enum SelectionCommand: Equatable {
-    case cyclePointer, cycleTool, tool(ToolChoice)
+    case cyclePointer, cyclePointerBackward, cycleTool, tool(ToolChoice)
     var request: [String: Any] {
         switch self {
         case .cyclePointer: return ["version": 1, "operation": "cycle-pointer"]
+        case .cyclePointerBackward: return ["version": 1, "operation": "cycle-pointer", "direction": "backward"]
         case .cycleTool: return ["version": 1, "operation": "cycle-tool"]
         case .tool(let tool): return ["version": 1, "operation": "tool", "tool": tool.rawValue]
         }
@@ -39,6 +42,7 @@ struct KeySettings: Equatable {
     var style: String?
     var activate = true
     var toolChoice: ToolChoice? = .cycle
+    var pointerDirection: PointerDirection? = .forward
 
     init(style: String? = nil, activate: Bool = true) {
         self.style = style
@@ -48,6 +52,9 @@ struct KeySettings: Equatable {
     init(_ payload: [String: Any]?) {
         style = (payload?["style"] as? String).flatMap { $0.isEmpty ? nil : $0 }
         activate = payload?["activate"] as? Bool ?? true
+        if let saved = payload?["direction"] {
+            pointerDirection = (saved as? String).flatMap(PointerDirection.init(rawValue:))
+        }
         if let saved = payload?["tool"] {
             toolChoice = (saved as? String).flatMap(ToolChoice.init(rawValue:))
         }
@@ -144,7 +151,10 @@ struct KeyFace: Equatable {
 
 enum KeyModel {
     static func selectionCommand(action: DeckAction, settings: KeySettings) -> Result<SelectionCommand, Refusal> {
-        if action == .choosePointer { return .success(.cyclePointer) }
+        if action == .choosePointer {
+            guard let direction = settings.pointerDirection else { return .failure(Refusal(text: "Choose Direction")) }
+            return .success(direction == .forward ? .cyclePointer : .cyclePointerBackward)
+        }
         guard action == .chooseTool, let choice = settings.toolChoice else { return .failure(Refusal(text: "Choose Tool")) }
         return .success(choice == .cycle ? .cycleTool : .tool(choice))
     }
@@ -220,6 +230,9 @@ enum KeyModel {
     private static func observedFace(action: DeckAction, settings: KeySettings, observed: Observed, styleNames: [String: String]) -> KeyFace {
         switch action {
         case .pointer, .choosePointer:
+            if action == .choosePointer && settings.pointerDirection == nil {
+                return KeyFace(glyph: .missing, label: "Choose Direction", tone: .warning)
+            }
             return observed.active
                 ? KeyFace(glyph: observed.style == "laser" ? .laser : .style(observed.style), label: "On", tone: .active, badge: .selected)
                 : KeyFace(glyph: observed.style == "laser" ? .laser : .style(observed.style), label: "Off", tone: .idle)

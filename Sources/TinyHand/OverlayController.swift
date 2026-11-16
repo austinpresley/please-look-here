@@ -219,10 +219,10 @@ final class OverlayController {
         return true
     }
     func cyclePointer(by delta: Int) {
-        let pinned = PointerCatalog.quickStyles
-        guard !pinned.isEmpty else { return }
-        let index = pinned.firstIndex(of: style) ?? 0
-        pick(pinned[min(max(index + delta, 0), pinned.count - 1)])
+        guard delta != 0 else { return }
+        CustomHands.reload()
+        guard let next = try? PointerCatalog.nextSelectable(after: style, direction: delta < 0 ? .backward : .forward) else { return }
+        pick(next)
     }
     @discardableResult
     func setMode(_ requested: PointerMode) -> Bool {

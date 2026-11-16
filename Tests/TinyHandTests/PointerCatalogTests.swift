@@ -179,12 +179,75 @@ import Testing
         }
     }
 
+    @Test func nativeNextAndPreviousWrapTheFullCatalogFromUnpinnedCurrent() throws {
+        _ = NSApplication.shared
+        for mode in [PointerMode.point, .draw] {
+            Preferences.pointerMode = mode
+            let overlay = OverlayController()
+            Preferences.pinnedStyles = [.laser]
+            try PointerCatalog.setEnabled(false, for: .robot)
+            let choices = PointerCatalog.selectableStyles
+            for (index, current) in choices.enumerated() {
+                #expect(overlay.pick(current))
+                overlay.cyclePointer(by: 1)
+                #expect(overlay.style == choices[(index + 1) % choices.count])
+                #expect(overlay.pick(current))
+                overlay.cyclePointer(by: -1)
+                #expect(overlay.style == choices[(index - 1 + choices.count) % choices.count])
+                #expect(!overlay.isActive && overlay.mode == mode)
+                #expect(Preferences.pinnedStyles == [.laser])
+            }
+        }
+    }
+
+    @Test func backwardProtocolWrapsAndRejectsMalformedDirectionsWithoutMutation() throws {
+        _ = NSApplication.shared
+        Preferences.pointerMode = .point
+        let overlay = OverlayController()
+        let api = ControlBridge(overlay: overlay, openSettings: { _ in }, openHandCreator: {})
+        Preferences.pinnedStyles = [.laser]
+        try PointerCatalog.setEnabled(false, for: .robot)
+        let choices = PointerCatalog.selectableStyles
+        #expect(overlay.pick(choices.first!))
+        for expected in choices.reversed() {
+            #expect(try request(api, "cycle-pointer", ["direction": "backward"])["ok"] as? Bool == true)
+            #expect(overlay.style == expected && !overlay.isActive && overlay.mode == .point)
+        }
+        let selected = overlay.style
+        for value: Any in ["previous", "", "Forward", 1, true, NSNull(), ["backward"]] {
+            let response = try request(api, "cycle-pointer", ["direction": value])
+            #expect(response["ok"] as? Bool == false)
+            #expect(overlay.style == selected && !overlay.isActive && overlay.mode == .point)
+        }
+        #expect(try request(api, "cycle-pointer", ["direction": "forward"])["ok"] as? Bool == true)
+        #expect(overlay.style == choices[1])
+        #expect(Preferences.pinnedStyles == [.laser])
+    }
+
+    @Test func backwardSkipsMissingAndDisabledCustomPointers() throws {
+        let custom = try CustomHands.add(try #require(HandAsset.load("hand_lavender")?.image), ink: 0, name: "Backward cycle fixture")
+        defer { CustomHands.remove(custom); Preferences.resetAll() }
+        #expect(try PointerCatalog.nextSelectable(after: .laser, direction: .backward) == custom)
+        let path = CustomHands.directory.appendingPathComponent(custom.rawValue + ".png")
+        let bytes = try Data(contentsOf: path)
+        try FileManager.default.removeItem(at: path)
+        #expect(try PointerCatalog.nextSelectable(after: .laser, direction: .backward) == PointerStyle.builtInHands.last!)
+        try bytes.write(to: path)
+        try PointerCatalog.setEnabled(false, for: custom)
+        #expect(try PointerCatalog.nextSelectable(after: .laser, direction: .backward) == PointerStyle.builtInHands.last!)
+        #expect(try PointerCatalog.nextSelectable(after: custom, direction: .backward) == .presentation)
+    }
+
     @Test func cycleHandlesOutsideCurrentSingleChoiceAndEmptySetWithoutMutation() throws {
         Preferences.disabledPointerIDs = Set(PointerStyle.allCases.filter { $0 != .laser }.map(\.rawValue))
         #expect(try PointerCatalog.nextSelectable(after: .robot) == .laser)
         #expect(try PointerCatalog.nextSelectable(after: .laser) == .laser)
+        #expect(try PointerCatalog.nextSelectable(after: .robot, direction: .backward) == .laser)
+        #expect(try PointerCatalog.nextSelectable(after: .laser, direction: .backward) == .laser)
         Preferences.disabledPointerIDs.insert("laser")
         do { _ = try PointerCatalog.nextSelectable(after: .robot); Issue.record("Cycled an empty set") }
+        catch let error as PointerCatalog.Problem { #expect(error.code == "no-enabled-pointer") }
+        do { _ = try PointerCatalog.nextSelectable(after: .robot, direction: .backward); Issue.record("Cycled an empty set backward") }
         catch let error as PointerCatalog.Problem { #expect(error.code == "no-enabled-pointer") }
         #expect(Preferences.disabledPointerIDs.contains("laser"))
     }

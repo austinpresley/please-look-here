@@ -41,6 +41,7 @@ final class ControlBridge {
                 throw reject("Unsupported protocol version or operation")
             }
             var allowed: Set<String> = ["version", "operation"]
+            if op == "cycle-pointer" { allowed.insert("direction") }
             if op == "style" { allowed.formUnion(["style", "activate"]) }
             if op == "configure" { allowed.insert("settings") }
             if op == "pin" { allowed.formUnion(["style", "pinned"]) }
@@ -105,8 +106,15 @@ final class ControlBridge {
             case "cycle-pointer":
                 // ControlServer executes this entire operation on the main queue.
                 // Refresh manifest membership before resolving the current catalog.
+                let direction: PointerCatalog.Direction
+                if let value = request["direction"] {
+                    guard let raw = value as? String, let parsed = PointerCatalog.Direction(rawValue: raw) else {
+                        throw reject("Pointer cycle direction must be forward or backward")
+                    }
+                    direction = parsed
+                } else { direction = .forward }
                 CustomHands.reload()
-                let next = try PointerCatalog.nextSelectable(after: overlay.style)
+                let next = try PointerCatalog.nextSelectable(after: overlay.style, direction: direction)
                 guard overlay.pick(next) else {
                     throw reject("The pointer image became unavailable. Restore it or choose another pointer.", code: "missing-asset")
                 }

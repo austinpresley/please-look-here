@@ -25,14 +25,17 @@ enum PointerCatalog {
     /// All enabled, available choices, including every unpinned pointer.
     static var selectableStyles: [PointerStyle] { entries.filter(\.selectable).map(\.style) }
 
+    enum Direction: String { case forward, backward }
+
     /// Resolve one cycle against the current full catalog, never toolbar favorites.
-    static func nextSelectable(after current: PointerStyle) throws -> PointerStyle {
+    static func nextSelectable(after current: PointerStyle, direction: Direction = .forward) throws -> PointerStyle {
         let choices = selectableStyles
         guard let first = choices.first else {
             throw Problem(code: "no-enabled-pointer", message: "Enable an available pointer in Settings > Pointers first.")
         }
-        guard let index = choices.firstIndex(of: current) else { return first }
-        return choices[(index + 1) % choices.count]
+        guard let index = choices.firstIndex(of: current) else { return direction == .forward ? first : choices[choices.count - 1] }
+        let step = direction == .forward ? 1 : -1
+        return choices[(index + step + choices.count) % choices.count]
     }
 
     static var quickStyles: [PointerStyle] {

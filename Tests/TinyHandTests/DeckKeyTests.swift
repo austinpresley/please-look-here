@@ -157,6 +157,45 @@ import Testing
         }
     }
 
+    @Test func pointerDirectionDefaultsForwardAndBackwardIntentIsCapturedAtPressTime() throws {
+        #expect(DeckAction.choosePointer.rawValue == "com.austinpresley.lookhereplease.choose-pointer")
+        #expect(DeckAction.selectPointer.rawValue == "com.austinpresley.lookhereplease.select-pointer")
+        for payload in [[:], ["style": "old-hand", "activate": false], ["direction": "forward"]] as [[String: Any]] {
+            let settings = KeySettings(payload)
+            #expect(settings.pointerDirection == .forward)
+            #expect(try KeyModel.selectionCommand(action: .choosePointer, settings: settings).get() == .cyclePointer)
+        }
+        var settings = KeySettings(["direction": "backward", "style": "old-hand", "activate": false])
+        let backward = try KeyModel.selectionCommand(action: .choosePointer, settings: settings).get()
+        #expect(backward == .cyclePointerBackward)
+        #expect(Set(backward.request.keys) == ["version", "operation", "direction"])
+        #expect(backward.request["direction"] as? String == "backward")
+        #expect(backward.request["operation"] as? String == "cycle-pointer")
+        var queue = CycleQueue()
+        queue.enqueue(.init(context: "previous", keyID: UUID(), command: backward))
+        settings = KeySettings(["direction": "forward"])
+        queue.enqueue(.init(context: "next", keyID: UUID(), command: try KeyModel.selectionCommand(action: .choosePointer, settings: settings).get()))
+        #expect(queue.takeNext()?.command == .cyclePointerBackward)
+        queue.finish(uncertain: false)
+        #expect(queue.takeNext()?.command == .cyclePointer)
+        // Fixed pointer keys keep their saved destination and activation policy.
+        let fixed = try KeyModel.request(action: .selectPointer, settings: KeySettings(["direction": "backward", "style": "robot", "activate": false]), link: .stopped).get()
+        #expect(fixed["style"] as? String == "robot" && fixed["activate"] as? Bool == false)
+        #expect(fixed["direction"] == nil)
+    }
+
+    @Test func malformedCycleDirectionsRequireAnExplicitInspectorChoice() {
+        for value: Any in ["", "previous", "Forward", 1, true, NSNull(), ["backward"]] {
+            let settings = KeySettings(["direction": value])
+            #expect(settings.pointerDirection == nil)
+            guard case .failure(let refusal) = KeyModel.selectionCommand(action: .choosePointer, settings: settings) else {
+                Issue.record("Invalid direction must not silently become forward"); continue
+            }
+            #expect(refusal.text == "Choose Direction")
+            #expect(face(.choosePointer, .connected(on), settings: settings).label == "Choose Direction")
+        }
+    }
+
     @Test func cycleQueueSerializesIntentAndNeverReplaysAnUncertainRequest() {
         var queue = CycleQueue()
         let a = CycleQueue.Intent(context: "a", keyID: UUID())

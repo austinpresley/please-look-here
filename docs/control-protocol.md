@@ -38,7 +38,7 @@ operations, enum values and invalid numeric/boolean values are rejected.
 | magnifier | enabled boolean | Start or stop live magnification independently of the selected pointer; Screen Recording is required |
 | gesture | slot: first, second or none | Show a hand pose for two seconds, or cancel it; invalid/unavailable non-hand targets reject before activation |
 | style | style ID; optional activate boolean | Select a pointer, optionally activate |
-| cycle-pointer | None | Advance once through all enabled, available pointers and wrap; preserve activation and Interact |
+| cycle-pointer | Optional `direction`: `forward` or `backward` | Cycle all enabled, available pointers and wrap; preserve activation and Interact |
 | laser | None | Activate and select the laser |
 | configure | settings object | Validate every field before writing a batch |
 | toggle-sound | None | Toggle hand sound |
@@ -239,17 +239,25 @@ changes in S-019. S-020 cycling uses the separate operation below.
 "$APP/Contents/MacOS/TinyHand" --ctl '{"version":1,"operation":"cycle-pointer"}'
 ```
 
-The request accepts no other fields. On the app's main queue, refresh custom
-manifest membership, read `overlay.style` and `PointerCatalog.selectableStyles`,
-choose the next entry, validate and select it, then return acknowledged state.
+The optional `direction` field accepts `forward` or `backward`. Omission keeps
+forward behavior for existing protocol v1 clients and Stream Deck keys. Other
+values or extra fields are rejected before mutation. For example:
+
+```json
+{"version":1,"operation":"cycle-pointer","direction":"backward"}
+```
+
+On the app's main queue, refresh custom manifest membership, read `overlay.style`
+and `PointerCatalog.selectableStyles`, choose the next or previous entry with
+wrapping, validate and select it, then return acknowledged state.
 ControlServer serializes requests and the complete operation cannot interleave
 with Settings or another control mutation. The order is built-in library order,
-custom manifest order, then Laser dot. It includes unpinned choices. It never uses
+custom manifest order, then presentation pointers in catalog order. It includes unpinned choices. It never uses
 `quickStyles`, `pinnedStyles` or `state.quickPointers` as the cycle set.
 
 One choice selects itself. A current pointer outside the set selects its first
-entry. Disabled and unavailable entries are excluded. Each request recomputes the
-set, so custom deletion/restoration and eligibility edits affect the next request.
+entry for forward, or its last entry for backward. Disabled and unavailable
+entries are excluded. Each request recomputes the set, so custom deletion/restoration and eligibility edits affect the next request.
 Restoration itself does not steal selection. An empty usable set returns
 `no-enabled-pointer`; a pointer whose image disappears during validation returns
 `missing-asset`. Rejected requests change neither selection nor activation.
@@ -257,11 +265,16 @@ Normal catalog recovery still owns fallback after external loss.
 
 Cycling preserves pointer activation and Interact, even while off. Use `toggle`
 or `on` separately to activate it. `activate`, `style`, lists and other extra fields
-are invalid on this operation. Existing `style` and pinned next/previous commands
-keep their existing behavior. No protocol version change is needed.
+are invalid on this operation. Native Next Pointer and Previous Pointer use the
+same full enabled/available catalog and wrap. Pins remain toolbar favorites.
+Existing `style` requests keep their behavior. No protocol version change is needed.
 
-The new Stream Deck Choose Pointer action queues deliberate press intents, not
-locally computed styles. It sends the next request only after the previous reply.
+The Stream Deck Choose Pointer inspector offers Forward and Backward. Opening it
+never rewrites settings. A user direction change preserves all other saved keys;
+legacy keys without a direction remain forward. Action UUIDs remain unchanged.
+The action queues deliberate press intents with their direction captured at press
+time, rather than locally computed styles. It sends the next request only after
+the previous reply.
 A lost reply removes that sent intent permanently and pauses unsent intents until
 a later successful status read. That safe read is serialized after the failed
 request. Only never-sent intents then continue against current app state. The

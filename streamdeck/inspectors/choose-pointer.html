@@ -6,23 +6,62 @@
 <title>Choose Pointer</title>
 <style>
   body { margin: 0; padding: 12px; color: #d8d8d8; background: #2d2d2d; font: 12px/1.5 -apple-system, sans-serif; }
-  h1 { margin: 0 0 8px; font-size: 13px; font-weight: 600; }
+  label { display: block; margin-bottom: 8px; font-size: 13px; font-weight: 600; }
+  select { box-sizing: border-box; width: 100%; margin-bottom: 8px; font: inherit; }
   p { margin: 0 0 8px; }
+  #error { color: #ffd16b; }
 </style>
 </head>
 <body>
-  <h1>Next enabled pointer</h1>
-  <p>Each press chooses the next enabled, available pointer in Look Here Please, then wraps to the first. All choices are included, even unpinned and custom hands.</p>
+  <label for="direction">Cycle direction</label>
+  <select id="direction" aria-describedby="help error">
+    <option value="forward">Forward</option>
+    <option value="backward">Backward</option>
+  </select>
+  <p id="error" role="status" hidden>Saved cycle direction is invalid. Choose Forward or Backward.</p>
+  <p id="help">Each press chooses the next or previous enabled, available pointer, wrapping at either end. All choices are included, even unpinned and custom hands.</p>
   <p>Cycling keeps On/Off and Interact unchanged. Use Pointer On/Off to turn an off pointer on.</p>
   <p>The key shows the current pointer acknowledged by the app. Enable choices in Settings &gt; Pointers.</p>
-  <p>Rapid presses wait in order. If a reply is lost, Check app marks the uncertain result. That press is never repeated. Unsent presses continue after status recovers. Leaving the key's page cancels unsent presses.</p>
+  <p>Rapid presses wait in order with the direction chosen at press time. If a reply is lost, Check app marks the uncertain result. That press is never repeated. Unsent presses continue after status recovers. Leaving the key's page cancels unsent presses.</p>
   <p>Keep Look Here Please running to use this key. Use Select Pointer for a fixed choice.</p>
 <script>
-// Register the read-only inspector without reading or writing saved key settings.
-function connectElgatoStreamDeckSocket(port, uuid, registerEvent) {
-  const connection = new WebSocket('ws://127.0.0.1:' + port);
-  connection.onopen = () => connection.send(JSON.stringify({ event: registerEvent, uuid }));
+let socket, context, settings = {};
+const direction = document.getElementById('direction');
+const error = document.getElementById('error');
+const directions = new Set(['forward', 'backward']);
+
+function showSettings(value) {
+  settings = value;
+  const choice = Object.hasOwn(settings, 'direction') ? settings.direction : 'forward';
+  const valid = typeof choice === 'string' && directions.has(choice);
+  direction.querySelector('[data-invalid]')?.remove();
+  if (!valid) {
+    const option = new Option('Choose a valid direction', '');
+    option.dataset.invalid = 'true';
+    option.disabled = true;
+    direction.prepend(option);
+  }
+  direction.value = valid ? choice : '';
+  direction.setAttribute('aria-invalid', String(!valid));
+  error.hidden = valid;
 }
+
+function connectElgatoStreamDeckSocket(port, uuid, registerEvent, info, actionInfo) {
+  context = uuid;
+  showSettings(JSON.parse(actionInfo).payload.settings || {});
+  socket = new WebSocket('ws://127.0.0.1:' + port);
+  socket.onopen = () => socket.send(JSON.stringify({ event: registerEvent, uuid }));
+  socket.onmessage = message => {
+    const event = JSON.parse(message.data);
+    if (event.event === 'didReceiveSettings') showSettings(event.payload.settings || {});
+  };
+}
+
+direction.addEventListener('change', () => {
+  if (!directions.has(direction.value) || socket?.readyState !== WebSocket.OPEN) return;
+  showSettings({ ...settings, direction: direction.value });
+  socket.send(JSON.stringify({ event: 'setSettings', context, payload: settings }));
+});
 </script>
 </body>
 </html>

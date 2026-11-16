@@ -61,3 +61,50 @@ another app currently prevents this command from registering. "Review Shortcut
 Conflict…" opens Shortcuts without altering assignments.
 Final S-039 focused run: `swift test --filter 'ShortcutTests|MenuBarTests|GestureTests'`
 passed 24 tests, including the new native-menu recovery request check.
+
+## S-043
+
+Native Next Pointer and Previous Pointer now resolve the complete enabled,
+available catalog and wrap in either direction. Pins remain toolbar favorites.
+Both native commands refresh custom manifest membership first. A current pointer
+outside the selectable set uses its first entry going forward or its last entry
+going backward. One choice selects itself; an empty set rejects without mutation.
+
+Protocol v1 `cycle-pointer` accepts optional `direction: "forward" | "backward"`.
+Omission preserves forward behavior and old clients. Invalid direction values
+reject before mutation. The Choose Pointer inspector offers Forward/Backward;
+opening or receiving settings never writes them. An explicit direction change
+merges all existing saved fields. Existing action UUIDs, fixed pointer settings,
+activation and Interact remain unchanged. Each queue intent captures direction
+at press time, using the existing FIFO and uncertain-request behavior.
+
+Local evidence: `swift test --filter 'PointerCatalogTests|DeckKeyTests|ControlTests'`
+passed 45 tests. Coverage includes both wrap boundaries, every native selectable
+current pointer including unpinned choices, disabled/missing custom images,
+single/empty catalogs, strict protocol validation, legacy defaults, stable action
+UUIDs and immutable mixed-direction queue intents. A test expectation initially
+counted one extra forward cycle incorrectly; corrected to the actual next entry,
+then the full focused run passed. `node scripts/test-pointer-inspector.cjs` passed
+5 tests against the actual inspector JavaScript, with DOM/socket stubs and no UI
+or Stream Deck host. All changes compile through the local Swift test build.
+
+The existing thumbnail exporter emitted 39 hex-named PNGs in this initially clean
+worktree during `styles` tests because ControlTransport.directory is empty in a
+bundle-less unit runner. Only those newly generated files were moved to
+`/tmp/lhp-inputcycle-generated-thumbnails`; no pre-existing assets were touched.
+This confirms the separately assigned S-044 test-output isolation issue. Further
+bundle-less styles tests should use `-Xswiftc -DCONTROL_TEST` or the S-044 fix.
+
+UX/copy proposals: "Cycle direction", "Forward", "Backward". Forward chooses the
+next enabled available pointer and wraps to the first; Backward chooses the
+previous and wraps to the last. Parent should update the central glossary and
+architecture text that still describes pinned native navigation and a read-only
+Choose Pointer inspector. Protocol details are updated in docs/control-protocol.md.
+
+Parent acceptance checks still required: physical radial holds/chords and missed
+releases; actual external hotkey conflict with unaffected command execution;
+recorder rollback under a real conflict; light/dark Settings and native menu;
+Stream Deck host inspector/profile preservation and physical forward/backward
+keys; integrated UI validation and release packaging. The historical reopen
+report is not physically closed by these unit tests. No PR, push, hosted CI,
+signing, notarization, installation, package build or delivery was performed.
