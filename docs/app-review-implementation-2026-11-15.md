@@ -92,7 +92,7 @@ UX:
 - Replace instruction-heavy rows with concise help and a practice canvas. Retain current Drawing controls.
 - Escape cancels temporary UI. Native text editing keeps its usual keys. Errors say what failed and how to recover.
 
-Status: todo
+Status: implemented; integrated 288-test suite and final source audit pass, native certification in progress
 
 ### S-42 Customize each pointer with shared defaults
 
@@ -106,7 +106,7 @@ UX:
 - Edit a selected pointer in Settings. Clearly label Default or Customized. Spotlight aperture and rod thickness have appropriate names.
 - Escape cancels temporary UI. Native text editing keeps its usual keys. Errors say what failed and how to recover.
 
-Status: todo
+Status: implemented; integrated 288-test suite and final source audit pass, native certification in progress
 
 ### S-43 Wrap pointer cycling everywhere
 
@@ -148,7 +148,7 @@ UX:
 - Keep native controls, logical focus and visible focus cues. Add labeled Move Left/Right actions for pins.
 - Escape cancels temporary UI. Native text editing keeps its usual keys. Errors say what failed and how to recover.
 
-Status: todo
+Status: implemented; integrated 288-test suite and final source audit pass, native certification in progress
 
 ### S-46 Browse and filter the pointer library
 
@@ -162,7 +162,7 @@ UX:
 - Keep the gallery near the top. Provide an empty-result message and Clear Search; retain independent Enabled and Pinned.
 - Escape cancels temporary UI. Native text editing keeps its usual keys. Errors say what failed and how to recover.
 
-Status: todo
+Status: implemented; integrated 288-test suite and final source audit pass, native certification in progress
 
 ### S-47 Preview pointer appearance locally
 
@@ -176,7 +176,7 @@ UX:
 - Use an inline sample and explicit Preview Tap. Keep the real pointer and annotations untouched.
 - Escape cancels temporary UI. Native text editing keeps its usual keys. Errors say what failed and how to recover.
 
-Status: todo
+Status: implemented; integrated 288-test suite and final source audit pass, native certification in progress
 
 ### S-48 Improve screenshot results and recovery
 
@@ -204,7 +204,7 @@ UX:
 - Separate Preview and selection controls, integrate per-pointer inheritance, and expose effective mute and volume.
 - Escape cancels temporary UI. Native text editing keeps its usual keys. Errors say what failed and how to recover.
 
-Status: todo
+Status: implemented; integrated 288-test suite and final source audit pass, native certification in progress
 
 ### S-50 Teach controls in a practice window
 
@@ -218,7 +218,7 @@ UX:
 - Use a small self-contained practice window reachable after onboarding. No forced setup and no default assignments.
 - Escape cancels temporary UI. Native text editing keeps its usual keys. Errors say what failed and how to recover.
 
-Status: todo
+Status: implemented; integrated 288-test suite and final source audit pass, native certification in progress
 
 ### S-51 Save presets and portable backups
 
@@ -232,7 +232,7 @@ UX:
 - Manual preset selection first. Keep shortcut/startup imports explicit and off by default. Preserve existing data and reject unsafe paths or invalid files.
 - Escape cancels temporary UI. Native text editing keeps its usual keys. Errors say what failed and how to recover.
 
-Status: todo
+Status: implemented; integrated 288-test suite and final source audit pass, native certification in progress
 
 ### S-52 Edit individual annotations
 

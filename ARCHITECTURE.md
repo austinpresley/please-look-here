@@ -178,3 +178,58 @@ fork-upgrades smoke script operates only over its public canvas and an isolated
 settings/hand domain. `test-presentation` is absent from normal capabilities and
 requires that isolated suite; snapshot paths stay inside APP_SNAPSHOT and capture
 only an app-owned window. The observed-event/permission helpers are DEBUG-only.
+# App review improvements, 16 November 2026
+
+The app and Stream Deck remain the same two executable targets. The version 1
+control protocol keeps its existing operations and raw IDs. Optional cycle
+direction, configuration readback and new capabilities extend it compatibly.
+Native and Stream Deck pointer cycles use the complete enabled/available catalog
+and wrap in either direction. Existing keys default to forward.
+
+DisplayInkStore retains one Ink document per stable display ID. Pointer Off hides
+documents without clearing history. InkVisibility captures per-object lifetime
+separately from geometry. Expired markers cannot hit-test; restored objects get a
+fresh lifetime. AnnotationHitTest removes one visible object per Eraser gesture;
+Highlighter uses normal freehand history with broader translucent styling.
+
+RadialInput separates observed ordinary keys from owned pairs. A bare-modifier
+hold has an identity and deadline. Every queued menu event and close uses that
+identity. Native flags/key samples repair missed state; stale timers cannot
+advance or cancel a newer gesture. HotKeyBindings retains successful registrations
+independently and exposes per-command failures.
+
+PointerConfigurationDocument is the validated versioned inheritance archive.
+Global preferences remain shared defaults, with independent per-ID overrides.
+SoundOutputConfiguration adds volume/master mute without changing saved sound
+choices. TapSound captures silent transitions before queueing teardown, and keeps
+all driver operations on its serial queue. Injected deadlines isolate queue-order
+tests from the separate real watchdog checks. SoundAudition never saves choices.
+
+HandRecoveryStore owns recoverable file packages. HandRestoreTransaction owns the
+file/preference boundary, including checked preference persistence before receipt
+completion. Valid manifest membership survives recovery errors, and failed loads
+cannot authorize destructive manifest writes. PointerRemovalConfiguration stores
+and merges only the removed ID's override snapshot.
+
+PresentationArchive owns the bounded portable JSON schema. PresentationStore
+prepares image validation, staged files and journals off-main, then validates and
+publishes on the main queue shared by native/control writers. Pending removal
+identities conflict with import. Before/after journals support partial recovery,
+rollback and retry, without claiming power-loss atomicity or an external-process
+lock. Protected shortcut, startup, capture-folder and host-profile state is not
+imported. Native PresetsSettings owns the user workflow.
+
+DrawingPracticeSession, PointerPreviewPlayback and GettingStartedPracticeSession
+own only disposable state. Their clocks, renderers and ink are independent of the
+live overlay. Local ink publishes to preview controls; the practice host observes
+that publisher rather than replacing its callback. Native sidebar navigation,
+PinOrdering and PointerLibraryFilter keep browsing and ordering separate from
+saved selection and enabled state.
+
+PointerThumbnailCache reuses signatures, encoded bytes and unchanged exports.
+Empty/unsafe output directories cannot fall back to the checkout. Tests use unique
+preferences, hand and thumbnail directories through scripts/run-tests.sh.
+
+The milestone check-in is recorded in
+docs/architecture-review-2026-11-16.md. No additional Strong refactor is required
+before handoff. Screenshot-session extraction remains Worth exploring.
