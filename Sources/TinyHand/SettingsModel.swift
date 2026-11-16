@@ -48,6 +48,7 @@ final class SettingsModel: ObservableObject {
         handsObserver = NotificationCenter.default.addObserver(forName: CustomHands.changed, object: nil, queue: .main) { [weak self] _ in
             self?.revision += 1
         }
+        CustomHands.reload()
         HandAsset.preloadThumbnails(PointerStyle.allCases.compactMap(\.assetName)) { [weak self] in
             self?.revision += 1
         }
@@ -159,7 +160,7 @@ final class SettingsModel: ObservableObject {
             handIdea = ""
             makingHand = false
         } catch {
-            draftError = "Look Here Please couldn't save that hand."
+            draftError = error.localizedDescription
         }
     }
 
@@ -185,31 +186,8 @@ final class SettingsModel: ObservableObject {
     func undoHandRemoval() {
         guard let receipt = removedHands.first else { return }
         do {
-            // Validate and encode before restoring any artwork or marking the
-            // receipt restored. Legacy receipts have no configuration payload.
-            let configurationData = try receipt.state.extensions[PointerRemovalConfiguration.receiptKey].map {
-                try PointerRemovalConfiguration.restoredArchive($0, for: receipt.hand.id,
-                    in: PointerConfigurationDocument.load(from: Preferences.storage))
-            }
             let warning = try CustomHands.restore(receipt)
-            Preferences.performBatch {
-                if let configurationData {
-                    Preferences.storage.set(configurationData, forKey: PointerConfigurationDocument.storageKey)
-                    Preferences.notifyPointerConfigurationChanged()
-                }
-                var disabled = Preferences.disabledPointerIDs
-                if receipt.state.disabled { disabled.insert(receipt.hand.id) }
-                else { disabled.remove(receipt.hand.id) }
-                Preferences.disabledPointerIDs = disabled
-                if let style = PointerStyle(rawValue: receipt.hand.id),
-                   receipt.state.pinnedIDs.contains(receipt.hand.id) {
-                    let originalPins = receipt.state.pinnedIDs.compactMap(PointerStyle.init(rawValue:))
-                    // Undo restores the saved toolbar snapshot, including the
-                    // sole-pin case, without exceeding the toolbar's capacity.
-                    if originalPins.contains(style) { Preferences.pinnedStyles = originalPins }
-                }
-                PointerCatalog.reconcile()
-            }
+            PointerCatalog.reconcile()
             handMessage = warning ?? "\(receipt.hand.name) was restored."
             refreshRemovedHands()
         } catch { handMessage = error.localizedDescription }

@@ -384,22 +384,41 @@ enum CustomHands {
     private(set) static var recoveryMessage: String?
 
     static var all: [CustomHand] {
-        if let loaded = loaded {
-            return loaded
-        }
-        let list: [CustomHand]
+        if loaded == nil { load() }
+        return loaded ?? []
+    }
+
+    private static func load() {
+        let store = HandRecoveryStore(directory: directory)
         do {
-            if FileManager.default.fileExists(atPath: listURL.path) {
-                try HandRecoveryStore(directory: directory).recoverInterruptedRemovals()
-                list = try HandRecoveryStore(directory: directory).readManifest()
-            } else { list = [] }
+            if FileManager.default.fileExists(atPath: directory.path) {
+                // Retain valid membership even when a separate recovery package
+                // cannot be read. A failed load is never an empty writable list.
+                loaded = try store.readManifest(allowNewLibrary: true)
+                if FileManager.default.fileExists(atPath: listURL.path) {
+                    let interrupted = try store.restoresAwaitingPreferences()
+                    for receipt in interrupted {
+                        try HandRestoreTransaction(store: store, preferences: Preferences.storage).restore(receipt)
+                        HandAsset.forget(receipt.hand.id)
+                    }
+                    if !interrupted.isEmpty {
+                        loaded = try store.readManifest()
+                        HandGestureCatalog.forget()
+                        Preferences.notifyPointerConfigurationChanged()
+                    }
+                }
+            } else { loaded = [] }
             recoveryMessage = nil
         } catch {
-            recoveryMessage = "Unable to load custom hands. Check access to \(directory.path), then reopen Settings. \(error.localizedDescription)"
-            list = []
+            recoveryMessage = "Unable to finish loading custom hands. Adding and removing hands is paused. Check \(directory.path), then reopen Settings. \(error.localizedDescription)"
+            if loaded == nil { loaded = [] }
         }
-        loaded = list
-        return list
+    }
+
+    private static func mutationLibrary() throws -> [CustomHand] {
+        reload()
+        if let recoveryMessage { throw HandRecoveryStore.Problem(message: recoveryMessage) }
+        return all
     }
 
     static func hand(_ id: String) -> CustomHand? {
@@ -413,13 +432,8 @@ enum CustomHands {
     /// missing files distinct from disabled choices and notice restored entries.
     static func reload() {
         let previous = loaded
-        loaded = nil
-        let current = all
-        if recoveryMessage != nil, let previous {
-            loaded = previous
-            return
-        }
-        if let previous, previous != current {
+        load()
+        if let previous, previous != loaded {
             NotificationCenter.default.post(name: changed, object: nil)
         }
     }
@@ -427,12 +441,13 @@ enum CustomHands {
     @discardableResult
     static func add(_ image: CGImage, ink: UInt32, name: String) throws -> PointerStyle {
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        var list = try mutationLibrary()
+        let original = list
         let id = "custom-" + UUID().uuidString.prefix(8).lowercased()
         try HandMaker.write(image, to: directory.appendingPathComponent("\(id).png"))
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        var list = all
         list.append(CustomHand(id: id, name: trimmed.isEmpty ? "My hand \(list.count + 1)" : String(trimmed.prefix(16)), ink: ink))
-        try save(list)
+        try save(list, replacing: original)
         guard let style = PointerStyle(rawValue: id) else {
             throw HandMaker.Problem(message: "Look Here Please couldn't add that hand.")
         }
@@ -441,6 +456,7 @@ enum CustomHands {
 
     @discardableResult
     static func remove(_ style: PointerStyle, extensions: [String: Data] = [:]) throws -> HandRecoveryStore.Receipt {
+        _ = try mutationLibrary()
         guard let assetName = style.assetName, style.isCustom else {
             throw HandRecoveryStore.Problem(message: "Only custom hands can be removed from the library.")
         }
@@ -456,14 +472,19 @@ enum CustomHands {
 
     @discardableResult
     static func restore(_ receipt: HandRecoveryStore.Receipt) throws -> String? {
-        let warning = try HandRecoveryStore(directory: directory).restore(receipt)
+        try HandRestoreTransaction(store: HandRecoveryStore(directory: directory), preferences: Preferences.storage).restore(receipt)
         HandAsset.forget(receipt.hand.id)
         HandGestureCatalog.forget()
         reload()
-        return warning
+        Preferences.notifyPointerConfigurationChanged()
+        return nil
     }
 
-    private static func save(_ list: [CustomHand]) throws {
+    private static func save(_ list: [CustomHand], replacing original: [CustomHand]) throws {
+        if let recoveryMessage { throw HandRecoveryStore.Problem(message: recoveryMessage) }
+        guard try HandRecoveryStore(directory: directory).readManifest(allowNewLibrary: true) == original else {
+            throw HandRecoveryStore.Problem(message: "The hand list changed while adding this hand. Reopen Settings, then try again.")
+        }
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         try JSONEncoder().encode(list).write(to: listURL, options: .atomic)
         loaded = list
