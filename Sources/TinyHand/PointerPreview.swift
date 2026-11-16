@@ -86,11 +86,13 @@ final class PointerPreviewView: NSView {
     private var tracking: NSTrackingArea?
     private var tap = 0
     private var motion = 0
+    private var lastSize = CGSize.zero
     init(configuration: PointerPreviewConfiguration) {
         self.configuration = configuration
         arm = ArmView(frame: .zero, previewConfiguration: configuration)
         super.init(frame: .zero)
         wantsLayer = true; layer?.masksToBounds = true
+        arm.autoresizingMask = [.width, .height]
         addSubview(arm)
         setAccessibilityElement(true)
         setAccessibilityRole(.image)
@@ -104,9 +106,22 @@ final class PointerPreviewView: NSView {
         bounds.contains(convert(point, from: superview)) ? self : nil
     }
     override func layout() {
-        super.layout(); arm.frame = bounds
-        playback.move(to: CGPoint(x: bounds.midX, y: bounds.height * 0.6))
+        super.layout()
+        layoutRenderer()
+    }
+    override func setFrameSize(_ newSize: NSSize) {
+        super.setFrameSize(newSize)
+        layoutRenderer()
+    }
+    private func layoutRenderer() {
+        arm.frame = bounds
+        guard bounds.width > 0, bounds.height > 0 else { return }
+        if lastSize != bounds.size {
+            lastSize = bounds.size
+            playback.move(to: CGPoint(x: bounds.midX, y: bounds.height * 0.6))
+        }
         arm.aim(cursor: playback.cursor)
+        wake()
     }
     override func updateTrackingAreas() {
         super.updateTrackingAreas()
@@ -138,7 +153,10 @@ final class PointerPreviewView: NSView {
         if !playback.playing && !arm.isSettling { timer?.invalidate(); timer = nil }
     }
     func stop() { timer?.invalidate(); timer = nil; playback.cancel(); arm.held = false; arm.cancelTapAnimation() }
-    override func viewDidMoveToWindow() { super.viewDidMoveToWindow(); if window == nil { stop() } }
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        if window == nil { stop() } else { layoutRenderer() }
+    }
     override func mouseMoved(with event: NSEvent) { playback.move(to: convert(event.locationInWindow, from: nil)); wake() }
     override func mouseDragged(with event: NSEvent) { mouseMoved(with: event) }
     override func mouseDown(with event: NSEvent) { window?.makeFirstResponder(self); mouseMoved(with: event); previewTap() }

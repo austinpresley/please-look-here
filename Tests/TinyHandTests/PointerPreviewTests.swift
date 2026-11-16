@@ -3,6 +3,14 @@ import Testing
 @testable import TinyHand
 
 @Suite(.serialized) @MainActor struct PointerPreviewTests {
+    @Test func rendererHasVisibleBoundsImmediatelyAfterHostResize() {
+        let view = PointerPreviewView(configuration: .current)
+        view.setFrameSize(NSSize(width: 504, height: 180))
+        #expect(view.arm.frame == view.bounds)
+        view.setFrameSize(NSSize(width: 320, height: 160))
+        #expect(view.arm.frame == view.bounds)
+        view.stop()
+    }
     private func configuration(size: CGFloat = 0.13) -> PointerPreviewConfiguration {
         PointerPreviewConfiguration(style: .laser, size: size, shadow: false, shadowStyle: .original, motion: .original, tapSwing: 0)
     }
