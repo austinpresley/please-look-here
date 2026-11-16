@@ -226,7 +226,7 @@ import Testing
 
     @Test func backwardSkipsMissingAndDisabledCustomPointers() throws {
         let custom = try CustomHands.add(try #require(HandAsset.load("hand_lavender")?.image), ink: 0, name: "Backward cycle fixture")
-        defer { CustomHands.remove(custom); Preferences.resetAll() }
+        defer { _ = try? CustomHands.remove(custom); Preferences.resetAll() }
         #expect(try PointerCatalog.nextSelectable(after: .laser, direction: .backward) == custom)
         let path = CustomHands.directory.appendingPathComponent(custom.rawValue + ".png")
         let bytes = try Data(contentsOf: path)

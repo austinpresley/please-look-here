@@ -22,7 +22,7 @@ UX:
 - Use the existing overlay. No new permission, window or automatic wake behavior. Clear Drawing remains explicit.
 - Escape cancels temporary UI. Native text editing keeps its usual keys. Errors say what failed and how to recover.
 
-Status: todo
+Status: implemented; integrated 192-test suite passed, native and packaging acceptance pending
 
 ### S-37 Make annotation fading consistent
 
@@ -36,7 +36,7 @@ UX:
 - Keep expiry separate from semantic history. Visible-state counts drive drawing controls; expired history remains recoverable.
 - Escape cancels temporary UI. Native text editing keeps its usual keys. Errors say what failed and how to recover.
 
-Status: todo
+Status: implemented; integrated 192-test suite passed, native and packaging acceptance pending
 
 ### S-38 Keep radial input compatible with normal clicks
 
@@ -50,7 +50,7 @@ UX:
 - Use a 180 ms starting hold threshold. Cancel pending opening on ordinary mouse/key input. No default modifier.
 - Escape cancels temporary UI. Native text editing keeps its usual keys. Errors say what failed and how to recover.
 
-Status: todo
+Status: implemented; integrated 192-test suite passed, native and packaging acceptance pending
 
 ### S-39 Isolate shortcut registration failures
 
@@ -64,7 +64,7 @@ UX:
 - Keep all hotkeys user assigned. Name the conflicting command and combination; offer a route to Shortcuts.
 - Escape cancels temporary UI. Native text editing keeps its usual keys. Errors say what failed and how to recover.
 
-Status: todo
+Status: implemented; integrated 192-test suite passed, native and packaging acceptance pending
 
 ### S-40 Recover deleted custom hands
 
@@ -78,7 +78,7 @@ UX:
 - Use Move to Trash/recoverable storage plus Undo. Make removal available without a hover-only target.
 - Escape cancels temporary UI. Native text editing keeps its usual keys. Errors say what failed and how to recover.
 
-Status: todo
+Status: implemented; integrated 192-test suite passed, native and packaging acceptance pending
 
 ### S-41 Preview drawing settings live
 
@@ -120,7 +120,7 @@ UX:
 - Pins remain toolbar favorites. All entry points preserve Pointer On/Off and Interact. Existing Stream Deck cycle keys keep forward behavior.
 - Escape cancels temporary UI. Native text editing keeps its usual keys. Errors say what failed and how to recover.
 
-Status: todo
+Status: implemented; integrated 192-test suite passed, native and packaging acceptance pending
 
 ### S-44 Cache thumbnails and isolate test files
 
@@ -134,7 +134,7 @@ UX:
 - No extra UI. Preserve existing custom-hand thumbnails; use isolated temporary output for tests. Do not delete preexisting root PNGs.
 - Escape cancels temporary UI. Native text editing keeps its usual keys. Errors say what failed and how to recover.
 
-Status: todo
+Status: implemented; integrated 192-test suite passed, native and packaging acceptance pending
 
 ### S-45 Make controls accessible from the keyboard
 
@@ -246,7 +246,7 @@ UX:
 - Keep edits within Draw/Interact Off. Extend tool choices consistently through toolbar, radial, menus, automation and Stream Deck without changing existing key UUIDs.
 - Escape cancels temporary UI. Native text editing keeps its usual keys. Errors say what failed and how to recover.
 
-Status: todo
+Status: implemented; integrated 192-test suite passed, native and packaging acceptance pending
 
 ### S-53 Back up source and reconcile status
 
