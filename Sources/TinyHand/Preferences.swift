@@ -233,8 +233,14 @@ enum Preferences {
     }
 
     static var laserSound: Bool {
-        get { defaults.object(forKey: "sound.laser") as? Bool ?? false }
-        set { set(newValue, "sound.laser") }
+        get { pointerConfiguration(for: "laser").soundEnabled }
+        set {
+            performBatch {
+                // Keep the old key for older app versions and configure clients.
+                set(newValue, "sound.laser")
+                try? updatePointer("laser") { $0.soundEnabled = newValue }
+            }
+        }
     }
 
     static var interactKeepsHand: Bool {
@@ -292,7 +298,7 @@ enum Preferences {
                     "sound.hands", "sound.laser", "interactKey", "interactKeepsHand", "pinnedStyles", "pointerStyle", "disabledPointerIDs",
                     "inkChoice", "showInkButton", "tapSound", "pointerMode", "drawingTool", "strokeWidth", "inkOpacity",
                     "strokeSmoothing", "pointerMotion", "theme", "showToolbar", "toolbarPosition", "capture.copy", "capture.save", "capture.folder",
-                    "inkFadeStyle", "trailDelay", "trailSpeed", "magnifierZoom", "magnifierDiameter", "tapSwing"]
+                    "inkFadeStyle", "trailDelay", "trailSpeed", "magnifierZoom", "magnifierDiameter", "tapSwing", PointerConfigurationDocument.storageKey]
                     + PresentationAction.allCases.map({ "shortcut.\($0.rawValue)" }) {
             defaults.removeObject(forKey: key)
         }
@@ -301,6 +307,10 @@ enum Preferences {
 
     private static func set(_ value: Any, _ key: String) {
         defaults.set(value, forKey: key)
+        if batchDepth == 0 { NotificationCenter.default.post(name: changed, object: nil) }
+    }
+
+    static func notifyPointerConfigurationChanged() {
         if batchDepth == 0 { NotificationCenter.default.post(name: changed, object: nil) }
     }
 

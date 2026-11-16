@@ -200,9 +200,10 @@ final class OverlayController {
 
     var drawingAllowed: Bool { accessibility() }
     var soundOn: Bool {
-        get { style == .laser ? Preferences.laserSound : Preferences.handSound }
+        get { Preferences.pointerConfiguration(for: style.rawValue).soundEnabled }
         set {
-            if style == .laser { Preferences.laserSound = newValue } else { Preferences.handSound = newValue }
+            do { try Preferences.updatePointer(style.rawValue) { $0.soundEnabled = newValue } }
+            catch { Log.write("Unable to change pointer sound: \(error.localizedDescription)") }
         }
     }
     @discardableResult
@@ -359,7 +360,6 @@ final class OverlayController {
         toolbar.setMode(mode)
         toolbar.setMagnifying(isMagnifying)
         toolbar.setNeedsPermission(needsDrawingPermission)
-        tapSound.load(Preferences.tapSound)
         syncSound()
         if isActive {
             if mode == .draw && !accessibility() {
@@ -375,6 +375,7 @@ final class OverlayController {
         onActiveChanged?()
     }
     private func syncSound() {
+        tapSound.load(Preferences.pointerConfiguration(for: style.rawValue).sound)
         if !soundOn { contactFeedback.cancel() }
         tapSound.enabled = soundOn
         toolbar.setSoundOn(soundOn)

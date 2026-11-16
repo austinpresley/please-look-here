@@ -1,7 +1,7 @@
 import AppKit
 import AVFoundation
 
-enum TapSoundChoice: String, CaseIterable {
+enum TapSoundChoice: String, CaseIterable, Codable {
     case thock, click, tock, clack, typewriter, snap, wood, pop, boop, blip, coin, pew, squeak, quack, chirp
 
     var title: String {

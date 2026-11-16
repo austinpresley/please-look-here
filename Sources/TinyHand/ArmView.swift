@@ -108,11 +108,17 @@ final class ArmView: NSView {
             self.aim(cursor: cursor)
         }
         NotificationCenter.default.addObserver(forName: Preferences.changed, object: nil, queue: .main) { [weak self] _ in
-            self?.handLenFrac = Preferences.pointerSize
-            self?.showShadow = Preferences.showShadow
-            self?.shadowStyle = Preferences.shadowStyle
-            self?.lastPose = []
+            self?.updatePointerConfiguration()
         }
+    }
+
+    private func updatePointerConfiguration() {
+        let configuration = Preferences.pointerConfiguration(for: style.rawValue)
+        handLenFrac = CGFloat(configuration.size)
+        showShadow = configuration.shadow
+        shadowStyle = configuration.shadowStyle
+        lastPose = []
+        lastLaserPose = []
     }
 
     func updateInkColor() {
@@ -133,6 +139,7 @@ final class ArmView: NSView {
         if newStyle.assetName != nil && asset == nil {
             style = .laser
         }
+        updatePointerConfiguration()
         updateInkColor()
         CATransaction.begin()
         CATransaction.setDisableActions(true)

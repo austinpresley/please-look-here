@@ -137,7 +137,10 @@ final class ControlBridge {
                 if let policy = request["releaseSelects"] as? Bool { overlay.radial.releaseSelects = policy }
                 if let path = request["snapshot"] as? String, !overlay.radial.snapshot(to: path) { throw reject("Radial snapshot failed") }
                 response["radial"] = overlay.radial.diagnostics
-            case "toggle-current-sound": overlay.soundOn.toggle()
+            case "toggle-current-sound":
+                let enabled = !overlay.soundOn
+                do { try Preferences.updatePointer(overlay.style.rawValue) { $0.soundEnabled = enabled } }
+                catch { throw reject(error.localizedDescription) }
             case "toggle-sound": Preferences.handSound.toggle()
             case "pin":
                 let style = try readStyle(request["style"])
@@ -248,7 +251,7 @@ final class ControlBridge {
 
     /// Validate every field before writing anything; deliver one native settings notification.
     private func configure(_ patch: [String: Any]) throws {
-        let allowed: Set<String> = ["style", "ink", "fade", "size", "shadow", "shadowStyle", "handSound", "laserSound", "tapSound", "lineWidth", "opacity", "smoothing", "motion", "theme", "showToolbar", "interactKeepsHand", "captureCopies", "captureSaves", "captureFolder", "radialTrigger", "inkFadeStyle", "trailDelay", "trailSpeed", "magnifierZoom", "magnifierDiameter", "tapSwing"]
+        let allowed: Set<String> = ["style", "ink", "fade", "size", "shadow", "shadowStyle", "handSound", "laserSound", "tapSound", "pointerOverrides", "lineWidth", "opacity", "smoothing", "motion", "theme", "showToolbar", "interactKeepsHand", "captureCopies", "captureSaves", "captureFolder", "radialTrigger", "inkFadeStyle", "trailDelay", "trailSpeed", "magnifierZoom", "magnifierDiameter", "tapSwing"]
         guard Set(patch.keys).isSubset(of: allowed) else { throw reject("Unsupported setting") }
         var trigger: RadialTrigger?
         if let value = patch["radialTrigger"] {
@@ -282,6 +285,16 @@ final class ControlBridge {
         if patch["shadowStyle"] != nil && shadowStyle == nil { throw reject("Unknown shadow style") }
         let handSound = try patch["handSound"].map { try readBool($0) }
         let laserSound = try patch["laserSound"].map { try readBool($0) }
+        var overrideData: Data?
+        if patch["pointerOverrides"] != nil || laserSound != nil {
+            do {
+                var document = try PointerConfigurationDocument.load(from: Preferences.storage)
+                if let laserSound { try document.patch(["soundEnabled": laserSound], for: "laser") }
+                // Explicit per-pointer edits take precedence over the legacy alias.
+                if let fields = patch["pointerOverrides"] { document = try document.applying(fields) }
+                overrideData = try document.encoded()
+            } catch { throw reject(error.localizedDescription) }
+        }
         let width = try patch["lineWidth"].map { try readNumber($0) }
         if let width = width, !(2...20).contains(width) { throw reject("Line width must be between 2 and 20") }
         let opacity = try patch["opacity"].map { try readNumber($0) }
@@ -321,7 +334,10 @@ final class ControlBridge {
             if let shadow = shadow { Preferences.showShadow = shadow }
             if let shadowStyle { Preferences.shadowStyle = shadowStyle }
             if let handSound = handSound { Preferences.handSound = handSound }
-            if let laserSound = laserSound { Preferences.laserSound = laserSound }
+            if let laserSound { Preferences.storage.set(laserSound, forKey: "sound.laser") }
+            if let overrideData {
+                Preferences.storage.set(overrideData, forKey: PointerConfigurationDocument.storageKey)
+            }
             if let sound = sound { Preferences.tapSound = sound }
             if let width = width { Preferences.strokeWidth = CGFloat(width) }
             if let opacity = opacity { Preferences.inkOpacity = CGFloat(opacity) }
@@ -368,6 +384,7 @@ final class ControlBridge {
                       "captureCopies": Preferences.captureCopies, "captureSaves": Preferences.captureSaves, "captureFolder": Preferences.captureFolder.path,
                       "toolbarPosition": Preferences.toolbarPosition.map { [$0.x, $0.y] } ?? []],
          "shortcuts": Preferences.shortcutState,
+         "pointerConfiguration": Preferences.pointerConfigurationState(for: overlay.style.rawValue),
          "sizeRange": [Double(Preferences.pointerSizeRange.lowerBound), Double(Preferences.pointerSizeRange.upperBound)],
          "enabledPointers": PointerCatalog.selectableStyles.map(\.rawValue),
          "quickPointers": PointerCatalog.quickStyles.map(\.rawValue),
@@ -383,6 +400,7 @@ final class ControlBridge {
             var item: [String: Any] = ["id": style.rawValue, "name": style.title, "type": style.catalogType,
                                        "enabled": entry.enabled, "available": entry.available, "selectable": entry.selectable,
                                        "pinned": Preferences.pinnedStyles.contains(style)]
+            item["configuration"] = Preferences.pointerConfigurationState(for: style.rawValue)
             if entry.available, let path = thumbnails.path(for: style.rawValue,
                 signature: PointerThumbnailCache.signature(for: style), image: { Toolbar.icon(for: style) }) {
                 item["thumbnail"] = path

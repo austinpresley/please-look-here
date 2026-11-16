@@ -1,6 +1,6 @@
 import AppKit
 
-enum PointerShadowStyle: String, CaseIterable {
+enum PointerShadowStyle: String, CaseIterable, Codable {
     case original, contact
     var title: String { self == .original ? "Original" : "Contact" }
 }

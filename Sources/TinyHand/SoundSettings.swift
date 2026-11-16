@@ -11,7 +11,7 @@ struct SoundPage: View {
         let on = Preferences.handSound
         VStack(alignment: .leading, spacing: Space.xxl) {
             VStack(alignment: .leading, spacing: 8) {
-                Text("Tap sound")
+                Text("Pointer Defaults")
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(.secondary)
                     .padding(.horizontal, 4)
@@ -30,16 +30,10 @@ struct SoundPage: View {
                         }
                     }
                 }
-                Text("Click a sound to hear it. It plays each time the hand taps.")
+                Text("Shared tap sound for pointers that use defaults. Customize individual pointers in Pointers.")
                     .font(.system(size: 11))
                     .foregroundColor(.secondary)
                     .padding(.horizontal, 4)
-            }
-            Card(title: nil) {
-                Row("Laser dot sound", detail: "Use the selected tap sound for Laser dot, independently of hand sound. Off by default.") {
-                    Toggle("Laser dot tap sound", isOn: model.binding({ Preferences.laserSound }, { Preferences.laserSound = $0 }))
-                        .toggleStyle(.switch).labelsHidden()
-                }
             }
         }
         .onAppear { model.warmPreview() }

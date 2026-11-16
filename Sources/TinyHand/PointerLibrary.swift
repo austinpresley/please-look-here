@@ -223,8 +223,8 @@ struct SelectedPointerDetails: View {
                 .font(.headline)
                 .fixedSize(horizontal: false, vertical: true)
                 .gridProbe("selectedPointer.heading", area: "selectedPointer")
-            // Parent integration point: selected-pointer override controls belong
-            // here, above gesture editing, after their separate model is merged.
+            PointerCustomization(style: PointerStyle.saved, model: model)
+                .gridProbe("selectedPointer.customization", area: "selectedPointer")
             HandGestureSettings(model: model)
                 .gridProbe("selectedPointer.gestures", area: "selectedPointer")
         }

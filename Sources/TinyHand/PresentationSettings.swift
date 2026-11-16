@@ -125,7 +125,7 @@ struct AppearancePage: View {
                     }.labelsHidden().pickerStyle(.segmented).frame(width: 192)
                 }
             }
-            Card(title: "Pointer") {
+            Card(title: "Pointer Defaults") {
                 Row("Size", detail: "Relative to the display height. Also sets Spotlight's circle size and Presentation pointer's thickness.") {
                     HStack(spacing: Space.sm) {
                         Slider(value: model.binding({ Double(Preferences.pointerSize) }, { Preferences.pointerSize = CGFloat($0) }),
