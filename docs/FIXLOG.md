@@ -168,3 +168,80 @@ encoded image. Region retry starts a fresh cancellable selection.
 
 Rule: choose recovery from the actual failure and keep completed capture actions
 separate from taking a new screenshot.
+# App review corrections, 16 November 2026
+
+## Display documents and faded ink
+
+Crossing displays reset the complete annotation document and history. Layer-only
+fading left invisible markers selectable and text without the same fade policy.
+DisplayInkStore now owns documents by stable display ID. InkVisibility owns
+captured lifetimes separately from full geometry/history, and erased/expired
+objects are excluded from hit testing. Native off/on and expired-marker checks
+pass; physical display crossing remains a separate hardware limit.
+
+Rule: presentation visibility changes must not implicitly destroy semantic history.
+
+## Radial callbacks and ordinary chords
+
+Immediate modifier opening captured ordinary clicks. Delayed callbacks could also
+close a newer gesture, and key-first chords were not considered. A 180 ms pending
+hold now cancels for early native input. Queued events and timers carry session
+identity; ordinary held keys are observed/sampled without becoming owned pairs.
+Fixed clocks and injected schedulers keep unit timing independent of real input.
+
+Rule: retain ownership through matching releases, and scope every deferred action
+to the gesture that created it.
+
+## Shortcut registration
+
+One unavailable combination unregistered unrelated commands. HotKeyBindings now
+retains each successful binding independently, retries failures separately and
+shows command-specific conflicts without changing saved assignments.
+
+Rule: one command's registration failure must not determine another's lifetime.
+
+## Hand recovery and manifest loading
+
+Removal was permanent. The new file receipt originally allowed receipt corruption
+to hide valid manifest membership, and finalized Undo before preferences persisted.
+Loading now retains validated membership and blocks mutations after failed
+recovery. HandRestoreTransaction keeps restoration replayable through checked
+preference persistence and completion. Overrides merge only the removed ID.
+
+Rule: a failed load is never an empty writable library, and recovery is complete
+only after both file and preference phases succeed.
+
+## Import ownership and publication
+
+Importing a removed identity could consume an unrelated removal journal and restore
+unpreviewed gestures. Background file writes also left a gap where accepted edits
+could be overwritten. Preview now rejects pending removal IDs. Heavy preparation
+runs off-main; final validation/publication shares the app writers' main queue,
+with a journal published before canonical changes and retryable rollback.
+
+Rule: validate the same context at the shared publication boundary, and never
+silently take ownership of another operation's recovery record.
+
+## Sound output ordering
+
+Rapid mute/unmute could make queued gain updates both see the final positive gain,
+leaving already scheduled audio alive. The silent transition now retains its own
+teardown while subsequent gain updates use the latest output. Queue-order tests
+use separate injected deadlines; real watchdog tests keep the production timer.
+
+Rule: later output state cannot erase an earlier cancellation request.
+
+## Native preview and shortcut navigation
+
+Active captures caught a 256-point preview control row, truncated segmented text
+and a dark-mode sample whose renderer could keep zero bounds. Intrinsic controls
+are bounded and labeled accessibly; the renderer lays out on attachment/resize.
+Local ink publishes control state without replacing another observer.
+
+Practice links initially opened Shortcuts before the target row completed layout.
+SettingsHostingView now reveals and focuses stable native destinations after
+mounted layout, without starting recording. Ordinary navigation cancels stale
+requests. Native Pointer, Pen, Interact and radial link checks pass.
+
+Rule: UI completion requires native layout and responder evidence, rather than
+source-only navigation or delayed guesses.

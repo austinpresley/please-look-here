@@ -22,7 +22,7 @@ UX:
 - Use the existing overlay. No new permission, window or automatic wake behavior. Clear Drawing remains explicit.
 - Escape cancels temporary UI. Native text editing keeps its usual keys. Errors say what failed and how to recover.
 
-Status: implemented; integrated 192-test suite passed, native and packaging acceptance pending
+Status: done
 
 ### S-37 Make annotation fading consistent
 
@@ -36,7 +36,7 @@ UX:
 - Keep expiry separate from semantic history. Visible-state counts drive drawing controls; expired history remains recoverable.
 - Escape cancels temporary UI. Native text editing keeps its usual keys. Errors say what failed and how to recover.
 
-Status: implemented; integrated 192-test suite passed, native and packaging acceptance pending
+Status: done
 
 ### S-38 Keep radial input compatible with normal clicks
 
@@ -50,7 +50,7 @@ UX:
 - Use a 180 ms starting hold threshold. Cancel pending opening on ordinary mouse/key input. No default modifier.
 - Escape cancels temporary UI. Native text editing keeps its usual keys. Errors say what failed and how to recover.
 
-Status: implemented; integrated 192-test suite passed, native and packaging acceptance pending
+Status: done
 
 ### S-39 Isolate shortcut registration failures
 
@@ -64,7 +64,7 @@ UX:
 - Keep all hotkeys user assigned. Name the conflicting command and combination; offer a route to Shortcuts.
 - Escape cancels temporary UI. Native text editing keeps its usual keys. Errors say what failed and how to recover.
 
-Status: implemented; integrated 192-test suite passed, native and packaging acceptance pending
+Status: done
 
 ### S-40 Recover deleted custom hands
 
@@ -78,7 +78,7 @@ UX:
 - Use Move to Trash/recoverable storage plus Undo. Make removal available without a hover-only target.
 - Escape cancels temporary UI. Native text editing keeps its usual keys. Errors say what failed and how to recover.
 
-Status: implemented; integrated 192-test suite passed, native and packaging acceptance pending
+Status: done
 
 ### S-41 Preview drawing settings live
 
@@ -92,7 +92,7 @@ UX:
 - Replace instruction-heavy rows with concise help and a practice canvas. Retain current Drawing controls.
 - Escape cancels temporary UI. Native text editing keeps its usual keys. Errors say what failed and how to recover.
 
-Status: implemented; integrated 288-test suite and final source audit pass, native certification in progress
+Status: done
 
 ### S-42 Customize each pointer with shared defaults
 
@@ -106,7 +106,7 @@ UX:
 - Edit a selected pointer in Settings. Clearly label Default or Customized. Spotlight aperture and rod thickness have appropriate names.
 - Escape cancels temporary UI. Native text editing keeps its usual keys. Errors say what failed and how to recover.
 
-Status: implemented; integrated 288-test suite and final source audit pass, native certification in progress
+Status: done
 
 ### S-43 Wrap pointer cycling everywhere
 
@@ -120,7 +120,7 @@ UX:
 - Pins remain toolbar favorites. All entry points preserve Pointer On/Off and Interact. Existing Stream Deck cycle keys keep forward behavior.
 - Escape cancels temporary UI. Native text editing keeps its usual keys. Errors say what failed and how to recover.
 
-Status: implemented; integrated 192-test suite passed, native and packaging acceptance pending
+Status: done
 
 ### S-44 Cache thumbnails and isolate test files
 
@@ -134,7 +134,7 @@ UX:
 - No extra UI. Preserve existing custom-hand thumbnails; use isolated temporary output for tests. Do not delete preexisting root PNGs.
 - Escape cancels temporary UI. Native text editing keeps its usual keys. Errors say what failed and how to recover.
 
-Status: implemented; integrated 192-test suite passed, native and packaging acceptance pending
+Status: done
 
 ### S-45 Make controls accessible from the keyboard
 
@@ -148,7 +148,7 @@ UX:
 - Keep native controls, logical focus and visible focus cues. Add labeled Move Left/Right actions for pins.
 - Escape cancels temporary UI. Native text editing keeps its usual keys. Errors say what failed and how to recover.
 
-Status: implemented; integrated 288-test suite and final source audit pass, native certification in progress
+Status: done
 
 ### S-46 Browse and filter the pointer library
 
@@ -162,7 +162,7 @@ UX:
 - Keep the gallery near the top. Provide an empty-result message and Clear Search; retain independent Enabled and Pinned.
 - Escape cancels temporary UI. Native text editing keeps its usual keys. Errors say what failed and how to recover.
 
-Status: implemented; integrated 288-test suite and final source audit pass, native certification in progress
+Status: done
 
 ### S-47 Preview pointer appearance locally
 
@@ -176,7 +176,7 @@ UX:
 - Use an inline sample and explicit Preview Tap. Keep the real pointer and annotations untouched.
 - Escape cancels temporary UI. Native text editing keeps its usual keys. Errors say what failed and how to recover.
 
-Status: implemented; integrated 288-test suite and final source audit pass, native certification in progress
+Status: done
 
 ### S-48 Improve screenshot results and recovery
 
@@ -190,7 +190,7 @@ UX:
 - Use one result panel, with named destination and error-specific actions. Capture app controls remain excluded.
 - Escape cancels temporary UI. Native text editing keeps its usual keys. Errors say what failed and how to recover.
 
-Status: implemented; active light/dark and native capture acceptance pending
+Status: done
 
 ### S-49 Control sound volume and audition
 
@@ -204,7 +204,7 @@ UX:
 - Separate Preview and selection controls, integrate per-pointer inheritance, and expose effective mute and volume.
 - Escape cancels temporary UI. Native text editing keeps its usual keys. Errors say what failed and how to recover.
 
-Status: implemented; integrated 288-test suite and final source audit pass, native certification in progress
+Status: done
 
 ### S-50 Teach controls in a practice window
 
@@ -218,7 +218,7 @@ UX:
 - Use a small self-contained practice window reachable after onboarding. No forced setup and no default assignments.
 - Escape cancels temporary UI. Native text editing keeps its usual keys. Errors say what failed and how to recover.
 
-Status: implemented; integrated 288-test suite and final source audit pass, native certification in progress
+Status: done
 
 ### S-51 Save presets and portable backups
 
@@ -232,7 +232,7 @@ UX:
 - Manual preset selection first. Keep shortcut/startup imports explicit and off by default. Preserve existing data and reject unsafe paths or invalid files.
 - Escape cancels temporary UI. Native text editing keeps its usual keys. Errors say what failed and how to recover.
 
-Status: implemented; integrated 288-test suite and final source audit pass, native certification in progress
+Status: done
 
 ### S-52 Edit individual annotations
 
@@ -246,7 +246,7 @@ UX:
 - Keep edits within Draw/Interact Off. Extend tool choices consistently through toolbar, radial, menus, automation and Stream Deck without changing existing key UUIDs.
 - Escape cancels temporary UI. Native text editing keeps its usual keys. Errors say what failed and how to recover.
 
-Status: implemented; integrated 192-test suite passed, native and packaging acceptance pending
+Status: done
 
 ### S-53 Back up source and reconcile status
 
@@ -260,7 +260,7 @@ UX:
 - Use local git bundles and explicit files. No public source push, hosted workflows, or deletion of old evidence.
 - Escape cancels temporary UI. Native text editing keeps its usual keys. Errors say what failed and how to recover.
 
-Status: implemented; final integrated source backup and status reconciliation pending
+Status: done
 
 ## Verification limits
 
@@ -271,3 +271,12 @@ Real multiple-display/mixed-scale, physical Stream Deck and host-inspector, actu
 - Recovery checkpoint completed before implementation.
 - Coordinator owns this file, STORIES.md, GLOSSARY.md, FIXLOG.md and VALIDATION.md. Agents return per-job evidence in separate `docs/work/` files to avoid parallel edits.
 
+
+## Completion, 16 November 2026
+
+All 18 software recommendations are implemented and locally verified in installed
+app 1.2.0 build 20261116015628 and plugin 1.1.0.0. The final full suite passes
+295 tests; 13 final native input checks pass. Source audits have no open P1/P2
+findings. Native UI, backup round trip/restart Undo, normal preferences, grants
+and all 39 Stream Deck profile files were checked. Physical coverage and spoken
+VoiceOver limits remain explicit in VALIDATION.md. No hosted CI or source push.

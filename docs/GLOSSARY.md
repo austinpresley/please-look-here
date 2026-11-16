@@ -14,8 +14,27 @@
 | Shadow style | The hand shadow choice in Appearance, independent of its visibility switch. |
 | Contact | The shadow style anchored to the fingertip, with softer falloff as the hand and rod lift away. |
 | Original shadow | The existing soft drop shadow, retained as the initial shadow style. |
-| Pointer Defaults | Proposed shared sound and appearance settings inherited by pointers. |
-| Use Default | Proposed action that restores one pointer setting to its shared default. |
+| Pointer Defaults | Shared sound and appearance values inherited independently by pointers. |
+| Use Default | Restore one pointer setting to its shared default without changing other overrides. |
+| Customized | The pointer has an explicit override for this particular setting. |
+| App Sound | App output volume and master mute, applied to pointer taps and sound previews. |
+| Mute all sounds | Silence app output while preserving pointer sound choices and enabled flags. |
+| Sound Preview | Hear a sound at the app volume without selecting it or enabling tap sound. |
+| Display document | One running-session annotation document and Undo/Redo history for a stable display identity. |
+| Annotation lifetime | Visibility timing kept separately from full annotation geometry and history. |
+| Eraser | Remove one visible annotation per completed gesture. Undo restores it. |
+| Highlighter | A broad translucent freehand annotation using the current drawing controls. |
+| Remove Hand | Recoverable removal of a custom hand, its artwork, gesture slots and saved settings. |
+| Undo Remove | Restore a removed hand and its saved settings from its retained recovery package. |
+| Practice drawing | A disposable local canvas with independent ink and history. |
+| Pointer preview | A local sample of the selected pointer using its effective appearance values. |
+| Getting Started Practice | A replayable local window teaching Pointer On, Interact, drawing and quick controls. |
+| Replay Step | Reset the current practice exercise without changing the desktop. |
+| Presentation preset | A named pointer, ink and sound setup that leaves activation, Interact and protected settings unchanged. |
+| Portable backup | A bounded versioned JSON export of supported settings, presets, hands and gesture artwork. |
+| Undo Last Change | Recover the latest unresolved preset or backup transaction, refusing conflicting later edits. |
+| Cycle direction | Forward chooses the next enabled available pointer; Backward chooses the previous. Both wrap. |
+| Toolbar pin actions | A native menu with Move Left, Move Right and Unpin from Toolbar for one favorite. |
 | Radial menu / Quick controls | Transient controls at the cursor. Hold an assigned modifier alone, move through a category to an outer choice, then release to select. |
 | Look Here Please | Austin Presley's native Mac pointer utility. Exact product name. |
 | Attention dot | The dot the original pointing glove reaches toward in the app identity. Filled in the active menu bar symbol, hollow when off. |
@@ -36,8 +55,8 @@
 | Undo Annotation / Redo Annotation | Optional presentation commands for drawing history, separate from native text editing. |
 | Show toolbar | Allow the floating toolbar to reveal briefly at pointer startup or when enabled, and while the cursor is nearby. Off keeps it hidden. |
 | Enabled pointer | A pointer allowed in quick selection. Enabling preserves separate toolbar pins. |
-| Available pointer | A library choice whose image loads, or Laser dot which needs no image. Availability is separate from Enabled. |
-| Pointer library | All built-in hands, custom manifest entries and Laser dot, including disabled or unavailable choices. |
+| Available pointer | A library choice whose image loads, or a native Laser dot, Spotlight or Presentation pointer. Availability is separate from Enabled. |
+| Pointer library | All built-in hands, custom manifest entries and native pointers, including disabled or unavailable choices. |
 | Toolbar pin | A saved toolbar favorite and its order. A disabled or unavailable favorite keeps its pin but is omitted from the live toolbar. |
 | Image unavailable | A hand image is missing or unreadable. Restore the image or choose another pointer. |
 | Current pointer | The pointer selected in Look Here Please, read from acknowledged app state. Pointer On/Off uses this selection without replacing it. |
@@ -46,7 +65,7 @@
 | Select Pointer | The separate Stream Deck action that selects one saved fixed pointer, optionally activating it. Existing keys retain their UUID and settings. |
 | Next enabled pointer | The next available choice in the enabled library order, including unpinned and custom choices. |
 | Choose Tool | Stream Deck action whose per-key Tool choice cycles tools or selects a fixed tool. Cycle keys show the acknowledged current tool; fixed keys show their assigned tool and a ready check only for a matching observation. |
-| Cycle tools | Advance Pen, Rectangle, Arrow, Text, Number, then wrap to Pen. The app owns the current position. |
+| Cycle tools | Advance Pen, Rectangle, Arrow, Text, Number, Eraser, Highlighter, then wrap to Pen. The app owns the current position. |
 | Tool choice | Per-key saved cycle or fixed drawing-tool destination in the Stream Deck inspector. |
 | Ready tool | The observed tool is usable with the pointer on, Interact off, Accessibility allowed and no capture in progress. |
 | Install Stream Deck Plugin… | Open this app's bundled matching installer in Stream Deck for host confirmation. Opening does not establish installation. |

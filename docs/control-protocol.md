@@ -30,7 +30,7 @@ operations, enum values and invalid numeric/boolean values are rejected.
 | toggle | None | Toggle activation of the currently selected pointer once, without changing selection |
 | interact | enabled: boolean | On uses apps normally; off captures annotations |
 | mode | mode: point or draw | Legacy v1 alias: point means Interact on, draw means off |
-| tool | tool: pen, rectangle, arrow, text or number | Turn Interact off and select its drawing tool |
+| tool | tool: pen, rectangle, arrow, text, number, eraser or highlighter | Turn Interact off and select its drawing tool |
 | cycle-tool | None | Select the next drawing tool and wrap; turn Interact off and preserve pointer activation/selection |
 | clear / undo / redo | None | Use the same annotation history as the toolbar |
 | capture | None | Start a screenshot asynchronously |
@@ -78,6 +78,8 @@ image. Retry opens a new selection after a region error. The optional
 - shadow, handSound, laserSound, showToolbar, interactKeepsHand, captureCopies, captureSaves: booleans.
 - shadowStyle: `original` or `contact`. The separate `shadow` boolean controls visibility without losing this choice.
 - tapSound: thock, click, tock, clack, typewriter, snap, wood, pop, boop, blip, coin, pew, squeak, quack or chirp.
+- soundVolume: finite number from 0 through 1; soundMuted: boolean. Output mute does not change saved choices.
+- pointerOverrides: dictionary of stable pointer ID to a field patch. Fields are size, shadow, shadowStyle, soundEnabled and sound. A null field restores inheritance; a null ID value restores that pointer's defaults. Validate the entire batch before writing.
 - captureFolder: absolute directory path. A file path is rejected.
 
 At least one capture output must remain enabled. Omitted values remain unchanged.
@@ -99,6 +101,13 @@ All three begin Unassigned, including after Reset All.
 Use Settings → Shortcuts to assign or clear commands. `configure` does not accept
 shortcut assignments, and omitted configuration values never install presets.
 Automation actions such as `undo` work directly without a keyboard assignment.
+
+`pointerConfiguration` and each style's `configuration` report effective values,
+explicit overrides, applicability and archive health. `soundOutput` separates
+pointer tap enablement from output gain/master mute. `annotations` is the current
+visible count; full semantic history can still be available through Undo after
+timed ink expires. New Eraser/Highlighter shortcuts start unassigned. The tool
+cycle preserves the previous five tools' order, then Eraser, Highlighter and Pen.
 
 Native errors return ok=false and an error with code and message, plus current state.
 Exit 0 means acknowledged, 1 means native rejection, and 2 means transport/usage

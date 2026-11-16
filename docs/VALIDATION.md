@@ -2746,3 +2746,150 @@ GitHub workflow state was read through the repository API. Build 414155231 and
 Release 414155234 were both `disabled_manually`. Their local workflow definitions
 are now archived outside `.github/workflows` so a later source push cannot
 reintroduce automatic build/release triggers. No hosted workflow was dispatched.
+# App review completion, 16 November 2026
+
+All 18 authorized recommendations are implemented as S-036 through S-053 on
+`feature/app-review-improvements-20261115`. Every implementation and review child
+used `gpt-6.1-sol` with reasoning effort **high**, with no Max setting. Worktrees
+kept implementation changes isolated, and the coordinator integrated explicit
+commits. Hosted CI remained disabled and its definitions are archived outside the
+Actions workflow directory. No source push, PR or public release was made.
+
+## Exact installed and delivered build
+
+- App: 1.2.0, build 20261116015628, universal arm64/x86_64, macOS 13 minimum.
+- Matching bundled and installed Stream Deck plugin: 1.1.0.0.
+- App notarization: Accepted `f5090abe-34dc-4a8e-959a-2fc18ad58775`.
+- Developer ID team remains G2R8798RLT with the installed app's designated
+  requirement preserved. Hardened-runtime signing, secure timestamps, stapling,
+  Gatekeeper, ZIP integrity and the extracted-app installer contract pass.
+- Artifact: `dist/Look Here Please-review.zip`. The exact tested dist app was
+  copied atomically to `~/Applications/Look Here Please.app`, verified again and
+  launched normally through LaunchServices without test capabilities.
+- Local build log: `/tmp/lhp-review-distribution-build.log`. Icon generation used
+  Pillow 13.0.0 in the dedicated local build-Python cache. Source icon artwork is
+  unchanged; the compiled Assets.car was regenerated for this packaging.
+
+## Local tests and source review
+
+`scripts/run-tests.sh` passed **295 tests in 38 suites**, the packaging contract
+test and all 12 existing layout lints. Full log:
+`/tmp/lhp-review-distribution-tests.log`. There are no compiler warnings in this
+run. Five tests against the real Choose Pointer inspector JavaScript also pass.
+
+Five source-review rounds found and closed seven substantive findings: stale
+radial closes, key-first chords, malformed-receipt manifest replacement, Undo
+completion before preferences, lost rapid-mute teardown, import/removal recovery
+ownership and edits accepted during import staging. The final source audit reports
+no remaining P1/P2 findings. Each correction has a failing-before regression and
+passing isolated evidence in `docs/work/`.
+
+Full-suite integration also corrected test-only native-timer interference and a
+canonical `/var` versus `/private/var` path assertion. The native UI pass caught
+segmented-control truncation, a 256-point preview control row and an initial
+zero-bounds renderer. Final controls measure 22 points high in both appearances;
+the pointer is visible in the replacement light/dark captures. The preview resize
+regression failed before the correction and its 13-test focused run passes after.
+
+The milestone architecture check found no additional Strong refactor required.
+See architecture-review-2026-11-16.md.
+
+## Active-window visual checks
+
+All eight Settings pages were captured as active key windows in light/dark with
+process-local Always Show Scroll Bars. Every associated layout report passes.
+Images are under `dist/verification/app-review-20261115/settings-certified`;
+Appearance's final replacement captures are under `settings-preview-final`.
+
+| Surface | Observed result |
+| --- | --- |
+| General | Getting-started, permissions, installer and capture controls align in both themes. Startup is reachable through normal scrolling when content exceeds the screen. |
+| Shortcuts | Unassigned states, native radial picker and concise practice link fit. Native destinations have visible focus without recording or changing assignments. |
+| Drawing | The local curve is visible with readable lifetime text and bounded native controls. Labels no longer truncate; local Undo/Clear reflect document state. |
+| Pointers | The gallery precedes selected details. Search, combined filters, selected/pinned cues and native pin menus fit with system scrollbars. |
+| Appearance | Preview background choices and tap/motion controls fit in one 22-point row. The local hand renders in both final themes and customized appearance is explained. |
+| Sound | Volume, master mute, shared choice and separate Preview fit without an empty bottom band. Mute disables Preview and preserves choices. |
+| Presets | Empty and saved states, recovery controls and import-preview scrolling are readable. Conflicts disable Import and explain Undo Remove; stale edits are rejected without replacement. |
+| About | Version 1.2.0, credit, license and notices fit in both appearances. |
+
+Native Getting Started checks covered all four lessons, sample pointer, local
+clicks, Interact, drawing, Undo/Clear, native radial keyboard buttons and a guarded
+continuous mouse path. The native path selected Arrow locally while the desktop
+tool remained Pen. Practice pointer and radial captures are retained in the same
+verification directory, including light/dark radial captures.
+
+The signed app's Pointer, Pen, Interact and radial links reveal/focus the exact
+native control. Unassigned values remain unchanged and recording does not begin.
+Named pin moves, sidebar arrow navigation, search/filter reset and independent
+Use Default behavior were exercised through native accessibility controls.
+
+## Final native input pass on the exact notarized app
+
+`docs/work/final-native-input-checks.md` and `native-final/checks.json` record
+**13 passing behavioral checks**. Real Carbon blockers prove per-command conflict
+isolation and rejected-replacement rollback while unrelated keys continue working.
+Native early modified clicks, key-first chords, preexisting native key state,
+ordinary-key cancellation and owned Escape repeats/releases pass.
+
+Twenty consecutive fresh Option hold/release openings passed with one transition
+each, no retries, and matching actual WindowServer window/alpha observations.
+Light/dark captures contain only the app's own radial window. The initial harness
+focus-prerequisite refusal remains separate and is not counted as a behavioral
+pass. All temporary blockers, keys/buttons, fixture and test app were cleaned up.
+
+## Presets, backups and hand recovery through native UI
+
+Preset save/apply/remove/Undo worked. Apply restored size, volume and tool while
+preserving Pointer On, Interact Off and every shortcut. A 3.9 MB public-fixture
+backup contained one custom hand, both custom gesture slots, one built-in gesture
+override and a named preset, with exact SHA-256 artwork matches.
+
+An edit accepted after preview caused native import to reject with "Nothing was
+replaced" and retain the edit. A fresh preview/import applied expected settings.
+Removing the hand, changing the absent ID's override and previewing the older
+backup disabled Import for pending recovery. Cancel retained Undo Remove. Undo
+restored exact hand/gesture bytes, pins and original overrides without stealing
+the current selection.
+
+Import into a second empty disposable profile restored all artwork, saved preset,
+overrides, pins and enabled choices while retaining its local capture folder and
+shortcuts. After quitting/restarting that profile, Undo removed only imported
+files and presets and restored the exact original settings. Evidence is in
+`roundtrip-*.json`, `native-hand-recovery-state.json` and the public fixture manifest.
+
+Native full-display and 300x200 region captures passed, along with Escape region
+cancellation preserving the last result. A low-volume native audition ran; master
+mute disabled/restored Preview without changing choices. Queue/driver cancellation
+is independently proven by injected audio tests, rather than speaker measurement.
+
+## Preservation and installation
+
+All original normal preferences compare exactly with the initial export after
+restoring four test-created AppKit navigation keys. No functional preference was
+reset. Both Accessibility and Screen Recording remain allowed. Normal app
+capabilities contain no test commands. Original custom-hand files and all 92
+untracked source/artwork files remain intact.
+
+Plugin 1.1.0.0 was installed through Settings > General and the Stream Deck host's
+Install confirmation. All 21 installed plugin files match the verified package.
+All **39 profile-related files** among the original 2,892 protected Stream Deck
+files are unchanged. Four files changed inside this plugin; the only other change
+is the host's runtime `Data/application_cache.json`. No key or profile was edited.
+
+The previous app and plugin remain backed up. Verified off-volume source recovery
+includes a real clone restoring the recorded HEAD; a fresh final source bundle
+is made after the handoff documentation commit.
+
+## Limits
+
+This host is Apple silicon, macOS 27.0, with one 1920x1080 display and no physical
+USB Stream Deck. Physical multiple-display/mixed-scale, USB key/host-inspector,
+Intel/older macOS and actual lock/sleep checks remain unperformed. Native CGEvent
+tests are distinct from a physical keyboard, mouse or trackpad test. The historical
+intermittent reopen cause remains unestablished despite the clean bounded run.
+
+VoiceOver was temporarily enabled through its actual system switch. App roles,
+values and ordinary keyboard paths were inspected, but spoken output could not
+be reliably captured through the automation interface. It was restored Off and
+the verification-only system utilities were closed. This is not a full spoken
+VoiceOver or Accessibility Inspector certification.

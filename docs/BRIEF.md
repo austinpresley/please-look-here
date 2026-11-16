@@ -1,5 +1,10 @@
 # Look Here Please
 
+All 18 app-review recommendations are implemented in local review version 1.2.0,
+build 20261116015628, with matching Stream Deck plugin 1.1.0.0. Current behavior,
+coverage and release notes are in project-status.md, VALIDATION.md and
+release-notes-1.2.0.md. The earlier design plans below remain historical context.
+
 The next product iteration is named **Look Here Please**. Follow the
 [current backlog](STORIES.md) and [Austin's 10 November feedback](FEEDBACK-2026-11-10.md)
 for new work. This brief describes the preceding integration.

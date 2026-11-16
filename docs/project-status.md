@@ -7,16 +7,19 @@ The branding update publishes no app code, binary, hosted build or public releas
 
 ## Local review direction
 
-The current installed baseline is signed/notarized **1.1.0**, build
-`20261114081700`. It includes Spotlight, Presentation pointer, magnification,
-temporary hand gestures, trail fading, tap swing, the hand creator and the expanded
-sound collection. Verification is recorded in VALIDATION.md.
+The installed app is signed/notarized **1.2.0**, build `20261116015628`.
+Matching Stream Deck plugin **1.1.0.0** is installed through the host's normal
+confirmation. All 18 recommendations from the 15 November review are implemented
+under [S-036 through S-053](app-review-implementation-2026-11-15.md), using Sol 6.1
+High subagents with no Max setting. Pointer cycling wraps in both directions in
+the app and Stream Deck. Changes are in [the release notes](release-notes-1.2.0.md).
 
-Austin has authorized all 18 recommendations from the 15 November app review.
-Implementation is active on `feature/app-review-improvements-20261115`, using
-isolated Sol 6.1 High subagents. The acceptance queue is
-[S-036 through S-053](app-review-implementation-2026-11-15.md). Stream Deck and
-shortcut pointer cycling will wrap through enabled choices in either direction.
+Local validation passed 295 tests in 38 suites, five inspector JavaScript checks,
+13 final native input checks and the active-window layout reports. The app and
+matching plugin passed local signing, notarization and packaging verification.
+All original normal preferences are exactly preserved, both grants remain allowed,
+and all 39 Stream Deck profile files remain unchanged. Detailed evidence and
+coverage limits are recorded in VALIDATION.md.
 
 - Choose enabled hands or Laser dot. Toolbar pins are separate from enabled choices.
 - Choose Spotlight or Presentation pointer through the same pointer catalog.
@@ -30,8 +33,10 @@ shortcut pointer cycling will wrap through enabled choices in either direction.
 
 ## Review still required
 
-The historical intermittent radial reopen failure remains unresolved. Successful
-bounded checks do not close it. Physical Stream Deck and host-inspector acceptance
+The historical intermittent radial reopen cause remains unestablished. Twenty
+consecutive fresh native openings passed without retries, alongside the corrected
+session/chord regressions; bounded checks do not establish that historical cause.
+Physical Stream Deck and host-inspector acceptance
 for pointer/tool cycling remain open. Broader physical gesture, accessibility,
 multiple-display and older-system coverage is still needed.
 

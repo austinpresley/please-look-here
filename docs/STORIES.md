@@ -584,7 +584,10 @@ Acceptance:
 - [manual] Drawing tools remain discoverable and usable through the toolbar and existing shortcuts. Put any essential instructions in concise contextual help.
 - [snap] Keep line-width and opacity controls and their current meaning.
 
-Status: todo
+Status: done
+
+Completed under S-041 in the authorized 15 November app-review milestone.
+See app-review-implementation-2026-11-15.md and the 1.2.0 validation record.
 
 ### S-006 Preview drawing settings in one live demo
 
@@ -601,7 +604,10 @@ Acceptance:
 - [self] Preview interaction does not add to, clear or change the live annotation history.
 - [snap] The preview and existing controls fit and remain readable in light and dark appearance.
 
-Status: todo
+Status: done
+
+Completed under S-041 in the authorized 15 November app-review milestone.
+See app-review-implementation-2026-11-15.md and the 1.2.0 validation record.
 
 ### S-007 Give the fingertip a natural contact shadow
 
@@ -778,7 +784,10 @@ This is a later design proposal. It does not replace the authorized S-001 throug
 S-004 work or authorize implementation now. Reconcile S-008's wording-only scope
 when deciding whether to pursue the broader settings redesign.
 
-Status: idea
+Status: done
+
+Completed under S-042 in the authorized 15 November app-review milestone.
+See app-review-implementation-2026-11-15.md and the 1.2.0 validation record.
 
 ### S-014 Explore pointer-specific click animations
 

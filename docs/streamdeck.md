@@ -207,3 +207,16 @@ The intentional installation remains. See S-022 in VALIDATION.md for evidence.
 MCP Deck is the only available canvas, and its Profiles page exposes no disposable
 profile editor. No existing key was reassigned to inspect property inspectors.
 Host inspector keyboard/VoiceOver and S-020/S-021 physical key checks remain open.
+# Version 1.1.0.0 update
+
+Look Here Please 1.2.0 bundles plugin 1.1.0.0. Choose Pointer has a Cycle direction
+setting. Forward and Backward wrap through the app's complete enabled/available
+catalog; existing keys keep Forward unless explicitly changed. Pins remain toolbar
+favorites. Activation and Interact do not change while cycling.
+
+Choose Tool also offers Eraser and Highlighter. Cycle follows Pen, Rectangle,
+Arrow, Text, Number, Eraser, Highlighter, then Pen. Existing UUIDs and saved keys
+remain compatible. Install the bundled update from Settings > General.
+
+Physical USB Deck and host-inspector acceptance remain explicitly separate from
+the local app/protocol/inspector tests. Existing host profiles must be preserved.
