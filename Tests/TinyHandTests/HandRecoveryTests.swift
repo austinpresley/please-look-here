@@ -297,7 +297,9 @@ import Testing
         }
         CustomHands.reload()
         #expect(CustomHands.all.contains { $0.id == custom.rawValue })
-        #expect(CustomHands.recoveryMessage?.contains(record.path) == true)
+        let recoveryMessage = CustomHands.recoveryMessage ?? ""
+        let canonicalRecord = record.resolvingSymlinksInPath().standardizedFileURL.path
+        #expect(recoveryMessage.contains(canonicalRecord), "Expected \(canonicalRecord); actual recovery message: \(recoveryMessage)")
         let filenames = try FileManager.default.contentsOfDirectory(atPath: CustomHands.directory.path).sorted()
         #expect(throws: (any Error).self) { try CustomHands.add(image, ink: 0, name: "Must reject") }
         #expect(try Data(contentsOf: manifest) == before)
