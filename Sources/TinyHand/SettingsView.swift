@@ -4,7 +4,7 @@ import Carbon.HIToolbox
 import SwiftUI
 
 enum SettingsSection: String, CaseIterable, Identifiable {
-    case general, shortcuts, drawing, pointers, appearance, sound, about
+    case general, shortcuts, drawing, pointers, appearance, sound, presets, about
 
     var id: String { rawValue }
 
@@ -16,6 +16,7 @@ enum SettingsSection: String, CaseIterable, Identifiable {
         case .appearance: return "Appearance"
         case .drawing: return "Drawing"
         case .sound: return "Sound"
+        case .presets: return "Presets"
         case .about: return "About"
         }
     }
@@ -28,6 +29,7 @@ enum SettingsSection: String, CaseIterable, Identifiable {
         case .appearance: return "sparkles"
         case .drawing: return "pencil.tip"
         case .sound: return "speaker.wave.2.fill"
+        case .presets: return "square.stack"
         case .about: return "info.circle.fill"
         }
     }
@@ -40,6 +42,7 @@ enum SettingsSection: String, CaseIterable, Identifiable {
         case .appearance: return Color(red: 0.95, green: 0.45, blue: 0.6)
         case .drawing: return Color(red: 0.96, green: 0.58, blue: 0.2)
         case .sound: return Color(red: 0.2, green: 0.55, blue: 0.98)
+        case .presets: return Color(white: 0.55)
         case .about: return Color(white: 0.45)
         }
     }
@@ -154,6 +157,7 @@ struct SettingsView: View {
         case .appearance: AppearancePage(model: model)
         case .drawing: DrawingPage(model: model)
         case .sound: SoundPage(model: model)
+        case .presets: PresetsPage()
         case .about: AboutPage(model: model)
         }
     }

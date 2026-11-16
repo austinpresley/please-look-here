@@ -300,6 +300,10 @@ struct HandAsset: Sendable {
         return ctx.makeImage()
     }
 
+    /// Portable imports must pass the same geometry requirements as the renderer
+    /// before the archive can claim that a newly imported hand is available.
+    static func isUsablePointerArtwork(_ image: CGImage) -> Bool { measure(image) != nil }
+
     private static func measure(_ image: CGImage) -> HandAsset? {
         let w = image.width
         let h = image.height
