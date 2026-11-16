@@ -27,6 +27,9 @@ final class SettingsWindow: NSObject, NSWindowDelegate {
         didSet { model.applyMode = applyMode }
     }
     var onVisibilityChanged: ((Bool) -> Void)?
+    var openPractice: ((PracticeLesson) -> Void)? {
+        didSet { model.openPractice = openPractice }
+    }
     private var permissionTimer: Timer?
     var updater: Updater? {
         didSet { model.updater = updater }
@@ -80,6 +83,11 @@ final class SettingsWindow: NSObject, NSWindowDelegate {
     func showHandCreator() {
         show(.pointers)
         model.startMakingHand()
+    }
+
+    func showShortcut(_ target: PracticeShortcutTarget) {
+        show(.shortcuts)
+        model.focusShortcut(target)
     }
 
     func snapshot(_ section: SettingsSection = .general, dark: Bool = false) -> CGImage? {

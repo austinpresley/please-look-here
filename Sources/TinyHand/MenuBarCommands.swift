@@ -7,6 +7,7 @@ final class MenuBarCommands: NSObject {
     var perform: (([String: Any]) -> Void)?
     var openControls: (() -> Void)?
     var checkForUpdates: (() -> Void)?
+    var openPractice: (() -> Void)?
     var shortcutConflicts: [String: String] = [:] { didSet { refresh() } }
     private var requests: [NSMenuItem: [String: Any]] = [:]
     private var items: [String: NSMenuItem] = [:]
@@ -50,6 +51,8 @@ final class MenuBarCommands: NSObject {
         add("permission", "Allow Drawing…", "settings", ["section": "general"], to: menu)
         add("shortcutConflicts", "Review Shortcuts…", "settings", ["section": "shortcuts"], to: menu)
         add("settings", "Settings…", "settings", to: menu)
+        let practice = NSMenuItem(title: "Getting Started Practice…", action: #selector(showPractice), keyEquivalent: "")
+        practice.target = self; menu.addItem(practice)
         if Updater.isAvailable {
             let update = NSMenuItem(title: "Check for Updates…", action: #selector(update), keyEquivalent: "")
             update.target = self; menu.addItem(update)
@@ -155,6 +158,7 @@ final class MenuBarCommands: NSObject {
     }
     @objc private func invoke(_ item: NSMenuItem) { if let request = requests[item] { perform?(request) }; refresh() }
     @objc private func showControls() { openControls?() }
+    @objc private func showPractice() { openPractice?() }
     @objc private func update() { checkForUpdates?() }
     @objc private func quit() { NSApp.terminate(nil) }
 

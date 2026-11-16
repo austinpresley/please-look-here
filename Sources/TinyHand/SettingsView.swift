@@ -98,6 +98,7 @@ struct SettingsView: View {
     }
 
     private var page: some View {
+        ScrollViewReader { scroll in
         ScrollView {
             VStack(alignment: .leading, spacing: Space.xxl) {
                 if model.section == .pointers && model.makingHand {
@@ -132,6 +133,11 @@ struct SettingsView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(nsColor: .windowBackgroundColor))
+        .onChange(of: model.shortcutFocusRequest) { request in
+            guard model.section == .shortcuts, let request else { return }
+            scroll.scrollTo(request.target.id, anchor: .center)
+        }
+        }
     }
 
     @ViewBuilder

@@ -6,6 +6,11 @@ struct GeneralPage: View {
     @ObservedObject var model: SettingsModel
     var body: some View {
         VStack(alignment: .leading, spacing: Space.xxl) {
+            Card(title: "Getting started") {
+                Row("Practice the controls", detail: "Try Pointer On, Interact, drawing and quick controls in a local window.") {
+                    PillButton(title: "Try It…") { model.openPractice?(.pointer) }
+                }
+            }
             Card(title: "Using the pointer") {
                 Row("Interact", detail: "On: use apps normally. Off: draw on screen.") {
                     Toggle("Interact", isOn: model.binding({ Preferences.pointerMode.isInteractive }, { enabled in
@@ -80,11 +85,14 @@ struct ShortcutsPage: View {
                         .accessibilityLabel("Clear radial menu modifier")
                         .help("Remove the radial menu modifier. Leave it Unassigned.")
                 }
+                .modifier(PracticeShortcutDestination(target: .radial, model: model))
                 VStack(alignment: .leading, spacing: Space.sm) {
-                    Text("Hold the modifier alone. Move through Pointer, Color or Tools to the outer choices, then release to select. Move inward to go back. Release at the center, press Escape or click outside to cancel. Next and Previous show more choices; move inward slightly before choosing again.")
+                    Text("Hold the modifier alone, move through a category to a choice, then release. Move inward to go back; release at the center or press Escape to cancel.")
                         .font(.callout).foregroundStyle(.secondary)
-                    Text("At a display edge, enter the shifted center first. During a drag, Settings, text entry or capture, the menu stays closed. Other keys close it and keep their usual shortcuts. Requires Accessibility permission.")
+                    Text("Desktop use needs Accessibility and Pointer On. The menu waits during a drag, app windows, text entry or capture. At an edge, enter the shifted center first.")
                         .font(.callout).foregroundStyle(.secondary)
+                    Button("Try It…") { model.openPractice?(.radial) }
+                        .help("Practice holding, moving and releasing in a local menu. No modifier assignment or permission is needed.")
                 }.padding(Space.lg)
             }
             HandGestureShortcutSettings(model: model)
@@ -92,6 +100,7 @@ struct ShortcutsPage: View {
                 Row("Turn pointer on or off") {
                     ShortcutField(shortcut: Preferences.toggleShortcut, model: model, command: "toggle", label: "Turn pointer on or off") { model.applyToggleShortcut?($0) ?? false }
                 }
+                .modifier(PracticeShortcutDestination(target: .pointer, model: model))
                 Row("Clear Drawing") {
                     ShortcutField(shortcut: Preferences.clearShortcut, model: model, command: "clear", label: "Clear Drawing") { model.applyClearShortcut?($0) ?? false }
                 }
@@ -111,6 +120,30 @@ struct ShortcutsPage: View {
                 model.applyPresentationShortcut?(action, $0) ?? false
             }
         }
+        .modifier(PracticeShortcutDestination(target: PracticeShortcutTarget(rawValue: action.rawValue), model: model))
+    }
+}
+
+/// Focus the row, never its recorder. Recording still requires an explicit click.
+private struct PracticeShortcutDestination: ViewModifier {
+    let target: PracticeShortcutTarget?
+    @ObservedObject var model: SettingsModel
+    @FocusState private var focused: Bool
+    func body(content: Content) -> some View {
+        if let target {
+            content
+                .id(target.id)
+                .focusable()
+                .focused($focused)
+                .overlay(RoundedRectangle(cornerRadius: Space.sm).strokeBorder(
+                    model.shortcutFocusRequest?.target == target ? Color.accentColor : .clear, lineWidth: 2))
+                .onAppear { focusIfRequested(target) }
+                .onChange(of: model.shortcutFocusRequest) { _ in focusIfRequested(target) }
+        } else { content }
+    }
+    private func focusIfRequested(_ target: PracticeShortcutTarget) {
+        guard model.shortcutFocusRequest?.target == target else { return }
+        DispatchQueue.main.async { focused = true }
     }
 }
 

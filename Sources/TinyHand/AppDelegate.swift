@@ -10,6 +10,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let settings = SettingsWindow()
     private let updater = Updater()
     private let welcome = WelcomeWindow()
+    private let practice = GettingStartedPracticeWindow()
     private lazy var menuBar = MenuBarControls(overlay: overlay, perform: { [weak self] request in
         guard let self, let data = try? JSONSerialization.data(withJSONObject: request),
               let response = try? JSONSerialization.jsonObject(with: self.control.handle(data)) as? [String: Any] else { return "Action unavailable" }
@@ -38,6 +39,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         welcome.onTryIt = { [weak self] mode in
             guard let self = self, self.overlay.setMode(mode) else { return }
             _ = self.overlay.activate()
+        }
+        welcome.onPractice = { [weak self] in self?.openPractice() }
+        menuBar.openPractice = { [weak self] in
+            // Leave native menu tracking before presenting a key window.
+            RunLoop.main.perform { [weak self] in self?.openPractice() }
+        }
+        practice.readiness = { [weak self] in
+            PracticeReadiness(drawingAllowed: self?.overlay.drawingAllowed ?? false,
+                              radialAssigned: Preferences.radialTrigger != nil, capturing: self?.overlay.isCapturing ?? false)
+        }
+        practice.openShortcut = { [weak self] target in
+            guard let self else { return }
+            self.menuBar.close()
+            self.settings.showShortcut(target)
+            _ = self.registerHotKeys()
+        }
+        practice.onVisibilityChanged = { [weak self] in
+            self?.overlay.presentationContextChanged()
+            _ = self?.registerHotKeys()
         }
         overlay.radial.perform = { [weak self] request in
             guard let self, let data = try? JSONSerialization.data(withJSONObject: request),
@@ -86,6 +106,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func setupSettings() {
+        settings.openPractice = { [weak self] in self?.openPractice($0) }
         settings.applyToggleShortcut = { [weak self] value in self?.apply(value, action: nil, toggle: true) ?? false }
         settings.applyClearShortcut = { [weak self] value in self?.apply(value, action: nil, toggle: false) ?? false }
         settings.applyPresentationShortcut = { [weak self] action, value in self?.apply(value, action: action, toggle: false) ?? false }
@@ -93,6 +114,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         settings.onRecording = { [weak self] value in self?.recordingShortcut = value; _ = self?.registerHotKeys() }
         settings.onVisibilityChanged = { [weak self] _ in self?.overlay.presentationContextChanged(); _ = self?.registerHotKeys() }
         settings.updater = Updater.isAvailable ? updater : nil
+    }
+    private func openPractice(_ lesson: PracticeLesson = .pointer) {
+        menuBar.close()
+        practice.show(lesson)
+        overlay.presentationContextChanged()
+        _ = registerHotKeys()
     }
     @objc private func settingsAction() { openSettings() }
     private func openSettings(_ section: SettingsSection? = nil) {

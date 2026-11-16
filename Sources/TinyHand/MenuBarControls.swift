@@ -41,6 +41,9 @@ final class MenuBarControls: NSObject, NSPopoverDelegate, NSMenuDelegate {
         didSet { commands.shortcutConflicts = shortcutConflicts }
     }
     var shortcutDiagnostics: [[String: Any]] { commands.diagnostics }
+    var openPractice: (() -> Void)? {
+        didSet { commands.openPractice = openPractice }
+    }
 
     init(overlay: OverlayController, perform: @escaping ([String: Any]) -> String, checkForUpdates: @escaping () -> Void) {
         self.overlay = overlay; self.perform = perform; self.checkForUpdates = checkForUpdates

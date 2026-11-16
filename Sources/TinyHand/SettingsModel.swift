@@ -20,6 +20,13 @@ final class SettingsModel: ObservableObject {
     var updater: Updater?
     @Published var shortcutError: String?
     @Published var shortcutConflicts: [String: String] = [:]
+    @Published private(set) var shortcutFocusRequest: ShortcutFocusRequest?
+    var openPractice: ((PracticeLesson) -> Void)?
+
+    func focusShortcut(_ target: PracticeShortcutTarget) {
+        section = .shortcuts
+        shortcutFocusRequest = ShortcutFocusRequest(target: target)
+    }
 
     private var observer: Any?
     private var handsObserver: Any?

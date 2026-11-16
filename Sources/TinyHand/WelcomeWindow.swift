@@ -3,6 +3,7 @@ import ApplicationServices
 
 final class WelcomeWindow: NSObject {
     var onTryIt: ((PointerMode) -> Void)?
+    var onPractice: (() -> Void)?
     private var forDrawing = false
     var simulateUntrusted = false
 
@@ -74,8 +75,13 @@ final class WelcomeWindow: NSObject {
         window?.orderOut(nil)
     }
 
+    @objc private func practicePressed() {
+        close()
+        onPractice?()
+    }
+
     private func build() {
-        let size = CGSize(width: 340, height: 300)
+        let size = CGSize(width: 340, height: 336)
         let w = Card(contentRect: CGRect(origin: .zero, size: size), styleMask: [.borderless], backing: .buffered, defer: false)
         w.title = "Look Here Please"
         w.isOpaque = false
@@ -118,7 +124,10 @@ final class WelcomeWindow: NSObject {
         tip.textColor = .secondaryLabelColor
         tip.alignment = .center
 
-        let stack = NSStackView(views: [icon, title, subtitle, button, tip])
+        let practice = NSButton(title: "Try Getting Started Practice…", target: self, action: #selector(practicePressed))
+        practice.bezelStyle = .rounded
+        practice.toolTip = "Practice Pointer On, Interact, drawing and quick controls in a local window. No permission is needed."
+        let stack = NSStackView(views: [icon, title, subtitle, button, practice, tip])
         stack.orientation = .vertical
         stack.alignment = .centerX
         stack.spacing = 6
