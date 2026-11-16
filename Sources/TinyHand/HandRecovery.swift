@@ -119,6 +119,13 @@ struct HandRecoveryStore {
         return true
     }
 
+    /// Read-only coordination with portable import. A pending receipt owns its
+    /// hand ID until Undo Remove completes, including legacy/interrupted phases.
+    /// Import must never manufacture manifest membership for that receipt.
+    func pendingImportHandIDs() throws -> Set<String> {
+        Set(try receipts().map { $0.hand.id.lowercased() })
+    }
+
     func pendingRemovals() throws -> [Receipt] {
         _ = try readManifest()
         // Manifest membership only proves the file phase. Settings may still

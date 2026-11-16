@@ -14,6 +14,11 @@ final class PresetsSettingsModel: ObservableObject {
     @Published var recovery: PresentationStore.Recovery?
     private var store: PresentationStore { PresentationStore(directory: CustomHands.directory, storage: Preferences.storage,
         availableIDs: Set(PointerCatalog.entries.filter(\.available).map { $0.style.rawValue })) }
+    private func catalogSignatures() -> [String: String] {
+        Dictionary(uniqueKeysWithValues: PointerStyle.allCases.map { style in
+            (style.rawValue, style.assetName.map(HandAsset.imageSignature) ?? "presentation")
+        })
+    }
     var selected: NamedPresentationPreset? { presets.first { $0.id == selectedID } }
 
     func refresh() {
@@ -99,17 +104,25 @@ final class PresetsSettingsModel: ObservableObject {
         guard let importPlan, !busy else { return }
         busy = true
         let store = store
+        let catalogAtPreparation = catalogSignatures()
         DispatchQueue.global(qos: .userInitiated).async {
-            let result = Result { try store.apply(importPlan) }
+            let result = Result { try store.prepareImport(importPlan) }
             DispatchQueue.main.async {
                 self.busy = false
-                switch result {
-                case .success:
+                do {
+                    let prepared = try result.get()
+                    // Recheck catalog file signatures without causing a newly
+                    // changed image to decode on main. Preference/file validation
+                    // and publication then share native/control writers' queue.
+                    defer { DispatchQueue.global(qos: .utility).async { store.discardImport(prepared) } }
+                    guard self.catalogSignatures() == catalogAtPreparation else {
+                        throw PresentationArchiveError(message: "The pointer library changed after preview. Preview the backup again before importing. Nothing was replaced.")
+                    }
+                    try store.commitImport(prepared)
                     self.importPlan = nil
                     self.message = "Backup imported. Undo restores the previous setup and files."
                     self.changed()
-                case .failure(let error): self.message = error.localizedDescription; self.importPlan = nil
-                }
+                } catch { self.message = error.localizedDescription; self.importPlan = nil }
             }
         }
     }

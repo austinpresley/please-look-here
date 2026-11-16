@@ -1,4 +1,5 @@
 import Foundation
+import Darwin
 
 /// File transactions are independent of the running app, UI and global preferences.
 /// Only the injected defaults and canonical owned paths can be changed.
@@ -8,6 +9,12 @@ struct PresentationStore {
     /// The UI supplies its current catalog availability. Tests may inject it.
     var availableIDs: Set<String>? = nil
     var writeFile: (Data, URL) throws -> Void = { try $0.write(to: $1, options: .atomic) }
+    /// Injectable atomic publication seam for deterministic filesystem failures.
+    var moveImportFile: (URL, URL) throws -> Void = { source, destination in
+        guard rename(source.path, destination.path) == 0 else {
+            throw CocoaError(.fileWriteUnknown, userInfo: [NSFilePathErrorKey: destination.path])
+        }
+    }
     private let fm = FileManager.default
     private let presetsPath = ".Presentation/presets.json"
     private var recoveryDirectory: URL { directory.appendingPathComponent(".Presentation/Recovery", isDirectory: true) }
@@ -45,6 +52,29 @@ struct PresentationStore {
         let preview: Preview
         let files: [FileChange]
         let preferencesAtPreview: Data
+        let context: [String: FileStamp]
+        let availableIDs: Set<String>?
+    }
+
+    /// Metadata, including inode and nanosecond ctime, detects replacement and
+    /// in-place edits without decoding or reading artwork on the main queue.
+    struct FileStamp: Equatable {
+        let device: Int32
+        let inode: UInt64
+        let mode: UInt16
+        let size: Int64
+        let modifiedSeconds: Int
+        let modifiedNanos: Int
+        let changedSeconds: Int
+        let changedNanos: Int
+    }
+    struct PreparedImport {
+        fileprivate let plan: Plan
+        fileprivate let receipt: Recovery
+        fileprivate let staging: URL
+        fileprivate let preferences: [String: Any]
+        fileprivate let context: [String: FileStamp]
+        fileprivate let stagedFiles: [String: FileStamp]
     }
 
     private func problem(_ message: String) -> PresentationArchiveError { PresentationArchiveError(message: message) }
@@ -146,10 +176,18 @@ struct PresentationStore {
 
     func preview(_ archive: PortablePresentationArchive) throws -> Plan {
         try archive.validate() // No mutation, including no creation of the root.
+        let context = try importContext(archive)
+        let preferences = currentPreferences()
         let localHands = try hands(), localPresets = try presets()
         var mergedHands = localHands, mergedPresets = localPresets
         var conflicts: [String] = [], files: [FileChange] = []
         var addedHands: [String] = [], addedArtwork: [String] = [], addedPresets: [String] = []
+        if exists(try safeURL(".Removed/import-probe").deletingLastPathComponent()) {
+            let pending = try HandRecoveryStore(directory: directory).pendingImportHandIDs()
+            for hand in archive.hands where pending.contains(hand.id.lowercased()) {
+                conflicts.append("Hand \(hand.id) has pending removal recovery. Finish Undo Remove in Settings > Pointers before previewing this backup again.")
+            }
+        }
         for hand in archive.hands {
             if let existing = localHands.first(where: { $0.id.lowercased() == hand.id.lowercased() }) {
                 if existing != hand { conflicts.append("Hand \(hand.id) already has different identity or settings.") }
@@ -192,23 +230,178 @@ struct PresentationStore {
                 changed.append("\(id) overrides: \(try description(oldOverrides.pointers[id])) → \(try description(newOverrides.pointers[id]))")
             }
         }
+        guard context == (try importContext(archive)), preferencesEqual(preferences, currentPreferences()) else {
+            throw staleImport()
+        }
         return Plan(archive: archive, preview: Preview(addedHands: addedHands, addedArtwork: addedArtwork,
             addedPresets: addedPresets, conflicts: conflicts, changedSettings: changed,
             selectedID: archive.setup.selectedID, pinnedIDs: archive.setup.pinnedIDs,
             disabledIDs: archive.setup.disabledIDs,
             overrideIDs: try PointerConfigurationDocument.decode(archive.setup.pointerOverrides).pointers.keys.sorted()), files: files,
-            preferencesAtPreview: try preferencesData(currentPreferences()))
+            preferencesAtPreview: try preferencesData(preferences), context: context, availableIDs: availableIDs)
     }
 
-    /// Rebuild the plan at commit time, so a stale preview cannot overwrite changes.
+    /// Background-only convenience for tests and non-UI callers. UI explicitly
+    /// prepares off-main and commits on-main to keep validation and staging away
+    /// from native preference writers, with no suspension inside final commit.
     @discardableResult func apply(_ plan: Plan) throws -> Recovery {
+        guard !Thread.isMainThread else { throw problem("Prepare the backup away from the main queue before committing it.") }
+        let prepared = try prepareImport(plan)
+        defer { discardImport(prepared) }
+        return try DispatchQueue.main.sync { try commitImport(prepared) }
+    }
+
+    func prepareImport(_ plan: Plan) throws -> PreparedImport {
+        guard !Thread.isMainThread else { throw problem("Backup staging must run away from the main queue.") }
         let refreshed = try preview(plan.archive)
         guard refreshed.preview.canApply else { throw problem(refreshed.preview.conflicts.joined(separator: "\n")) }
-        guard refreshed.files == plan.files,
-              NSDictionary(dictionary: try decodePreferences(plan.preferencesAtPreview)).isEqual(to: currentPreferences()) else {
-            throw problem("The library changed after preview. Preview the backup again before importing.")
+        guard refreshed.files == plan.files, refreshed.context == plan.context,
+              refreshed.availableIDs == plan.availableIDs,
+              preferencesEqual(try decodePreferences(plan.preferencesAtPreview), currentPreferences()) else { throw staleImport() }
+        let preferences = try appliedPreferences(plan.archive.setup, importedIDs: Set(plan.archive.hands.map(\.id)))
+        let receipt = Recovery(id: UUID(), created: Date(), title: "Import Backup",
+            preferencesBefore: plan.preferencesAtPreview, preferencesAfter: try preferencesData(preferences), files: plan.files)
+        let staging = try safeURL(".Presentation/Staging/\(receipt.id.uuidString)")
+        do {
+            try fm.createDirectory(at: staging, withIntermediateDirectories: true)
+            let stagedContext = try importContext(plan.archive)
+            // Creating a new Hands root adds ancestor identities. Every identity
+            // that existed at preview and every owned-file stamp must still match.
+            guard stagedContext.filter({ !$0.key.hasPrefix("ancestor:") || plan.context[$0.key] != nil }) == plan.context else { throw staleImport() }
+            for file in plan.files {
+                if let data = file.after {
+                    let target = staging.appendingPathComponent(file.path)
+                    try fm.createDirectory(at: target.deletingLastPathComponent(), withIntermediateDirectories: true)
+                    try writeFile(data, target)
+                }
+            }
+            // Serialize the large durable journal before entering the main queue.
+            let journalData = try JSONEncoder().encode(receipt)
+            try writeFile(journalData, staging.appendingPathComponent("journal.json"))
+            var stagedFiles: [String: FileStamp] = [:]
+            let stagedBytes = plan.files.compactMap { file in file.after.map { (file.path, $0) } } + [("journal.json", journalData)]
+            for (path, data) in stagedBytes {
+                let url = try safeURL(".Presentation/Staging/\(receipt.id.uuidString)/\(path)")
+                let before = try stamp(url)
+                guard try Data(contentsOf: url) == data, before == (try stamp(url)), let before else {
+                    throw problem("Backup staging changed before it finished. Preview the backup again. Nothing was replaced.")
+                }
+                stagedFiles[path] = before
+            }
+            // Prepare canonical parent directories too. No owned file changes.
+            for path in plan.files.map(\.path) {
+                let url = try safeURL(path)
+                try fm.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+            }
+            return PreparedImport(plan: plan, receipt: receipt, staging: staging, preferences: preferences, context: stagedContext, stagedFiles: stagedFiles)
+        } catch {
+            try? fm.removeItem(at: staging)
+            throw error
         }
-        return try transact(title: "Import Backup", preferences: try appliedPreferences(plan.archive.setup, importedIDs: Set(plan.archive.hands.map(\.id))), files: refreshed.files)
+    }
+
+    func discardImport(_ prepared: PreparedImport) {
+        try? fm.removeItem(at: prepared.staging)
+    }
+
+    /// Native bindings, control commands and hand mutations run on main. Final
+    /// validation and publication share that queue, without callbacks or awaits.
+    /// Staging contains every byte already; commit does bounded metadata checks,
+    /// renames and the allowlisted preference writes. No PNG decode or file copy.
+    @discardableResult func commitImport(_ prepared: PreparedImport) throws -> Recovery {
+        dispatchPrecondition(condition: .onQueue(.main))
+        let plan = prepared.plan
+        guard availableIDs == plan.availableIDs, prepared.context == (try importContext(plan.archive)),
+              preferencesEqual(try decodePreferences(plan.preferencesAtPreview), currentPreferences()) else { throw staleImport() }
+        for (path, expected) in prepared.stagedFiles {
+            let url = try safeURL(".Presentation/Staging/\(prepared.receipt.id.uuidString)/\(path)")
+            guard try stamp(url) == expected else { throw staleImport() }
+        }
+        let journal = try safeURL(recoveryPath(prepared.receipt.id))
+        // One small directory creation belongs inside the serialization boundary,
+        // so another Settings action cannot slip a new Undo journal past preview.
+        try fm.createDirectory(at: journal.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try moveStaged(prepared.staging.appendingPathComponent("journal.json"), to: journal)
+        var published: [FileChange] = []
+        do {
+            for file in plan.files {
+                let target = try safeURL(file.path)
+                // Retain the original inode for bounded rollback on a file error.
+                if file.before != nil {
+                    try fm.moveItem(at: target, to: prepared.staging.appendingPathComponent("before-\(published.count)"))
+                }
+                published.append(file)
+                if file.after != nil { try moveStaged(prepared.staging.appendingPathComponent(file.path), to: target) }
+            }
+            setPreferences(prepared.preferences)
+        } catch {
+            // Preferences were never written. Preserve every accepted user edit.
+            do {
+                for (index, file) in published.enumerated().reversed() {
+                    let target = try safeURL(file.path)
+                    if exists(target) { try fm.removeItem(at: target) }
+                    if file.before != nil { try fm.moveItem(at: prepared.staging.appendingPathComponent("before-\(index)"), to: target) }
+                }
+                try Data().write(to: try safeURL(".Presentation/Recovery/\(prepared.receipt.id.uuidString).restored"), options: .atomic)
+            } catch { throw problem("Import stopped. Recovery is retained at \(recoveryDirectory.path). Restore access, then use Undo Last Change. \(error.localizedDescription)") }
+            throw problem("Import could not be saved. The previous files and settings were kept. \(error.localizedDescription)")
+        }
+        return prepared.receipt
+    }
+
+    private func moveStaged(_ source: URL, to destination: URL) throws {
+        // POSIX rename is atomic and stays on the same volume as the Hands root.
+        try moveImportFile(source, destination)
+    }
+    private func staleImport() -> PresentationArchiveError {
+        problem("The library or settings changed after preview. Preview the backup again before importing. Nothing was replaced.")
+    }
+    private func preferencesEqual(_ a: [String: Any], _ b: [String: Any]) -> Bool {
+        NSDictionary(dictionary: a).isEqual(to: b)
+    }
+    private func stamp(_ url: URL, directoryOnly: Bool = false) throws -> FileStamp? {
+        var info = stat()
+        guard lstat(url.path, &info) == 0 else {
+            if errno == ENOENT { return nil }
+            throw problem("Unable to inspect \(url.path). Restore access before importing.")
+        }
+        return FileStamp(device: info.st_dev, inode: info.st_ino, mode: info.st_mode,
+            size: directoryOnly ? 0 : info.st_size,
+            modifiedSeconds: directoryOnly ? 0 : info.st_mtimespec.tv_sec,
+            modifiedNanos: directoryOnly ? 0 : info.st_mtimespec.tv_nsec,
+            changedSeconds: directoryOnly ? 0 : info.st_ctimespec.tv_sec,
+            changedNanos: directoryOnly ? 0 : info.st_ctimespec.tv_nsec)
+    }
+    private func importContext(_ archive: PortablePresentationArchive) throws -> [String: FileStamp] {
+        var paths = Set(archive.artwork.keys).union(["hands.json", presetsPath])
+        for hand in archive.hands {
+            paths.formUnion(["\(hand.id).png", "Gestures/\(hand.id)-first.png", "Gestures/\(hand.id)-second.png"])
+        }
+        var result: [String: FileStamp] = [:]
+        // Missing files are represented by absence; all paths are checked again.
+        for path in paths { result[path] = try stamp(safeURL(path)) }
+        // Keep root/ancestor identity, allowing our staging directories to appear.
+        var ancestor = directory
+        while ancestor.path != "/" {
+            if let value = try stamp(ancestor, directoryOnly: true) { result["ancestor:" + ancestor.path] = value }
+            ancestor.deleteLastPathComponent()
+        }
+        result[".Presentation/Recovery"] = try stamp(safeURL(".Presentation/Recovery/import-probe").deletingLastPathComponent())
+        let removed = try safeURL(".Removed/import-probe").deletingLastPathComponent()
+        result[".Removed"] = try stamp(removed)
+        if exists(removed) {
+            let folders = try fm.contentsOfDirectory(at: removed, includingPropertiesForKeys: nil)
+                .filter { UUID(uuidString: $0.lastPathComponent) != nil }
+            guard folders.count <= 512 else { throw problem("The hand recovery history is too large for a portable import. Keep .Removed backed up and move completed recovery packages aside before previewing again.") }
+            for folder in folders {
+                let base = ".Removed/" + folder.lastPathComponent
+                result[base] = try stamp(safeURL(base + "/import-probe").deletingLastPathComponent())
+                for path in [base + "/receipt.json", base + "/restoring", base + "/restored"] {
+                    result[path] = try stamp(safeURL(path))
+                }
+            }
+        }
+        return result
     }
     @discardableResult func applyPreset(_ preset: NamedPresentationPreset) throws -> Recovery {
         try preset.validate()

@@ -25,6 +25,17 @@ import Testing
             try data.write(to: url)
         }
         func read(_ path: String) throws -> Data { try Data(contentsOf: directory.appendingPathComponent(path)) }
+        func durableFiles() throws -> [String: Data] {
+            guard let items = FileManager.default.enumerator(at: directory, includingPropertiesForKeys: [.isRegularFileKey]) else { return [:] }
+            var result: [String: Data] = [:]
+            for case let url as URL in items {
+                let path = String(url.resolvingSymlinksInPath().path.dropFirst(directory.resolvingSymlinksInPath().path.count + 1))
+                if !path.hasPrefix(".Presentation/Staging/"), try url.resourceValues(forKeys: [.isRegularFileKey]).isRegularFile == true {
+                    result[path] = try Data(contentsOf: url)
+                }
+            }
+            return result
+        }
         func archive() throws -> PortablePresentationArchive {
             var setup = try PresentationSetup.capture(defaults)
             setup.selectedID = "custom-fixture"
@@ -52,6 +63,275 @@ import Testing
         }
     }
     struct InjectedFailure: Error {}
+
+    @Test func importingRemovedIdentityKeepsRemovalUndoAndUnpreviewedGestures() throws {
+        let f = try Fixture(); defer { f.finish() }
+        var older = try f.archive()
+        older.artwork["Gestures/custom-fixture-first.png"] = nil
+        older.setup.disabledIDs = []
+        try f.write(JSONEncoder().encode(older.hands), "hands.json")
+        try f.write(try #require(older.artwork["custom-fixture.png"]), "custom-fixture.png")
+        let gesture = try f.png(red: 0.5)
+        try f.write(gesture, "Gestures/custom-fixture-first.png")
+        let removalStore = HandRecoveryStore(directory: f.directory)
+        let removed = try removalStore.remove("custom-fixture")
+        let manifest = try f.read("hands.json")
+        let originalFiles = try f.durableFiles()
+        let originalPreferences = f.defaults.persistentDomain(forName: f.suite) ?? [:]
+        let plan = try f.store.preview(older)
+        #expect(!plan.preview.canApply)
+        #expect(plan.preview.conflicts.contains { $0.contains("Undo Remove") })
+        if plan.preview.canApply {
+            // The actual Settings reload sequence from the reported reproduction.
+            let imported = try f.store.apply(plan)
+            try removalStore.recoverInterruptedRemovals()
+            for receipt in try removalStore.restoresAwaitingPreferences() {
+                try HandRestoreTransaction(store: removalStore, preferences: f.defaults).restore(receipt)
+            }
+            try f.store.restore(imported)
+        } else {
+            #expect(throws: (any Error).self) { try f.store.apply(plan) }
+        }
+        #expect(try f.read("hands.json") == manifest)
+        #expect(!FileManager.default.fileExists(atPath: f.directory.appendingPathComponent("Gestures/custom-fixture-first.png").path))
+        #expect(try removalStore.pendingRemovals() == [removed])
+        #expect(try f.durableFiles() == originalFiles)
+        #expect(NSDictionary(dictionary: f.defaults.persistentDomain(forName: f.suite) ?? [:]).isEqual(to: originalPreferences))
+        #expect(try Data(contentsOf: removalStore.package(for: removed).appendingPathComponent("Gestures/custom-fixture-first.png")) == gesture)
+        // The independent Undo Remove still restores the complete newer hand.
+        try HandRestoreTransaction(store: removalStore, preferences: f.defaults).restore(removed)
+        #expect(try f.read("Gestures/custom-fixture-first.png") == gesture)
+    }
+
+    @Test func preferenceEditDuringArtworkStagingRejectsWithoutReplacingAcceptedEdit() throws {
+        let f = try Fixture(); defer { f.finish() }
+        let archive = try f.archive(), plan = try f.store.preview(archive)
+        var store = f.store
+        store.writeFile = { data, url in
+            if url.lastPathComponent == "custom-fixture.png" {
+                DispatchQueue.main.sync { f.defaults.set(0.18, forKey: "pointerSize") }
+            }
+            try data.write(to: url, options: .atomic)
+        }
+        #expect(throws: (any Error).self) { try store.apply(plan) }
+        #expect(f.defaults.double(forKey: "pointerSize") == 0.18)
+        #expect(NSDictionary(dictionary: f.defaults.persistentDomain(forName: f.suite) ?? [:]).isEqual(to: ["pointerSize": 0.18]))
+        #expect(try f.durableFiles().isEmpty)
+        #expect(!FileManager.default.fileExists(atPath: f.directory.appendingPathComponent("hands.json").path))
+        #expect(!FileManager.default.fileExists(atPath: f.directory.appendingPathComponent("custom-fixture.png").path))
+        #expect(try f.store.latestRecovery() == nil)
+    }
+
+    @Test func fileEditDuringArtworkStagingPreservesExactFilesPreferencesAndPriorRecovery() throws {
+        let f = try Fixture(); defer { f.finish() }
+        try f.store.savePreset(name: "Local setup")
+        let archive = try f.archive()
+        let existing = try #require(archive.artwork["custom-fixture.png"])
+        try f.write(existing, "custom-fixture.png")
+        let plan = try f.store.preview(archive)
+        let changed = try f.png(red: 0.3)
+        var expected = try f.durableFiles()
+        expected["custom-fixture.png"] = changed
+        let preferences = f.defaults.persistentDomain(forName: f.suite) ?? [:]
+        let prior = try #require(try f.store.latestRecovery())
+        var store = f.store
+        var edited = false
+        store.writeFile = { data, url in
+            #expect(!Thread.isMainThread)
+            if !edited {
+                edited = true
+                try DispatchQueue.main.sync { try f.write(changed, "custom-fixture.png") }
+            }
+            try data.write(to: url, options: .atomic)
+        }
+        #expect(throws: (any Error).self) { try store.apply(plan) }
+        #expect(edited)
+        #expect(try f.durableFiles() == expected)
+        #expect(NSDictionary(dictionary: f.defaults.persistentDomain(forName: f.suite) ?? [:]).isEqual(to: preferences))
+        #expect(try f.store.latestRecovery()?.id == prior.id)
+        // A fresh preview reports the conflict instead of accepting the old bytes.
+        #expect(try !f.store.preview(archive).preview.canApply)
+    }
+
+    @Test func preferenceEditAfterPreparationRejectsAtMainQueueBoundaryAndRetryKeepsEdit() throws {
+        let f = try Fixture(); defer { f.finish() }
+        try f.store.savePreset(name: "Local setup")
+        let before = try f.durableFiles()
+        let prepared = try f.store.prepareImport(f.store.preview(f.archive()))
+        defer { f.store.discardImport(prepared) }
+        DispatchQueue.main.sync {
+            f.defaults.set(0.18, forKey: "pointerSize")
+            #expect(throws: (any Error).self) { try f.store.commitImport(prepared) }
+        }
+        #expect(f.defaults.double(forKey: "pointerSize") == 0.18)
+        #expect(try f.durableFiles() == before)
+        let afterEdit = f.defaults.persistentDomain(forName: f.suite) ?? [:]
+        let receipt = try f.store.apply(f.store.preview(f.archive()))
+        try f.store.restore(receipt)
+        #expect(NSDictionary(dictionary: f.defaults.persistentDomain(forName: f.suite) ?? [:]).isEqual(to: afterEdit))
+    }
+
+    @Test func matchingArtworkAndOmittedGestureChangesInvalidatePreparedImport() throws {
+        for path in ["custom-fixture.png", "Gestures/custom-fixture-second.png", "hands.json", ".Presentation/presets.json"] {
+            let f = try Fixture(); defer { f.finish() }
+            let archive = try f.archive()
+            try f.write(try #require(archive.artwork["custom-fixture.png"]), "custom-fixture.png")
+            let prepared = try f.store.prepareImport(f.store.preview(archive))
+            defer { f.store.discardImport(prepared) }
+            let edit = Data("accepted local edit".utf8)
+            try f.write(edit, path)
+            let before = try f.durableFiles()
+            #expect(throws: (any Error).self) { try DispatchQueue.main.sync { try f.store.commitImport(prepared) } }
+            #expect(try f.durableFiles() == before)
+            #expect(f.defaults.object(forKey: "pointerSize") == nil)
+        }
+    }
+
+    @Test func removalDuringStagingKeepsExactRemovalPackageAndRequiresFreshPreview() throws {
+        let f = try Fixture(); defer { f.finish() }
+        var archive = try f.archive()
+        archive.artwork["Gestures/custom-fixture-first.png"] = nil
+        try f.write(JSONEncoder().encode(archive.hands), "hands.json")
+        try f.write(try #require(archive.artwork["custom-fixture.png"]), "custom-fixture.png")
+        try f.write(f.png(red: 0.4), "Gestures/custom-fixture-first.png")
+        let plan = try f.store.preview(archive)
+        var store = f.store
+        var expected: [String: Data] = [:]
+        var removed: HandRecoveryStore.Receipt?
+        store.writeFile = { data, url in
+            if removed == nil {
+                removed = try DispatchQueue.main.sync { try HandRecoveryStore(directory: f.directory).remove("custom-fixture") }
+                expected = try f.durableFiles()
+            }
+            try data.write(to: url, options: .atomic)
+        }
+        #expect(throws: (any Error).self) { try store.apply(plan) }
+        #expect(try f.durableFiles() == expected)
+        #expect(try HandRecoveryStore(directory: f.directory).pendingRemovals() == [try #require(removed)])
+        #expect(try !f.store.preview(archive).preview.canApply)
+    }
+
+    @Test func legacyInterruptedAndCompletedRemovalPhasesKeepTheirOwnership() throws {
+        let f = try Fixture(); defer { f.finish() }
+        let archive = try f.archive()
+        try f.write(JSONEncoder().encode(archive.hands), "hands.json")
+        for (path, data) in archive.artwork { try f.write(data, path) }
+        let recovery = HandRecoveryStore(directory: f.directory)
+        let removed = try recovery.remove("custom-fixture")
+        // Legacy receipts have this same version-1 payload and no phase marker.
+        #expect(try !f.store.preview(archive).preview.canApply)
+        try f.write(JSONEncoder().encode(archive.hands), "hands.json")
+        #expect(try !f.store.preview(archive).preview.canApply)
+        try recovery.recoverInterruptedRemovals()
+        #expect(try recovery.pendingRemovals() == [removed])
+        try recovery.restoreFiles(removed)
+        #expect(try !f.store.preview(archive).preview.canApply)
+        try recovery.completeRestore(removed)
+        let before = try f.durableFiles()
+        let plan = try f.store.preview(archive)
+        #expect(plan.preview.canApply)
+        let receipt = try f.store.apply(plan)
+        try f.store.restore(receipt)
+        let after = try f.durableFiles().filter { !$0.key.hasPrefix(".Presentation/") }
+        #expect(after == before.filter { !$0.key.hasPrefix(".Presentation/") })
+        #expect(try recovery.pendingRemovals().isEmpty)
+    }
+
+    @Test func catalogAndRecoveryPhaseChangesRejectPreparedImportWithoutConsumingRecovery() throws {
+        let f = try Fixture(); defer { f.finish() }
+        let other = CustomHand(id: "custom-other", name: "Other", ink: 0)
+        try f.write(JSONEncoder().encode([other]), "hands.json")
+        try f.write(f.png(), "custom-other.png")
+        let recovery = HandRecoveryStore(directory: f.directory)
+        let removed = try recovery.remove(other.id)
+        var store = f.store
+        store.availableIDs = ["laser", "glove"]
+        let archive = try f.archive(), plan = try store.preview(archive)
+        let prepared = try store.prepareImport(plan)
+        defer { store.discardImport(prepared) }
+        var changedCatalog = store
+        changedCatalog.availableIDs = ["laser"]
+        #expect(throws: (any Error).self) { try DispatchQueue.main.sync { try changedCatalog.commitImport(prepared) } }
+        // Change only a recovery marker, leaving all import destinations intact.
+        try Data().write(to: recovery.package(for: removed).appendingPathComponent("restoring"))
+        let before = try f.durableFiles()
+        #expect(throws: (any Error).self) { try DispatchQueue.main.sync { try store.commitImport(prepared) } }
+        #expect(try f.durableFiles() == before)
+        #expect(try recovery.pendingRemovals() == [removed])
+    }
+
+    @Test func publicationFailureRollsBackOriginalBytesAndFreshPreviewCanRetry() throws {
+        let f = try Fixture(); defer { f.finish() }
+        try f.write(Data("[  ]".utf8), "hands.json")
+        f.defaults.set(0.18, forKey: "pointerSize")
+        let before = try f.durableFiles(), preferences = f.defaults.persistentDomain(forName: f.suite) ?? [:]
+        let archive = try f.archive()
+        var store = f.store
+        store.moveImportFile = { source, destination in
+            #expect(Thread.isMainThread)
+            if destination.lastPathComponent == "presets.json" { throw InjectedFailure() }
+            try FileManager.default.moveItem(at: source, to: destination)
+        }
+        #expect(throws: (any Error).self) { try store.apply(store.preview(archive)) }
+        #expect(try f.durableFiles().filter { !$0.key.hasPrefix(".Presentation/Recovery/") } == before)
+        #expect(NSDictionary(dictionary: f.defaults.persistentDomain(forName: f.suite) ?? [:]).isEqual(to: preferences))
+        #expect(try f.store.latestRecovery() == nil)
+        let receipt = try f.store.apply(f.store.preview(archive))
+        try f.store.restore(receipt)
+        #expect(try f.read("hands.json") == before["hands.json"])
+        #expect(NSDictionary(dictionary: f.defaults.persistentDomain(forName: f.suite) ?? [:]).isEqual(to: preferences))
+    }
+
+    @Test func stagedBytesChangedAfterPreparationCannotBePublished() throws {
+        let f = try Fixture(); defer { f.finish() }
+        let prepared = try f.store.prepareImport(f.store.preview(f.archive()))
+        defer { f.store.discardImport(prepared) }
+        let staging = try #require(FileManager.default.contentsOfDirectory(at: f.directory.appendingPathComponent(".Presentation/Staging"), includingPropertiesForKeys: nil).first)
+        try Data("replaced staged bytes".utf8).write(to: staging.appendingPathComponent("custom-fixture.png"))
+        #expect(throws: (any Error).self) { try DispatchQueue.main.sync { try f.store.commitImport(prepared) } }
+        #expect(try f.durableFiles().isEmpty)
+        #expect(f.defaults.object(forKey: "pointerSize") == nil)
+    }
+
+    @Test func separatelyPreparedImportsSerializeAndSecondCannotOverwriteFirst() throws {
+        let f = try Fixture(); defer { f.finish() }
+        try f.write(JSONEncoder().encode([CustomHand]()), "hands.json")
+        let archive = try f.archive(), plan = try f.store.preview(archive)
+        let first = try f.store.prepareImport(plan)
+        defer { f.store.discardImport(first) }
+        let second = try f.store.prepareImport(plan)
+        defer { f.store.discardImport(second) }
+        let receipt = try DispatchQueue.main.sync { try f.store.commitImport(first) }
+        let files = try f.durableFiles(), preferences = f.defaults.persistentDomain(forName: f.suite) ?? [:]
+        #expect(throws: (any Error).self) { try DispatchQueue.main.sync { try f.store.commitImport(second) } }
+        #expect(try f.durableFiles() == files)
+        #expect(NSDictionary(dictionary: f.defaults.persistentDomain(forName: f.suite) ?? [:]).isEqual(to: preferences))
+        #expect(try f.store.latestRecovery()?.id == receipt.id)
+        try f.store.restore(receipt)
+        #expect(f.defaults.object(forKey: "pointerSize") == nil)
+    }
+
+    @Test func anotherUndoJournalDuringStagingInvalidatesImportEvenWithIdenticalPreferences() throws {
+        let f = try Fixture(); defer { f.finish() }
+        try f.store.savePreset(name: "Local setup")
+        let preset = try #require(try f.store.presets().first)
+        let prepared = try f.store.prepareImport(f.store.preview(f.archive()))
+        defer { f.store.discardImport(prepared) }
+        // Applying this preset changes raw defaults once, then records a no-op
+        // Undo journal with the same preference values on its second application.
+        _ = try DispatchQueue.main.sync { try f.store.applyPreset(preset) }
+        let before = try f.durableFiles()
+        #expect(throws: (any Error).self) { try DispatchQueue.main.sync { try f.store.commitImport(prepared) } }
+        #expect(try f.durableFiles() == before)
+        let plan = try f.store.preview(f.archive())
+        let second = try f.store.prepareImport(plan)
+        defer { f.store.discardImport(second) }
+        let accepted = try DispatchQueue.main.sync { try f.store.applyPreset(preset) }
+        let after = try f.durableFiles()
+        #expect(throws: (any Error).self) { try DispatchQueue.main.sync { try f.store.commitImport(second) } }
+        #expect(try f.durableFiles() == after)
+        #expect(try f.store.latestRecovery()?.id == accepted.id)
+    }
 
     @Test func roundTripIncludesRawDistinctionsMissingOverridesAndArtwork() throws {
         let f = try Fixture(); defer { f.finish() }
@@ -206,14 +486,14 @@ import Testing
     @Test func failedRollbackRetainsJournalAndCanRecoverAfterAccessIsRepaired() throws {
         let f = try Fixture(); defer { f.finish() }
         var store = f.store
-        store.writeFile = { data, url in
-            if url.lastPathComponent == "hands.json" {
+        store.moveImportFile = { source, destination in
+            if destination.lastPathComponent == "hands.json" {
                 let artwork = f.directory.appendingPathComponent("custom-fixture.png")
                 try FileManager.default.removeItem(at: artwork)
                 try FileManager.default.createDirectory(at: artwork, withIntermediateDirectories: false)
                 throw InjectedFailure()
             }
-            try data.write(to: url, options: .atomic)
+            try FileManager.default.moveItem(at: source, to: destination)
         }
         do {
             try store.apply(store.preview(f.archive()))
