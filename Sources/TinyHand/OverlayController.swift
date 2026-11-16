@@ -11,6 +11,7 @@ final class OverlayController {
     private let armView: ArmView
     private let inputTap = InputTap()
     private let toolbar = Toolbar()
+    private let screenshotResult = ScreenshotResult()
     let radial = RadialMenu()
     private let accessibility: () -> Bool
     private let screenRecording: () -> Bool
@@ -435,6 +436,7 @@ final class OverlayController {
     func toggle() { if isActive { deactivate() } else { _ = activate() } }
     func exit() { deactivate() }
     func deactivate() {
+        screenshotResult.close()
         guard isActive else { return }
         isActive = false
         cancelTapFeedback()
@@ -548,6 +550,7 @@ final class OverlayController {
 
     func captureScreenshot(fromToolbar: Bool = false) {
         guard !isCapturing else { return }
+        screenshotResult.close()
         if !isActive { _ = activate() }
         guard let screen = currentScreen() else { return }
         releaseDrawing()
@@ -593,7 +596,7 @@ final class OverlayController {
                 }
                 self.lastCaptureURL = destination
                 self.lastCaptureSize = [image.width, image.height]
-                self.toolbar.showMessage(destination.map { "Screenshot saved: \($0.lastPathComponent)" } ?? "Screenshot copied to clipboard")
+                self.screenshotResult.show(png: data, destination: destination, copied: copies, on: screen)
             } catch is CancellationError {
                 return
             } catch {
@@ -606,10 +609,16 @@ final class OverlayController {
                     let alert = NSAlert()
                     alert.messageText = "Screenshot could not be taken"
                     alert.informativeText = error.localizedDescription
-                    alert.addButton(withTitle: "OK")
-                    if error is ScreenshotError { alert.addButton(withTitle: "Open Screen Recording Settings") }
+                    let recovery = ScreenshotRecovery.action(for: error)
+                    alert.addButton(withTitle: recovery.title)
+                    alert.addButton(withTitle: "Cancel")
                     let response = alert.runModal()
-                    if response == .alertSecondButtonReturn { ScreenCapture.openPermissionSettings() }
+                    if response == .alertFirstButtonReturn {
+                        if recovery == .permissionSettings { ScreenCapture.openPermissionSettings() }
+                        else {
+                            DispatchQueue.main.async { [weak self] in self?.captureScreenshot(fromToolbar: fromToolbar) }
+                        }
+                    }
                     if wasVisible && self.isActive { self.window.orderFrontRegardless() }
                 }
             }
