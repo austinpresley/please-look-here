@@ -11,13 +11,32 @@ private final class OutputProbe {
     }
     private let lock = NSLock()
     private var events: [Event] = []
+    private var configurationChanges: [() -> Void] = []
+    private var pending = 0
     var blockStart: (() -> Void)?
+    var blockPlay: (() -> Void)?
+    var rendersImmediately = true
     func note(_ kind: String, gain: Float? = nil) {
         lock.withLock { events.append(Event(kind: kind, gain: gain, onMain: Thread.isMainThread)) }
     }
     var recorded: [Event] { lock.withLock { events } }
     var plays: Int { recorded.filter { $0.kind == "play" }.count }
     var gains: [Float] { recorded.compactMap(\.gain) }
+    var scheduledPlayback: Int { lock.withLock { pending } }
+    func schedule() {
+        lock.withLock {
+            events.append(Event(kind: "play", gain: nil, onMain: Thread.isMainThread))
+            if !rendersImmediately { pending += 1 }
+        }
+    }
+    func cancelScheduledPlayback() { lock.withLock { pending = 0 } }
+    func rememberConfigurationChange(_ callback: @escaping () -> Void) {
+        lock.withLock { configurationChanges.append(callback) }
+    }
+    func changeFirstDriverConfiguration() {
+        let callback = lock.withLock { configurationChanges.first }
+        callback?()
+    }
 }
 
 private final class OutputDriver: TapAudioDriver {
@@ -27,14 +46,18 @@ private final class OutputDriver: TapAudioDriver {
     func start() throws { probe.note("start"); probe.blockStart?(); isRunning = true }
     func setGain(_ gain: Float) { probe.note("gain", gain: gain) }
     func play(_ buffer: AVAudioPCMBuffer, rendered: @escaping () -> Void) {
-        probe.note("play"); rendered()
+        probe.schedule(); probe.blockPlay?()
+        if probe.rendersImmediately { rendered() }
     }
-    func stop() { probe.note("stop"); isRunning = false }
+    func stop() { probe.note("stop"); probe.cancelScheduledPlayback(); isRunning = false }
 }
 
 @Suite(.serialized) @MainActor struct SoundOutputTests {
     private func player(_ probe: OutputProbe) -> TapSound {
-        TapSound(.click, driverFactory: { _, _ in OutputDriver(probe) })
+        TapSound(.click, driverFactory: { _, changed in
+            probe.rememberConfigurationChange(changed)
+            return OutputDriver(probe)
+        })
     }
 
     @Test func initialOutputPreservesFullVolumeAndExistingEnabledSettings() {
@@ -103,7 +126,73 @@ private final class OutputDriver: TapAudioDriver {
         }
     }
 
-    @Test func masterMuteCancelsPlaybackDuringBlockedStartupAndPendingPresses() async {
+    @Test(arguments: [true, false])
+    func inaudibleTransitionCancelsScheduledAudioEvenWhenOutputIsRestoredBeforeQueueDrains(masterMute: Bool) async {
+        let probe = OutputProbe(), sound = player(probe)
+        let release = DispatchSemaphore(value: 0)
+        defer { release.signal() }
+        probe.rendersImmediately = false
+        sound.setOutput(SoundOutputConfiguration(volume: 0.4))
+        // Hold the serial queue after the driver has scheduled a buffer. Every
+        // output change below must arrive before either output closure can run.
+        await withCheckedContinuation { (scheduled: CheckedContinuation<Void, Never>) in
+            probe.blockPlay = { scheduled.resume(); release.wait() }
+            sound.play()
+        }
+        #expect(probe.scheduledPlayback == 1)
+        sound.play() // A pending press from before mute must also be cancelled.
+        sound.setOutput(masterMute ? SoundOutputConfiguration(volume: 0.4, muted: true)
+                                   : SoundOutputConfiguration(volume: 0))
+        sound.play(); sound.warm() // Calls during silence cannot replay later.
+        sound.setOutput(SoundOutputConfiguration(volume: 0.3))
+        sound.setOutput(SoundOutputConfiguration(volume: 0.65))
+        probe.blockPlay = nil
+        release.signal()
+        await sound.drain()
+        #expect(probe.plays == 1)
+        #expect(probe.scheduledPlayback == 0)
+        #expect(probe.recorded.filter { $0.kind == "stop" }.count == 1)
+        #expect(probe.recorded.filter { $0.kind == "start" }.count == 1)
+        await sound.drain()
+        #expect(probe.plays == 1 && probe.scheduledPlayback == 0)
+
+        sound.play(); await sound.drain()
+        #expect(probe.plays == 2 && probe.scheduledPlayback == 1)
+        #expect(probe.recorded.filter { $0.kind == "start" }.count == 2)
+        #expect(probe.gains.last == 0.65)
+        // The discarded driver's delayed notification cannot tear down its replacement.
+        probe.changeFirstDriverConfiguration(); await sound.drain()
+        #expect(probe.scheduledPlayback == 1)
+        #expect(probe.recorded.filter { $0.kind == "stop" }.count == 1)
+        #expect(!probe.recorded.contains(where: { $0.onMain }))
+        sound.silence(); await sound.drain()
+        #expect(probe.scheduledPlayback == 0)
+    }
+
+    @Test func rapidPositiveVolumeChangesKeepLiveAudioAndApplyTheLatestGain() async {
+        let probe = OutputProbe(), sound = player(probe)
+        let release = DispatchSemaphore(value: 0)
+        defer { release.signal() }
+        probe.rendersImmediately = false
+        await withCheckedContinuation { (scheduled: CheckedContinuation<Void, Never>) in
+            probe.blockPlay = { scheduled.resume(); release.wait() }
+            sound.play()
+        }
+        sound.setOutput(SoundOutputConfiguration(volume: 0.2))
+        sound.setOutput(SoundOutputConfiguration(volume: 0.8))
+        sound.setOutput(SoundOutputConfiguration(volume: 0.45))
+        probe.blockPlay = nil
+        release.signal()
+        await sound.drain()
+        #expect(probe.plays == 1 && probe.scheduledPlayback == 1)
+        #expect(probe.gains.last == 0.45)
+        #expect(probe.recorded.filter { $0.kind == "start" }.count == 1)
+        #expect(!probe.recorded.contains { $0.kind == "stop" || $0.onMain })
+        sound.silence(); await sound.drain()
+    }
+
+    @Test(arguments: [true, false])
+    func masterMuteCancelsPlaybackDuringBlockedStartupAndPendingPresses(restoreBeforeDrain: Bool) async {
         for output in [SoundOutputConfiguration(muted: true), SoundOutputConfiguration(volume: 0)] {
             let probe = OutputProbe(), sound = player(probe)
             let release = DispatchSemaphore(value: 0)
@@ -113,6 +202,7 @@ private final class OutputDriver: TapAudioDriver {
             }
             sound.play()
             sound.setOutput(output)
+            if restoreBeforeDrain { sound.setOutput(SoundOutputConfiguration(volume: 0.6)) }
             release.signal()
             await sound.drain()
             #expect(probe.plays == 0)

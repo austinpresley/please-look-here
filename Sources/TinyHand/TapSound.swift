@@ -135,10 +135,13 @@ final class TapSound: @unchecked Sendable {
     func load(_ choice: TapSoundChoice) { queue.async { @Sendable [weak self] in self?.choice = choice } }
     func setOutput(_ output: SoundOutputConfiguration) {
         guard gate.setOutput(output) else { return }
+        // Mute/zero must discard already scheduled buffers even if output is
+        // restored before this queue runs. Gain updates still use the latest value.
+        let cancelsPlayback = !output.audible
         queue.async { @Sendable [weak self] in
             guard let self else { return }
             let gain = self.gate.gain
-            if gain == 0 { self.teardown() }
+            if cancelsPlayback || gain == 0 { self.teardown() }
             else { self.driver?.setGain(gain) }
         }
     }
