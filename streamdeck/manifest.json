@@ -3,7 +3,7 @@
   "Author": "Austin Presley",
   "Description": "Control the Look Here Please pointer from Stream Deck and see its actual state on each key.",
   "UUID": "com.austinpresley.lookhereplease",
-  "Version": "1.0.3.2",
+  "Version": "1.1.0.0",
   "SDKVersion": 2,
   "CodePath": "look-here-please-deck",
   "Icon": "icons/plugin",
