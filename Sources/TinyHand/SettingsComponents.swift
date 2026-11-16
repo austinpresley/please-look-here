@@ -3,36 +3,6 @@ import ApplicationServices
 import Carbon.HIToolbox
 import SwiftUI
 
-struct SidebarRow: View {
-    let section: SettingsSection
-    let selected: Bool
-    let action: () -> Void
-    @State private var hovering = false
-
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: 8) {
-                IconTile(symbol: section.symbol, tint: section.tint)
-                Text(section.title)
-                    .font(.system(size: 13, weight: selected ? .semibold : .regular))
-                    .foregroundColor(.primary)
-                Spacer()
-            }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 8)
-            .background(
-                RoundedRectangle(cornerRadius: 8, style: .continuous)
-                    .fill(Color.primary.opacity(selected ? 0.1 : hovering ? 0.05 : 0))
-            )
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .focusable(false)
-        .onHover { hovering = $0 }
-    }
-}
-
-
 struct IconTile: View {
     let symbol: String
     let tint: Color
@@ -144,8 +114,9 @@ struct LinkRow: View {
             .background(Color.primary.opacity(hovering ? 0.04 : 0))
             .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
-        .focusable(false)
+        .buttonStyle(.borderless)
+        .accessibilityLabel(title)
+        .accessibilityValue(detail)
         .onHover { hovering = $0 }
     }
 }
@@ -162,8 +133,7 @@ struct TextButton: View {
                 .font(.system(size: 11, weight: .medium))
                 .foregroundColor(hovering ? .primary : .secondary)
         }
-        .buttonStyle(.plain)
-        .focusable(false)
+        .buttonStyle(.borderless)
         .onHover { hovering = $0 }
     }
 }
@@ -182,8 +152,7 @@ struct PillButton: View {
         .padding(.vertical, 8)
                 .background(Capsule().fill(Color.primary.opacity(hovering ? 0.14 : 0.09)))
         }
-        .buttonStyle(.plain)
-        .focusable(false)
+        .buttonStyle(.borderless)
         .onHover { hovering = $0 }
     }
 }

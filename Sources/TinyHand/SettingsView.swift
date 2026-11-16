@@ -59,12 +59,26 @@ struct SettingsView: View {
     }
 
     private var sidebar: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            ForEach(SettingsSection.allCases) { section in
-                SidebarRow(section: section, selected: model.section == section) {
-                    model.section = section
+        VStack(alignment: .leading, spacing: 0) {
+            List(selection: Binding<SettingsSection?>(
+                get: { model.section },
+                set: { if let section = $0 { model.section = section } }
+            )) {
+                ForEach(SettingsSection.allCases) { section in
+                    HStack(spacing: Space.sm) {
+                        IconTile(symbol: section.symbol, tint: section.tint)
+                            .accessibilityHidden(true)
+                        Text(section.title)
+                    }
+                    .tag(section)
+                    .accessibilityLabel(section.title)
+                    .accessibilityValue(model.section == section ? "Selected" : "")
+                    .accessibilityAddTraits(model.section == section ? .isSelected : [])
                 }
             }
+            .listStyle(.sidebar)
+            .scrollContentBackground(.hidden)
+            .accessibilityLabel("Settings sections")
             Spacer()
             HStack(spacing: 8) {
                 if let icon = NSImage(named: "AppIcon") ?? NSApp.applicationIconImage {
@@ -96,8 +110,7 @@ struct SettingsView: View {
                         }
                         .foregroundColor(.secondary)
                     }
-                    .buttonStyle(.plain)
-                    .focusable(false)
+                    .buttonStyle(.borderless)
                     .padding(.bottom, -12)
                 }
                 Text(model.section == .pointers && model.makingHand ? "Make your own hand" : model.section.title)

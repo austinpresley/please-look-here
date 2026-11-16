@@ -127,8 +127,8 @@ struct PointersPage: View {
                         .onEnded { _ in dropDrag() }
                 )
                 Text(full
-                     ? "The toolbar is full. Remove a pointer to add another. Drag to reorder."
-                     : "Press + to add a pointer. Drag to reorder, or out to remove.")
+                     ? "The toolbar is full. Remove a pointer to add another. Drag to reorder, or open a pin for Move Left and Move Right."
+                     : "Press + to add a pointer. Drag to reorder or out to remove. Open a pin for Move Left and Move Right.")
                     .font(.system(size: 11))
                     .foregroundColor(.secondary)
                     .padding(.horizontal, 4)
@@ -174,8 +174,8 @@ struct AddSlot: View {
                 )
                 .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
-        .focusable(false)
+        .buttonStyle(.borderless)
+        .accessibilityLabel("Add a toolbar pin")
         .help("Add a pointer")
         .onHover { hovering = $0 }
     }
@@ -215,8 +215,7 @@ struct PointerPicker: View {
                 .padding(.vertical, 10)
                 .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
-            .focusable(false)
+            .buttonStyle(.borderless)
         }
         .frame(width: 400)
     }
@@ -263,8 +262,10 @@ struct PickerCell: View {
             .opacity(added ? 0.35 : 1)
             .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
-        .focusable(false)
+        .buttonStyle(.borderless)
+        .disabled(added)
+        .accessibilityLabel("Pin \(style.title) to toolbar")
+        .accessibilityValue(added ? "Already pinned" : "Not pinned")
         .help(added ? "\(style.title) is already in the toolbar" : style.title)
         .onHover { hovering = $0 }
     }
@@ -327,7 +328,7 @@ struct CustomHandChip: View {
                     .frame(width: 16, height: 16)
                     .background(Circle().fill(Color.primary.opacity(hovering ? 0.12 : 0)))
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.borderless)
             .accessibilityLabel("Remove \(style.title)")
             .help("Remove \(style.title). Undo is available in the pointer library.")
         }
@@ -383,8 +384,8 @@ struct SwapCell: View {
             .background(RoundedRectangle(cornerRadius: 9, style: .continuous).fill(Color.primary.opacity(hovering ? 0.1 : 0.04)))
             .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
-        .focusable(false)
+        .buttonStyle(.borderless)
+        .accessibilityLabel("Replace toolbar pin \(style.title)")
         .help("Replace \(style.title)")
         .onHover { hovering = $0 }
     }
@@ -423,47 +424,55 @@ struct ToolbarSlot: View {
     let style: PointerStyle
     @ObservedObject var model: SettingsModel
     let lifted: Bool
-    @State private var hovering = false
 
-    var body: some View {
-        slot
+    private var position: String {
+        guard let index = model.pinnedOrder.firstIndex(of: style) else { return "Not pinned" }
+        let enabled = Preferences.disabledPointerIDs.contains(style.rawValue) ? "Disabled, pin kept" : "Enabled"
+        return "Position \(index + 1) of \(model.pinnedOrder.count). \(enabled)"
     }
 
-    private var slot: some View {
-        ZStack(alignment: .topTrailing) {
+    var body: some View {
+        // Keep the artwork as the drag target. Only the small native menu
+        // enters menu tracking, so pressing the artwork can still start a drag.
+        ZStack(alignment: .bottomTrailing) {
             Group {
                 if let icon = pointerIcon(style) {
                     Image(nsImage: icon).resizable().interpolation(.high).frame(width: 40, height: 40)
                 }
             }
             .frame(maxWidth: .infinity)
-            .frame(height: 58)
+            .frame(height: 58) // grid: ok Retain existing drag row geometry.
             .background(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                RoundedRectangle(cornerRadius: 10, style: .continuous) // grid: ok Retain existing drag slot shape.
                     .fill(Color(nsColor: .windowBackgroundColor).opacity(0.95))
                     .shadow(color: .black.opacity(lifted ? 0.22 : 0.08), radius: lifted ? 10 : 2, y: lifted ? 4 : 1)
             )
             .scaleEffect(lifted ? 1.06 : 1)
-            if hovering && model.dragging == nil {
-                Button {
-                    model.unpin(style)
-                } label: {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 8, weight: .bold))
-                        .foregroundColor(.white)
-                        .frame(width: 16, height: 16)
-                        .background(Circle().fill(Color.black.opacity(0.55)))
-                }
-                .buttonStyle(.plain)
-                .focusable(false)
-                .help("Remove from the toolbar")
-                .offset(x: 5, y: -5)
+            .accessibilityHidden(true)
+            Menu {
+                Button("Move Left") { model.movePin(style, direction: .left) }
+                    .disabled(!model.canMovePin(style, direction: .left))
+                Button("Move Right") { model.movePin(style, direction: .right) }
+                    .disabled(!model.canMovePin(style, direction: .right))
+                Divider()
+                Button("Unpin from Toolbar") { model.unpin(style) }
+                    .disabled(model.pinnedOrder.count <= 1 || model.dragging != nil)
+            } label: {
+                Image(systemName: "ellipsis.circle")
+                    .frame(width: 20, height: 20)
+                    .background(Circle().fill(Color(nsColor: .windowBackgroundColor)))
             }
+            .menuStyle(.borderlessButton)
+            .menuIndicator(.hidden)
+            .fixedSize()
+            .accessibilityLabel("Toolbar pin actions: \(style.title)")
+            .accessibilityValue(position)
+            .accessibilityAction(named: Text("Move Left")) { model.movePin(style, direction: .left) }
+            .accessibilityAction(named: Text("Move Right")) { model.movePin(style, direction: .right) }
+            .help("Move or unpin \(style.title). \(position)")
         }
         .contentShape(Rectangle())
-        .onHover { hovering = $0 }
         .opacity(Preferences.disabledPointerIDs.contains(style.rawValue) ? 0.45 : 1)
-        .help(Preferences.disabledPointerIDs.contains(style.rawValue) ? "\(style.title) is disabled. Its toolbar pin is kept." : style.title)
     }
 }
 

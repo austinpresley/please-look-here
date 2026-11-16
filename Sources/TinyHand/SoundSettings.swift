@@ -38,7 +38,7 @@ struct SoundPage: View {
             Card(title: nil) {
                 Row("Laser dot sound", detail: "Use the selected tap sound for Laser dot, independently of hand sound. Off by default.") {
                     Toggle("Laser dot tap sound", isOn: model.binding({ Preferences.laserSound }, { Preferences.laserSound = $0 }))
-                        .toggleStyle(.switch).labelsHidden().focusable(false)
+                        .toggleStyle(.switch).labelsHidden()
                 }
             }
         }
@@ -67,11 +67,22 @@ struct InkSwatch: View {
             .frame(width: 20, height: 20)
             .padding(Space.xs)
             .overlay(Circle().strokeBorder(selected ? Color.accentColor : Color.clear, lineWidth: 2))
+            .overlay(alignment: .bottomTrailing) {
+                if selected {
+                    Image(systemName: "checkmark.circle.fill")
+                        .symbolRenderingMode(.palette)
+                        .foregroundStyle(Color.primary, Color(nsColor: .windowBackgroundColor))
+                        .font(.system(size: 12, weight: .bold))
+                        .accessibilityHidden(true)
+                }
+            }
             .scaleEffect(hovering && !selected ? 1.08 : 1)
             .contentShape(Circle())
         }
-        .buttonStyle(.plain)
-        .focusable(false)
+        .buttonStyle(.borderless)
+        .accessibilityLabel("Ink color: \(choice.title)")
+        .accessibilityValue(selected ? "Selected" : "Not selected")
+        .accessibilityAddTraits(selected ? .isSelected : [])
         .help(choice.title)
         .onHover { hovering = $0 }
     }
@@ -107,9 +118,18 @@ struct SoundTile: View {
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
                     .strokeBorder(selected ? Color.accentColor.opacity(0.7) : Color.clear, lineWidth: 2)
             )
+            .overlay(alignment: .topTrailing) {
+                if selected {
+                    Image(systemName: "checkmark.circle.fill")
+                        .padding(Space.xs)
+                        .accessibilityHidden(true)
+                }
+            }
             .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.borderless)
+        .accessibilityValue(selected ? "Selected" : "Not selected")
+        .accessibilityAddTraits(selected ? .isSelected : [])
         .accessibilityLabel(title == "Off" ? "Turn hand sound off" : "Preview \(title) tap sound")
         .help(title == "Off" ? "Mute hand taps" : "Preview and select the \(title) tap sound")
         .onHover { hovering = $0 }
