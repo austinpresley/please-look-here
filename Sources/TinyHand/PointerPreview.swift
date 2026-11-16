@@ -34,10 +34,21 @@ struct PointerPreview: View {
                     .font(.callout).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
                     .gridProbe("pointerPreview.help", area: "pointerPreview")
+                if hasCustomizedAppearance {
+                    Text("Some appearance values are customized for \(configuration.style.title) in Pointers.")
+                        .font(.callout).foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .gridProbe("pointerPreview.customization", area: "pointerPreview")
+                }
             }
             .padding(Space.lg)
             .gridArea("pointerPreview", inset: Space.lg)
         }
+    }
+    private var hasCustomizedAppearance: Bool {
+        guard let document = try? PointerConfigurationDocument.load(from: Preferences.storage),
+              let customized = document.pointers[configuration.style.rawValue] else { return false }
+        return customized.size != nil || customized.shadow != nil || customized.shadowStyle != nil
     }
     private var sampleBackground: some View {
         Canvas { context, size in
