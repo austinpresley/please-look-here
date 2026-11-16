@@ -652,9 +652,11 @@ Acceptance:
 Implementation notes: `OverlayController.soundOn` selects `laserSound` for the
 laser and `handSound` for other pointers. Click handling calls the selected tap
 sound. This is an audio option, not an extra click or a separate drawing mode.
-The rest of Sound is accepted for now.
+The rest of Sound was accepted in the original review. The wording shipped in
+1.1.0 and was inspected again in the 15 November live app review. Broader sound
+changes are tracked separately under S-042 and S-049.
 
-Status: todo
+Status: done
 
 ## Automation
 
