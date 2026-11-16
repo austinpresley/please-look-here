@@ -58,6 +58,7 @@ import Testing
         tap.configureRadial(trigger: .option, eligible: true)
         let flags = event(.flagsChanged, key: 58); flags.flags = .maskAlternate
         _ = tap.handle(type: .flagsChanged, event: flags)
+        tap.radial.advanceHold(flags: .maskAlternate, dragging: false, now: .greatestFiniteMagnitude)
         #expect(tap.handle(type: .keyDown, event: event(.keyDown)) == nil)
         tap.configureRadial(trigger: nil, eligible: false)
         tap.configureControls(open: true, nativeMenu: false, regions: [])
@@ -74,6 +75,7 @@ import Testing
         let tap = InputTap(); tap.configureRadial(trigger: .option, eligible: true)
         let flags = event(.flagsChanged, key: 58); flags.flags = .maskAlternate
         _ = tap.handle(type: .flagsChanged, event: flags)
+        tap.radial.advanceHold(flags: .maskAlternate, dragging: false, now: .greatestFiniteMagnitude)
         let down: CGEventType = button == 0 ? .leftMouseDown : button == 1 ? .rightMouseDown : .otherMouseDown
         let up: CGEventType = button == 0 ? .leftMouseUp : button == 1 ? .rightMouseUp : .otherMouseUp
         #expect(tap.handle(type: down, event: event(down, button: button)) == nil)

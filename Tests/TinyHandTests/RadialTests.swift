@@ -50,6 +50,7 @@ import Testing
         for button: Int64 in [0, 1, 2, 4] {
             let r = RadialInput(); r.configure(trigger: .option, eligible: true)
             _ = r.handle(.flagsChanged, event: event(.flagsChanged, flags: .maskAlternate), dragging: false)
+        r.advanceHold(flags: .maskAlternate, dragging: false, now: .greatestFiniteMagnitude)
             let down: CGEventType = button == 0 ? .leftMouseDown : button == 1 ? .rightMouseDown : .otherMouseDown
             let up: CGEventType = button == 0 ? .leftMouseUp : button == 1 ? .rightMouseUp : .otherMouseUp
             #expect(r.handle(down, event: event(down, button: button), dragging: false))
@@ -60,6 +61,7 @@ import Testing
         }
         let r = RadialInput(); r.configure(trigger: .shift, eligible: true)
         _ = r.handle(.flagsChanged, event: event(.flagsChanged, flags: .maskShift), dragging: false)
+        r.advanceHold(flags: .maskShift, dragging: false, now: .greatestFiniteMagnitude)
         #expect(r.handle(.keyDown, event: event(.keyDown, key: 53), dragging: false))
         r.configure(trigger: nil, eligible: false)
         #expect(r.handle(.keyUp, event: event(.keyUp, key: 53), dragging: false))
@@ -68,31 +70,38 @@ import Testing
     @Test func existingDragAndExtraModifiersRequireFreshGesture() {
         let r = RadialInput(); r.configure(trigger: .option, eligible: true)
         _ = r.handle(.flagsChanged, event: event(.flagsChanged, flags: .maskAlternate), dragging: true)
+        r.advanceHold(flags: .maskAlternate, dragging: false, now: .greatestFiniteMagnitude)
         #expect(r.diagnostics["open"] as? Bool == false)
         _ = r.handle(.flagsChanged, event: event(.flagsChanged, flags: .maskAlternate), dragging: false)
+        r.advanceHold(flags: .maskAlternate, dragging: false, now: .greatestFiniteMagnitude)
         #expect(r.diagnostics["open"] as? Bool == false)
         _ = r.handle(.flagsChanged, event: event(.flagsChanged), dragging: false)
         _ = r.handle(.flagsChanged, event: event(.flagsChanged, flags: [.maskAlternate, .maskCommand]), dragging: false)
         #expect(r.diagnostics["open"] as? Bool == false)
         _ = r.handle(.flagsChanged, event: event(.flagsChanged), dragging: false)
         _ = r.handle(.flagsChanged, event: event(.flagsChanged, flags: .maskAlternate), dragging: false)
+        r.advanceHold(flags: .maskAlternate, dragging: false, now: .greatestFiniteMagnitude)
         #expect(r.diagnostics["open"] as? Bool == true)
         r.end()
         _ = r.handle(.flagsChanged, event: event(.flagsChanged, flags: .maskAlternate), dragging: false)
+        r.advanceHold(flags: .maskAlternate, dragging: false, now: .greatestFiniteMagnitude)
         #expect(r.diagnostics["open"] as? Bool == false)
     }
     @Test func enablingWhileModifierIsAlreadyHeldRequiresReleaseAndFreshPress() {
         let r = RadialInput()
         r.configure(trigger: .option, eligible: true, flags: .maskAlternate)
         _ = r.handle(.flagsChanged, event: event(.flagsChanged, flags: .maskAlternate), dragging: false)
+        r.advanceHold(flags: .maskAlternate, dragging: false, now: .greatestFiniteMagnitude)
         #expect(r.diagnostics["open"] as? Bool == false)
         _ = r.handle(.flagsChanged, event: event(.flagsChanged), dragging: false)
         _ = r.handle(.flagsChanged, event: event(.flagsChanged, flags: .maskAlternate), dragging: false)
+        r.advanceHold(flags: .maskAlternate, dragging: false, now: .greatestFiniteMagnitude)
         #expect(r.diagnostics["open"] as? Bool == true)
     }
     @Test func overlappingButtonsStayOwnedUntilEveryClaimedRelease() {
         let r = RadialInput(); r.configure(trigger: .option, eligible: true)
         _ = r.handle(.flagsChanged, event: event(.flagsChanged, flags: .maskAlternate), dragging: false)
+        r.advanceHold(flags: .maskAlternate, dragging: false, now: .greatestFiniteMagnitude)
         #expect(r.handle(.leftMouseDown, event: event(.leftMouseDown), dragging: false))
         r.end() // UI has selected and closed, but the first button is still down.
         #expect(r.handle(.rightMouseDown, event: event(.rightMouseDown, button: 1), dragging: true))
@@ -105,6 +114,7 @@ import Testing
         tap.setActive(true)
         tap.radial.configure(trigger: .option, eligible: true)
         #expect(tap.handle(type: .flagsChanged, event: event(.flagsChanged, flags: .maskAlternate)) != nil)
+        tap.radial.advanceHold(flags: .maskAlternate, dragging: false, now: .greatestFiniteMagnitude)
         #expect(tap.handle(type: .leftMouseDown, event: event(.leftMouseDown, flags: .maskAlternate)) == nil)
         #expect((tap.diagnostics["capturedButtons"] as? [Int64])?.isEmpty == true)
         tap.setActive(false)
@@ -118,6 +128,7 @@ import Testing
         tap.setActive(true)
         tap.radial.configure(trigger: .option, eligible: true)
         #expect(tap.handle(type: .flagsChanged, event: event(.flagsChanged, flags: .maskAlternate)) != nil)
+        tap.radial.advanceHold(flags: .maskAlternate, dragging: false, now: .greatestFiniteMagnitude)
         #expect(tap.radial.diagnostics["open"] as? Bool == true)
         #expect(tap.handle(type: .keyDown, event: event(.keyDown, flags: .maskAlternate, key: 53)) == nil)
         #expect(tap.radial.diagnostics["open"] as? Bool == false)
@@ -133,6 +144,7 @@ import Testing
             #expect(tap.handle(type: .keyDown, event: repeatEvent) == nil)
             let modifierEvent = event(.flagsChanged, flags: flags)
             #expect(tap.handle(type: .flagsChanged, event: modifierEvent)?.takeUnretainedValue() === modifierEvent)
+        tap.radial.advanceHold(flags: .maskAlternate, dragging: false, now: .greatestFiniteMagnitude)
             #expect(modifierEvent.flags == flags)
         }
         #expect(tap.handle(type: .keyUp, event: event(.keyUp, key: 53)) == nil)
@@ -147,6 +159,48 @@ import Testing
                 #expect(ordinary.flags == .maskAlternate)
             }
         }
+    }
+    @Test func holdDeadlineAndEarlyNativePairs() {
+        for type: CGEventType in [.leftMouseDown, .rightMouseDown, .otherMouseDown, .keyDown, .scrollWheel] {
+            var now: TimeInterval = 10
+            let r = RadialInput(clock: { now }); r.configure(trigger: .option, eligible: true)
+            _ = r.handle(.flagsChanged, event: event(.flagsChanged, flags: .maskAlternate), dragging: false)
+            now += 0.179
+            r.advanceHold(flags: .maskAlternate, dragging: false)
+            #expect(r.diagnostics["pending"] as? Bool == true)
+            #expect(r.diagnostics["open"] as? Bool == false)
+            #expect(!r.handle(type, event: event(type, flags: .maskAlternate, button: 4, key: 8), dragging: false))
+            now += 1
+            r.advanceHold(flags: .maskAlternate, dragging: false)
+            #expect(r.diagnostics["open"] as? Bool == false)
+            let up: CGEventType = type == .keyDown ? .keyUp : type == .leftMouseDown ? .leftMouseUp : type == .rightMouseDown ? .rightMouseUp : .otherMouseUp
+            #expect(!r.handle(up, event: event(up, flags: .maskAlternate, button: 4, key: 8), dragging: false))
+        }
+        var now: TimeInterval = 0
+        let r = RadialInput(clock: { now }); r.configure(trigger: .option, eligible: true)
+        _ = r.handle(.flagsChanged, event: event(.flagsChanged, flags: .maskAlternate), dragging: false)
+        now = 0.179; r.advanceHold(flags: .maskAlternate, dragging: false)
+        #expect(r.diagnostics["open"] as? Bool == false)
+        now = 0.180; r.advanceHold(flags: .maskAlternate, dragging: false)
+        #expect(r.diagnostics["open"] as? Bool == true)
+    }
+    @Test func missedReleaseReconcilesWhileClosedWithoutDroppingOwnedPairs() {
+        let r = RadialInput(); r.configure(trigger: .option, eligible: true)
+        _ = r.handle(.flagsChanged, event: event(.flagsChanged, flags: .maskAlternate), dragging: false)
+        r.advanceHold(flags: .maskAlternate, dragging: false, now: .greatestFiniteMagnitude)
+        #expect(r.handle(.leftMouseDown, event: event(.leftMouseDown), dragging: false))
+        r.end()
+        r.configure(trigger: .option, eligible: true, flags: [])
+        #expect(r.diagnostics["held"] as? Bool == false)
+        #expect(r.diagnostics["reconciledReleases"] as? Int == 1)
+        #expect(r.handle(.leftMouseUp, event: event(.leftMouseUp), dragging: false))
+        _ = r.handle(.flagsChanged, event: event(.flagsChanged, flags: .maskAlternate), dragging: false)
+        r.advanceHold(flags: .maskAlternate, dragging: false, now: .greatestFiniteMagnitude)
+        #expect(r.diagnostics["open"] as? Bool == true)
+        // A lost release while open must cancel, never commit an old selection.
+        r.configure(trigger: .option, eligible: true, flags: [])
+        #expect(r.diagnostics["open"] as? Bool == false)
+        #expect(r.diagnostics["held"] as? Bool == false)
     }
     @Test func accessibleNavigationUsesSameCatalogAndCommands() {
         var s = session()

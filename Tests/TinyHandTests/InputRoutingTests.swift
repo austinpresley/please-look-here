@@ -58,6 +58,7 @@ private func event(_ type: CGEventType, button: Int64 = 0, point: CGPoint = CGPo
         let flag = try #require(CGEvent(keyboardEventSource: nil, virtualKey: 58, keyDown: true))
         flag.type = .flagsChanged; flag.flags = .maskAlternate
         #expect(tap.handle(type: .flagsChanged, event: flag) != nil)
+        tap.radial.advanceHold(flags: .maskAlternate, dragging: false, now: .greatestFiniteMagnitude)
         let down = try #require(CGEvent(keyboardEventSource: nil, virtualKey: 53, keyDown: true))
         #expect(tap.handle(type: .keyDown, event: down) == nil)
         locked = true
