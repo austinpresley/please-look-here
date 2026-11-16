@@ -71,6 +71,71 @@ Both report effective values, explicit overrides, applicability and archive heal
 - Grid lint passed for PointerCustomization, SoundSettings and PresentationSettings.
 - `git diff --check` passed.
 
+## S-049
+
+App Sound now has independent volume and Mute all sounds controls. New output
+preferences are `sound.volume` = 1 and `sound.muted` = false, so existing users
+keep their initial output level. Mute preserves both the volume and all pointer
+sound choices/enabled overrides. Reset all settings restores these output defaults.
+
+Sound choice is a native picker that only saves the choice. The separate Preview
+button auditions it without enabling taps or changing choices. Individual pointer
+customization has the same separation. Master mute and zero volume disable Preview
+and the player gate also rejects it, including direct calls. Escape, leaving the
+page and changing the customized pointer stop Preview. Opening Sound does not
+start an audio device.
+
+`SoundOutputConfiguration` supplies gain, audibility and descriptive state.
+`TapAudioDriver.setGain` applies production gain to AVAudioEngine's mixer. Every
+engine/driver/gain operation remains on TapSound's existing serial queue. A locked
+gate invalidates pending tickets on output changes and rechecks after device
+startup. Master mute/zero volume tear down current output; unmuting does not replay
+cancelled presses. Overlay also cancels delayed contact feedback when inaudible.
+`SoundAudition` owns its separate player and receives output changes from the
+SettingsModel preferences observer.
+
+Menu and radial menus expose Mute All Sounds independently of the current pointer's
+saved tap enabled state. Toolbar and menu-bar sound icons reflect audibility;
+tooltips and accessibility values explain master mute, zero volume and output
+percentage. The per-pointer check preserves the saved enabled setting. No shortcut
+was added or assigned.
+
+Automation `configure.settings.soundVolume` accepts finite numbers in 0...1 and
+`soundMuted` accepts only booleans. `SoundOutputPatch` validates both before the
+existing configure batch commits. Legacy settings retain their prior meanings.
+Status `settings` reports both values; `soundOutput` reports volume, masterMuted,
+pointerEnabled, audible, gain and status. Current and per-style configuration
+readback includes that effective output state too. Portable backups should retain
+these two output preferences as well as the override document and shared defaults.
+
+### Local evidence
+
+- Isolated `swift build` passed. Swift 5 and macOS 13 package support remain unchanged.
+- All commands below used `TINYHAND_DEFAULTS_SUITE=com.austinpresley.pointer-defaults.s049`
+  and `TH_HANDS_DIR=/tmp/lhp-pointer-defaults-s049-hands`.
+- `swift test --filter SoundOutputTests` passed 11 tests. Tests use an injected
+  driver, without an audio device, and prove initial output, strict configure
+  validation, gain on fresh/live drivers, background-only operations, stop on
+  mute, no replay on unmute, no device startup when muted/zero, blocked-startup
+  cancellation, pending press cancellation, fresh gain after cancellation,
+  Preview choice/enabled preservation, Preview cancellation, effective state and reset.
+- `swift test --filter 'AudioTests/(everySound|blockedAudio|configurationChanges|missingRender|muting|aQueued)'`
+  passed seven existing non-GUI audio tests. Overlay/permission tests were omitted
+  because they create native UI and belong to the parent's integrated validation.
+- `swift test --filter PointerConfigurationTests` passed all eight tests again
+  against the final sound integration.
+- Grid lint passed for PointerCustomization, SoundSettings, MenuBarCommands,
+  MenuBarControls and RadialMenu. `git diff --check` passed.
+
+### Acceptance still requiring integrated verification
+
+No implementation gap is known in the assigned scope. The parent still owns real
+audio-device audition/gain checks, keyboard/VoiceOver and Settings layout, live
+pointer render/sound changes, native menu/radial/control transport checks, and
+packaging. Parent must wire the recovery record to the hooks above after merging
+the safety agent. The library agent can place PointerCustomization in its selected
+details. No full GUI-dependent test suite was run by this worker.
+
 ## Copy and glossary proposals for parent
 
 - Pointer Defaults: shared appearance and tap sound values for inherited fields.
@@ -78,6 +143,9 @@ Both report effective values, explicit overrides, applicability and archive heal
 - Use Default: remove this field's override and follow its shared default.
 - Aperture size: Spotlight's transparent circle, relative to display height.
 - Rod thickness: Presentation pointer's width, using the existing size range.
+- App Sound: output volume and master mute, applied to pointer taps and Preview.
+- Mute all sounds: silence app output while preserving saved sound choices.
+- Preview: audition a sound at the app volume without selecting or enabling it.
 
 ## Integrated checks reserved for parent
 

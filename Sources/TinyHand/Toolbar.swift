@@ -236,9 +236,10 @@ final class Toolbar: NSObject, NSWindowDelegate {
     func setUndoEnabled(_ value: Bool) { undoButton.isEnabled = value }
     func setClearEnabled(_ value: Bool) { clearButton.isEnabled = value }
     func setCapturing(_ value: Bool) { captureButton.isEnabled = !value }
-    func setSoundOn(_ value: Bool) {
+    func setSoundOn(_ value: Bool, status: String? = nil) {
         soundButton.image = NSImage(systemSymbolName: value ? "speaker.wave.2.fill" : "speaker.slash.fill", accessibilityDescription: "Tap sound")
-        soundButton.toolTip = value ? "Mute tap sound" : "Unmute tap sound"
+        soundButton.toolTip = status.map { "\($0). Toggle current pointer tap sound." } ?? (value ? "Mute tap sound" : "Unmute tap sound")
+        soundButton.setAccessibilityValue(status ?? (value ? "On" : "Off"))
     }
     func setNeedsPermission(_ needed: Bool) { permissionButton.isHidden = !needed; resize() }
     func center(of style: PointerStyle) -> CGPoint? {

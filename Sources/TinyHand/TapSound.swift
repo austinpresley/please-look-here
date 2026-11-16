@@ -30,6 +30,7 @@ enum TapSoundChoice: String, CaseIterable, Codable {
 protocol TapAudioDriver: AnyObject {
     var isRunning: Bool { get }
     func start() throws
+    func setGain(_ gain: Float)
     func play(_ buffer: AVAudioPCMBuffer, rendered: @escaping () -> Void)
     func stop()
 }
@@ -57,6 +58,7 @@ private final class EngineTapAudioDriver: TapAudioDriver {
 
     var isRunning: Bool { engine.isRunning }
     func start() throws { engine.prepare(); try engine.start() }
+    func setGain(_ gain: Float) { engine.mainMixerNode.outputVolume = gain }
     func play(_ buffer: AVAudioPCMBuffer, rendered: @escaping () -> Void) {
         let player = nodes[next % nodes.count]
         next += 1
@@ -85,12 +87,22 @@ final class TapSound: @unchecked Sendable {
         private let lock = NSLock()
         private var allowed = true
         private var generation = 0
+        private var output = SoundOutputConfiguration()
         var enabled: Bool {
             get { lock.withLock { allowed } }
             set { lock.withLock { if allowed != newValue { allowed = newValue; generation += 1 } } }
         }
-        func ticket() -> Int? { lock.withLock { allowed ? generation : nil } }
-        func accepts(_ ticket: Int) -> Bool { lock.withLock { allowed && generation == ticket } }
+        func ticket() -> Int? { lock.withLock { allowed && output.audible ? generation : nil } }
+        func accepts(_ ticket: Int) -> Bool { lock.withLock { allowed && output.audible && generation == ticket } }
+        var gain: Float { lock.withLock { output.gain } }
+        func setOutput(_ value: SoundOutputConfiguration) -> Bool {
+            lock.withLock {
+                guard value != output else { return false }
+                output = value
+                generation += 1
+                return true
+            }
+        }
         func cancel() { lock.withLock { generation += 1 } }
     }
     private let gate = Gate()
@@ -121,11 +133,21 @@ final class TapSound: @unchecked Sendable {
     }
 
     func load(_ choice: TapSoundChoice) { queue.async { @Sendable [weak self] in self?.choice = choice } }
+    func setOutput(_ output: SoundOutputConfiguration) {
+        guard gate.setOutput(output) else { return }
+        queue.async { @Sendable [weak self] in
+            guard let self else { return }
+            let gain = self.gate.gain
+            if gain == 0 { self.teardown() }
+            else { self.driver?.setGain(gain) }
+        }
+    }
     func warm() {
         guard let ticket = gate.ticket() else { return }
         queue.async { @Sendable [weak self] in
             guard let self, self.gate.accepts(ticket) else { return }
             _ = self.start()
+            if !self.gate.accepts(ticket) { self.teardown() }
         }
     }
     func play() {
@@ -144,6 +166,7 @@ final class TapSound: @unchecked Sendable {
         guard let buffer = buffers[choice], start(), let driver else { return }
         // Device startup may block. Mute/off can invalidate this press meanwhile.
         guard gate.accepts(ticket) else { teardown(); return }
+        driver.setGain(gate.gain)
         let receipt = Receipt(), token = generation
         driver.play(buffer) { @Sendable in receipt.finish() }
         let duration = Double(buffer.frameLength) / buffer.format.sampleRate
@@ -167,7 +190,7 @@ final class TapSound: @unchecked Sendable {
                 self.teardown()
             }
         }
-        do { try candidate.start(); driver = candidate; return true }
+        do { try candidate.start(); candidate.setGain(gate.gain); driver = candidate; return true }
         catch { candidate.stop(); Log.write("Tap audio could not start: \(error.localizedDescription)"); return false }
     }
     private func teardown(cancelIdle: Bool = true) {

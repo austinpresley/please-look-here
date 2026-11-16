@@ -207,6 +207,7 @@ extension Preferences {
         let override = loaded?.pointers[id] ?? PointerOverride()
         let fields = (try? JSONSerialization.jsonObject(with: JSONEncoder().encode(override))) as? [String: Any] ?? [:]
         return ["effective": pointerConfiguration(for: id).state, "overrides": fields,
+                "soundOutput": soundOutput.state(enabled: pointerConfiguration(for: id).soundEnabled),
                 "customized": !override.isEmpty, "sizeLabel": PointerConfigurationPolicy(id).sizeLabel,
                 "supportsShadow": PointerConfigurationPolicy(id).supportsShadow,
                 "supportsShadowStyle": PointerConfigurationPolicy(id).supportsShadowStyle,

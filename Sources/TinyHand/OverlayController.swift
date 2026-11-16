@@ -206,6 +206,8 @@ final class OverlayController {
             catch { Log.write("Unable to change pointer sound: \(error.localizedDescription)") }
         }
     }
+    var soundAudible: Bool { soundOn && Preferences.soundOutput.audible }
+    var soundStatus: String { Preferences.soundOutput.status(enabled: soundOn) }
     @discardableResult
     func pick(_ style: PointerStyle) -> Bool {
         guard (try? PointerCatalog.validateSelection(style)) != nil else { return false }
@@ -376,9 +378,10 @@ final class OverlayController {
     }
     private func syncSound() {
         tapSound.load(Preferences.pointerConfiguration(for: style.rawValue).sound)
-        if !soundOn { contactFeedback.cancel() }
+        tapSound.setOutput(Preferences.soundOutput)
+        if !soundAudible { contactFeedback.cancel() }
         tapSound.enabled = soundOn
-        toolbar.setSoundOn(soundOn)
+        toolbar.setSoundOn(soundAudible, status: soundStatus)
         onSoundChanged?()
     }
     private func annotationChanged() {
@@ -702,7 +705,7 @@ final class OverlayController {
     private func scheduleTapSound() {
         let style = self.style
         contactFeedback.schedule(after: armView.tapSoundDelay) { [weak self] in
-            guard let self, self.isActive, self.style == style, self.soundOn else { return }
+            guard let self, self.isActive, self.style == style, self.soundAudible else { return }
             self.tapSound.play()
         }
     }

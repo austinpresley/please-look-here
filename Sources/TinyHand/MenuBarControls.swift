@@ -228,9 +228,9 @@ final class MenuBarControls: NSObject, NSPopoverDelegate, NSMenuDelegate {
         buttons["magnifier"]?.isEnabled = !overlay.isCapturing
         buttons["magnifier"]?.setAccessibilityValue(overlay.isMagnifying ? "On" : "Off")
         buttons["magnifier"]?.toolTip = Preferences.shortcut(for: .magnifier).help("Toggle magnification")
-        buttons["sound"]?.image = NSImage(systemSymbolName: overlay.soundOn ? "speaker.wave.2" : "speaker.slash", accessibilityDescription: "Tap Sound")
-        buttons["sound"]?.toolTip = Preferences.shortcut(for: .sound).help(overlay.soundOn ? "Mute current pointer tap sound" : "Unmute current pointer tap sound")
-        buttons["sound"]?.setAccessibilityValue(overlay.soundOn ? "On" : "Off")
+        buttons["sound"]?.image = NSImage(systemSymbolName: overlay.soundAudible ? "speaker.wave.2" : "speaker.slash", accessibilityDescription: "Tap Sound")
+        buttons["sound"]?.toolTip = Preferences.shortcut(for: .sound).help("\(overlay.soundStatus). Toggle current pointer tap sound.")
+        buttons["sound"]?.setAccessibilityValue("\(overlay.soundOn ? "Enabled" : "Disabled"). \(overlay.soundStatus)")
         buttons["settings"]?.toolTip = Preferences.shortcut(for: .settings).help("Open Settings")
         commands.refresh()
     }

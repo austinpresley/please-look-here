@@ -251,7 +251,7 @@ final class ControlBridge {
 
     /// Validate every field before writing anything; deliver one native settings notification.
     private func configure(_ patch: [String: Any]) throws {
-        let allowed: Set<String> = ["style", "ink", "fade", "size", "shadow", "shadowStyle", "handSound", "laserSound", "tapSound", "pointerOverrides", "lineWidth", "opacity", "smoothing", "motion", "theme", "showToolbar", "interactKeepsHand", "captureCopies", "captureSaves", "captureFolder", "radialTrigger", "inkFadeStyle", "trailDelay", "trailSpeed", "magnifierZoom", "magnifierDiameter", "tapSwing"]
+        let allowed: Set<String> = ["style", "ink", "fade", "size", "shadow", "shadowStyle", "handSound", "laserSound", "tapSound", "pointerOverrides", "soundVolume", "soundMuted", "lineWidth", "opacity", "smoothing", "motion", "theme", "showToolbar", "interactKeepsHand", "captureCopies", "captureSaves", "captureFolder", "radialTrigger", "inkFadeStyle", "trailDelay", "trailSpeed", "magnifierZoom", "magnifierDiameter", "tapSwing"]
         guard Set(patch.keys).isSubset(of: allowed) else { throw reject("Unsupported setting") }
         var trigger: RadialTrigger?
         if let value = patch["radialTrigger"] {
@@ -285,6 +285,9 @@ final class ControlBridge {
         if patch["shadowStyle"] != nil && shadowStyle == nil { throw reject("Unknown shadow style") }
         let handSound = try patch["handSound"].map { try readBool($0) }
         let laserSound = try patch["laserSound"].map { try readBool($0) }
+        let output: SoundOutputPatch
+        do { output = try SoundOutputPatch(volume: patch["soundVolume"], muted: patch["soundMuted"]) }
+        catch { throw reject(error.localizedDescription) }
         var overrideData: Data?
         if patch["pointerOverrides"] != nil || laserSound != nil {
             do {
@@ -334,6 +337,8 @@ final class ControlBridge {
             if let shadow = shadow { Preferences.showShadow = shadow }
             if let shadowStyle { Preferences.shadowStyle = shadowStyle }
             if let handSound = handSound { Preferences.handSound = handSound }
+            if let volume = output.volume { Preferences.soundVolume = volume }
+            if let muted = output.muted { Preferences.soundMuted = muted }
             if let laserSound { Preferences.storage.set(laserSound, forKey: "sound.laser") }
             if let overrideData {
                 Preferences.storage.set(overrideData, forKey: PointerConfigurationDocument.storageKey)
@@ -378,6 +383,7 @@ final class ControlBridge {
                       "size": Double(Preferences.pointerSize), "shadow": Preferences.showShadow,
                       "shadowStyle": Preferences.shadowStyle.rawValue,
                       "handSound": Preferences.handSound, "laserSound": Preferences.laserSound, "tapSound": Preferences.tapSound.rawValue,
+                      "soundVolume": Preferences.soundVolume, "soundMuted": Preferences.soundMuted,
                       "lineWidth": Double(Preferences.strokeWidth), "opacity": Double(Preferences.inkOpacity), "smoothing": Preferences.strokeSmoothing.rawValue,
                       "motion": Preferences.pointerMotion.rawValue, "theme": Preferences.theme.rawValue, "showToolbar": Preferences.showToolbar,
                       "interactKeepsHand": Preferences.interactKeepsHand,
@@ -385,6 +391,7 @@ final class ControlBridge {
                       "toolbarPosition": Preferences.toolbarPosition.map { [$0.x, $0.y] } ?? []],
          "shortcuts": Preferences.shortcutState,
          "pointerConfiguration": Preferences.pointerConfigurationState(for: overlay.style.rawValue),
+         "soundOutput": Preferences.soundOutput.state(enabled: overlay.soundOn),
          "sizeRange": [Double(Preferences.pointerSizeRange.lowerBound), Double(Preferences.pointerSizeRange.upperBound)],
          "enabledPointers": PointerCatalog.selectableStyles.map(\.rawValue),
          "quickPointers": PointerCatalog.quickStyles.map(\.rawValue),

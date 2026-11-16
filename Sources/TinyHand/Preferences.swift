@@ -227,6 +227,16 @@ enum Preferences {
         set { set(newValue, "sound.hands") }
     }
 
+    static var soundVolume: Double {
+        get { SoundOutputConfiguration(volume: defaults.object(forKey: "sound.volume") as? Double ?? 1).volume }
+        set { set(SoundOutputConfiguration(volume: newValue).volume, "sound.volume") }
+    }
+
+    static var soundMuted: Bool {
+        get { defaults.object(forKey: "sound.muted") as? Bool ?? false }
+        set { set(newValue, "sound.muted") }
+    }
+
     static var tapSound: TapSoundChoice {
         get { defaults.string(forKey: "tapSound").flatMap(TapSoundChoice.init(rawValue:)) ?? .thock }
         set { set(newValue.rawValue, "tapSound") }
@@ -295,7 +305,7 @@ enum Preferences {
 
     static func resetAll() {
         for key in ["radialTrigger", "shortcut.toggle", "shortcut.clear", "pointerSize", "showShadow", "shadowStyle", "fadeSeconds",
-                    "sound.hands", "sound.laser", "interactKey", "interactKeepsHand", "pinnedStyles", "pointerStyle", "disabledPointerIDs",
+                    "sound.hands", "sound.laser", "sound.volume", "sound.muted", "interactKey", "interactKeepsHand", "pinnedStyles", "pointerStyle", "disabledPointerIDs",
                     "inkChoice", "showInkButton", "tapSound", "pointerMode", "drawingTool", "strokeWidth", "inkOpacity",
                     "strokeSmoothing", "pointerMotion", "theme", "showToolbar", "toolbarPosition", "capture.copy", "capture.save", "capture.folder",
                     "inkFadeStyle", "trailDelay", "trailSpeed", "magnifierZoom", "magnifierDiameter", "tapSwing", PointerConfigurationDocument.storageKey]

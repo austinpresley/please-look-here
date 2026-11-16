@@ -54,9 +54,11 @@ struct PointerCustomization: View {
                 }.labelsHidden().frame(width: 112)
                 useDefault("sound choice", customized: override.sound != nil) { $0.sound = nil }
             }
-            Row("Preview sound", detail: "Hear the effective sound without changing its saved choice or enabling tap sound.") {
+            Row("Preview sound", detail: "\(Preferences.soundOutput.status(enabled: effective.soundEnabled)). Preview preserves the saved choice and tap sound setting.") {
                 Button("Preview") { model.preview(effective.sound) }
+                    .disabled(!Preferences.soundOutput.audible)
                     .accessibilityLabel("Preview \(style.title) sound")
+                    .help("Hear \(effective.sound.title) at the app volume. Master mute also mutes Preview.")
             }
             if let errorMessage {
                 Row("Unable to save pointer settings", detail: "\(errorMessage) Restore a valid pointer settings export and try again.") {
@@ -65,6 +67,7 @@ struct PointerCustomization: View {
             }
         }
         .onExitCommand { model.stopPreview() }
+        .onChange(of: style) { _ in errorMessage = nil; model.stopPreview() }
         .onDisappear { model.stopPreview() }
     }
 

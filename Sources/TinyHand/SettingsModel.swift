@@ -35,6 +35,7 @@ final class SettingsModel: ObservableObject {
 
     init() {
         observer = NotificationCenter.default.addObserver(forName: Preferences.changed, object: nil, queue: .main) { [weak self] _ in
+            self?.previewSound?.updateOutput(Preferences.soundOutput)
             self?.revision += 1
         }
         handsObserver = NotificationCenter.default.addObserver(forName: CustomHands.changed, object: nil, queue: .main) { [weak self] _ in
@@ -239,23 +240,15 @@ final class SettingsModel: ObservableObject {
         })
     }
 
-    private var previewSound: TapSound?
-
-    func warmPreview() {
-        if previewSound == nil {
-            previewSound = TapSound()
-        }
-        previewSound?.warm()
-    }
+    private var previewSound: SoundAudition?
 
     func preview(_ choice: TapSoundChoice) {
         if previewSound == nil {
-            previewSound = TapSound(choice)
+            previewSound = SoundAudition()
         }
-        previewSound?.load(choice)
-        previewSound?.play()
+        previewSound?.preview(choice, output: Preferences.soundOutput)
     }
-    func stopPreview() { previewSound?.silence() }
+    func stopPreview() { previewSound?.stop() }
 
     @Published var dragging: PointerStyle?
     @Published private var draftOrder: [PointerStyle]?

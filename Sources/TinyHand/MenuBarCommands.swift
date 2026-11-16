@@ -33,6 +33,7 @@ final class MenuBarCommands: NSObject {
         }
         add("gestureArtwork", "Edit Gesture Artwork…", "settings", ["section": "pointers"], to: gestures)
         add("sound", "Tap Sound", "toggle-current-sound", to: pointer)
+        add("masterMute", "Mute All Sounds", "configure", ["settings": ["soundMuted": true]], to: pointer)
         let drawing = group("Drawing")
         for tool in DrawingTool.allCases { add(tool.rawValue, tool.title, "tool", ["tool": tool.rawValue], to: drawing) }
         submenu("Ink Color", colors, to: drawing)
@@ -115,6 +116,11 @@ final class MenuBarCommands: NSObject {
         items["interact"]?.isEnabled = !overlay.isCapturing && (overlay.mode == .draw || overlay.drawingAllowed)
         if let item = items["interact"] { requests[item] = ["version": 1, "operation": "interact", "enabled": !overlay.mode.isInteractive] }
         items["sound"]?.state = overlay.soundOn ? .on : .off
+        items["sound"]?.toolTip = "\(overlay.soundStatus). Toggle this pointer's saved tap sound setting."
+        items["masterMute"]?.state = Preferences.soundMuted ? .on : .off
+        if let item = items["masterMute"] {
+            requests[item] = ["version": 1, "operation": "configure", "settings": ["soundMuted": !Preferences.soundMuted]]
+        }
         items["undo"]?.isEnabled = overlay.canUndo && !overlay.isCapturing
         items["redo"]?.isEnabled = overlay.canRedo && !overlay.isCapturing
         items["clear"]?.isEnabled = overlay.inkStrokes > 0 && !overlay.isCapturing

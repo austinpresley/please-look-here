@@ -20,6 +20,7 @@ private final class ProbeAudioDriver: TapAudioDriver {
     var isRunning = false
     init(_ probe: AudioProbe, changed: @escaping () -> Void) { self.probe = probe; probe.remember(changed) }
     func start() throws { probe.note("start"); probe.blockStart?(); if probe.delay > 0 { usleep(probe.delay) }; isRunning = true }
+    func setGain(_ gain: Float) { probe.note("gain:\(gain)") }
     func play(_ buffer: AVAudioPCMBuffer, rendered: @escaping () -> Void) { probe.note("play"); if probe.render { rendered() } }
     func stop() { probe.note("stop"); isRunning = false }
 }

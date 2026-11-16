@@ -5,38 +5,47 @@ import SwiftUI
 
 struct SoundPage: View {
     @ObservedObject var model: SettingsModel
-    private let columns = [GridItem(.adaptive(minimum: 104, maximum: 140), spacing: 8)]
 
     var body: some View {
-        let on = Preferences.handSound
         VStack(alignment: .leading, spacing: Space.xxl) {
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Pointer Defaults")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(.secondary)
-                    .padding(.horizontal, 4)
-                LazyVGrid(columns: columns, spacing: 8) {
-                    SoundTile(title: "Off", symbol: "speaker.slash.fill", selected: !on) {
-                        Preferences.handSound = false
-                        model.stopPreview()
-                        model.refresh()
-                    }
-                    ForEach(TapSoundChoice.allCases, id: \.self) { choice in
-                        SoundTile(title: choice.title, symbol: "waveform", selected: on && Preferences.tapSound == choice) {
-                            Preferences.tapSound = choice
-                            Preferences.handSound = true
-                            model.preview(choice)
-                            model.refresh()
-                        }
+            Card(title: "App Sound") {
+                Row("Mute all sounds", detail: "Preserves pointer choices and tap sound settings. Also mutes Preview.") {
+                    Toggle("Mute all sounds", isOn: model.binding({ Preferences.soundMuted }, { Preferences.soundMuted = $0 }))
+                        .labelsHidden().toggleStyle(.switch)
+                }
+                Row("Volume", detail: Preferences.soundOutput.status(enabled: true)) {
+                    HStack(spacing: Space.sm) {
+                        Slider(value: model.binding({ Preferences.soundVolume }, { Preferences.soundVolume = $0 }), in: 0...1)
+                            .frame(width: 144)
+                            .accessibilityLabel("App sound volume")
+                            .accessibilityValue("\(Int((Preferences.soundVolume * 100).rounded())) percent")
+                        Text("\(Int((Preferences.soundVolume * 100).rounded()))%")
+                            .monospacedDigit().frame(width: 40, alignment: .trailing)
                     }
                 }
-                Text("Shared tap sound for pointers that use defaults. Customize individual pointers in Pointers.")
-                    .font(.system(size: 11))
-                    .foregroundColor(.secondary)
-                    .padding(.horizontal, 4)
+            }
+            Card(title: "Pointer Defaults") {
+                Row("Tap sound", detail: "Shared setting for pointers that use defaults. Customize individual pointers in Pointers.") {
+                    Toggle("Default tap sound enabled", isOn: model.binding({ Preferences.handSound }, { Preferences.handSound = $0 }))
+                        .labelsHidden().toggleStyle(.switch)
+                }
+                Row("Sound choice", detail: "Selecting a sound saves the choice. Use Preview to hear it.") {
+                    Picker("Default sound choice", selection: model.binding({ Preferences.tapSound }, { Preferences.tapSound = $0 })) {
+                        ForEach(TapSoundChoice.allCases, id: \.self) { Text($0.title).tag($0) }
+                    }.labelsHidden().frame(width: 144)
+                }
+                Row("Preview", detail: "Hear the selected sound without enabling tap sound.") {
+                    Button("Preview") { model.preview(Preferences.tapSound) }
+                        .disabled(!Preferences.soundOutput.audible)
+                        .accessibilityLabel("Preview default tap sound")
+                        .help("Hear the selected sound at the app volume. Master mute also mutes Preview.")
+                }
+                Row("Current pointer", detail: "\(PointerStyle.saved.title): \(Preferences.soundOutput.status(enabled: Preferences.pointerConfiguration(for: PointerStyle.saved.rawValue).soundEnabled))") {
+                    EmptyView()
+                }
             }
         }
-        .onAppear { model.warmPreview() }
+        .onExitCommand { model.stopPreview() }
         .onDisappear { model.stopPreview() }
     }
 }
@@ -78,54 +87,6 @@ struct InkSwatch: View {
         .accessibilityValue(selected ? "Selected" : "Not selected")
         .accessibilityAddTraits(selected ? .isSelected : [])
         .help(choice.title)
-        .onHover { hovering = $0 }
-    }
-}
-
-
-struct SoundTile: View {
-    let title: String
-    let symbol: String
-    let selected: Bool
-    let action: () -> Void
-    @State private var hovering = false
-
-    var body: some View {
-        Button(action: action) {
-            VStack(spacing: 8) {
-                Image(systemName: symbol)
-                    .font(.system(size: 18, weight: .medium))
-                    .foregroundColor(selected ? .accentColor : .secondary)
-                    .frame(height: 24)
-                Text(title)
-                    .font(.system(size: 12, weight: selected ? .semibold : .regular))
-                    .foregroundColor(selected ? .primary : .secondary)
-                    .lineLimit(1)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, Space.lg)
-            .background(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(selected ? Color.accentColor.opacity(0.12) : Color.primary.opacity(hovering ? 0.07 : 0.035))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .strokeBorder(selected ? Color.accentColor.opacity(0.7) : Color.clear, lineWidth: 2)
-            )
-            .overlay(alignment: .topTrailing) {
-                if selected {
-                    Image(systemName: "checkmark.circle.fill")
-                        .padding(Space.xs)
-                        .accessibilityHidden(true)
-                }
-            }
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.borderless)
-        .accessibilityValue(selected ? "Selected" : "Not selected")
-        .accessibilityAddTraits(selected ? .isSelected : [])
-        .accessibilityLabel(title == "Off" ? "Turn hand sound off" : "Preview \(title) tap sound")
-        .help(title == "Off" ? "Mute hand taps" : "Preview and select the \(title) tap sound")
         .onHover { hovering = $0 }
     }
 }

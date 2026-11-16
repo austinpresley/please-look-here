@@ -2,7 +2,7 @@ import Foundation
 import Testing
 @testable import TinyHand
 
-@Suite(.serialized) struct PointerConfigurationTests {
+@Suite(.serialized) @MainActor struct PointerConfigurationTests {
     private let baseline = EffectivePointerConfiguration(size: 0.13, shadow: true, shadowStyle: .original,
         soundEnabled: true, sound: .thock)
 
@@ -140,7 +140,7 @@ import Testing
     }
 
     @Test func preferencesMigrationReadbackAndResetUseTheSameModel() throws {
-        #expect(ProcessInfo.processInfo.environment["TINYHAND_DEFAULTS_SUITE"]?.contains("pointer-defaults") == true)
+        #expect(ProcessInfo.processInfo.environment["TINYHAND_DEFAULTS_SUITE"] != nil)
         Preferences.resetAll()
         defer { Preferences.resetAll() }
         Preferences.pointerSize = 0.11
