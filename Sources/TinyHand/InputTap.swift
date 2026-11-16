@@ -3,7 +3,9 @@ import AppKit
 final class InputTap {
     private let sessionLocked: () -> Bool
     var onScreenLocked: (() -> Void)?
-    init(sessionLocked: @escaping () -> Bool = { PresentationSession.isLocked }) { self.sessionLocked = sessionLocked }
+    init(sessionLocked: @escaping () -> Bool = { PresentationSession.isLocked }, radial: RadialInput = RadialInput()) {
+        self.sessionLocked = sessionLocked; self.radial = radial
+    }
     private let controls = ControlInput()
     var onDismissControls: (() -> Void)?
     var onControlStatusClick: ((Bool) -> Void)?
@@ -14,7 +16,7 @@ final class InputTap {
             updateEnabled()
         }
     }
-    let radial = RadialInput()
+    let radial: RadialInput
     func configureRadial(trigger: RadialTrigger?, eligible: Bool) {
         radial.configure(trigger: trigger, eligible: eligible, flags: CGEventSource.flagsState(.combinedSessionState))
         if trigger != nil && eligible { _ = install() }
@@ -135,7 +137,10 @@ final class InputTap {
         guard let tap = tap else { return }
         // Finish any press that started in Draw, even after turning the pointer off or changing mode.
         let desired = active || !presses.isEmpty || radial.needsTap || controls.needsTap
-        if CGEvent.tapIsEnabled(tap: tap) != desired { CGEvent.tapEnable(tap: tap, enable: desired) }
+        if CGEvent.tapIsEnabled(tap: tap) != desired {
+            if desired { radial.resetKeyboardObservation() }
+            CGEvent.tapEnable(tap: tap, enable: desired)
+        }
     }
 
     func resetWait() {
@@ -155,6 +160,7 @@ final class InputTap {
         lock.withLock {
             eventCount += 1
             eventTypes[String(type.rawValue), default: 0] += 1
+            radial.observeKeyboard(type, event: event)
             let forwarded = Unmanaged.passUnretained(event)
             if [.leftMouseDown, .rightMouseDown, .otherMouseDown, .keyDown].contains(type), sessionLocked() {
                 // The login window owns locked-session input. Do not let drawing,

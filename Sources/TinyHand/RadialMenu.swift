@@ -12,10 +12,11 @@ final class RadialMenu {
     private var feedback: NSPanel?
     private var feedbackID = UUID()
     private(set) var session: RadialSession?
+    private var inputSessionID: UInt?
     private(set) var lastResult = ""
     var releaseSelects = true // Changed only by the gated native comparison seam.
     var perform: (([String: Any]) -> String)?
-    var onClose: (() -> Void)?
+    var onClose: ((UInt) -> Void)?
     var visible: Bool { panel.isVisible && panel.alphaValue > 0.01 }
     var window: NSWindow { panel }
     var diagnostics: [String: Any] {
@@ -43,8 +44,9 @@ final class RadialMenu {
             else { self.update() }
         }
     }
-    func open(at point: CGPoint, style: PointerStyle, mode: PointerMode, canUndo: Bool, canRedo: Bool, hasInk: Bool) {
-        guard let screen = NSScreen.screens.first(where: { $0.frame.contains(point) }), screen.visibleFrame.width >= RadialGeometry.size, screen.visibleFrame.height >= RadialGeometry.size else { lastResult = "Quick controls need a display at least 592 points wide and tall."; onClose?(); return }
+    func open(sessionID: UInt, at point: CGPoint, style: PointerStyle, mode: PointerMode, canUndo: Bool, canRedo: Bool, hasInk: Bool) {
+        inputSessionID = sessionID
+        guard let screen = NSScreen.screens.first(where: { $0.frame.contains(point) }), screen.visibleFrame.width >= RadialGeometry.size, screen.visibleFrame.height >= RadialGeometry.size else { lastResult = "Quick controls need a display at least 592 points wide and tall."; close(sessionID: sessionID); return }
         func request(_ operation: String, _ fields: [String: Any] = [:]) -> [String: Any] { fields.merging(["version": 1, "operation": operation]) { _, b in b } }
         func command(_ id: String, _ title: String, _ symbol: String, _ op: String, _ fields: [String: Any] = [:], selected: Bool = false, enabled: Bool = true) -> RadialItem { RadialItem(id: id, title: title, symbol: symbol, selected: selected, enabled: enabled, request: request(op, fields)) }
         let root = [RadialItem(id: "pointers", title: "Pointer", symbol: "hand.point.up.left.fill", group: "pointer"),
@@ -69,20 +71,31 @@ final class RadialMenu {
         panel.setFrame(geometry.frame, display: true)
         update(); canvas.needsDisplay = true; panel.orderFrontRegardless()
     }
-    func move(to point: CGPoint) { session?.move(point); update() }
+    func move(to point: CGPoint, sessionID: UInt) {
+        guard inputSessionID == sessionID else { return }
+        session?.move(point); update()
+    }
     func updateHistory(canUndo: Bool, canRedo: Bool, hasInk: Bool) {
         guard session != nil else { return }
         session?.updateHistory(canUndo: canUndo, canRedo: canRedo, hasInk: hasInk)
         update()
     }
-    func release() {
+    func release(sessionID: UInt) {
+        guard inputSessionID == sessionID else { return }
         if releaseSelects, let command = session?.candidate?.request { commit(command) } else { close() }
     }
-    func click(at point: CGPoint) {
-        move(to: point)
+    func click(at point: CGPoint, sessionID: UInt) {
+        guard inputSessionID == sessionID else { return }
+        move(to: point, sessionID: sessionID)
         if let command = session?.candidate?.request { commit(command) } else { close() }
     }
-    func close() { session = nil; panel.orderOut(nil); onClose?() }
+    func close(sessionID: UInt? = nil) {
+        if let sessionID, inputSessionID != sessionID { return }
+        let closingSessionID = inputSessionID
+        inputSessionID = nil
+        session = nil; panel.orderOut(nil)
+        if let closingSessionID { onClose?(closingSessionID) }
+    }
     private func commit(_ command: [String: Any]) {
         let location = session?.geometry.center
         let title = session?.candidate?.title ?? "Quick controls"

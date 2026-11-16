@@ -5,7 +5,7 @@ import AppKit
 /// Escape pairs drain after dismissal, deactivation, or an eligibility change.
 final class RadialInput {
     enum Event { case open(CGPoint), move(CGPoint), release, click(CGPoint), cancel }
-    var onEvent: ((Event) -> Void)?
+    var onEvent: ((UInt, Event) -> Void)?
     private let lock = NSLock()
     private var trigger: RadialTrigger?
     private var eligible = false
@@ -15,13 +15,42 @@ final class RadialInput {
     private struct Pending { let id: UInt; let deadline: TimeInterval; var point: CGPoint }
     private var pending: Pending?
     private var sequence: UInt = 0
+    private var sessionID: UInt?
     private var reconciledReleases = 0
     private let clock: () -> TimeInterval
-    init(clock: @escaping () -> TimeInterval = { ProcessInfo.processInfo.systemUptime }) { self.clock = clock }
+    private let nativeKeyState: (CGKeyCode) -> Bool
+    init(clock: @escaping () -> TimeInterval = { ProcessInfo.processInfo.systemUptime },
+         nativeKeyState: @escaping (CGKeyCode) -> Bool = { CGEventSource.keyState(.combinedSessionState, key: $0) }) {
+        self.clock = clock; self.nativeKeyState = nativeKeyState
+    }
     private var buttons = Set<Int64>()
     private var keys = Set<Int64>()
+    // Observation is independent of ownership. Ordinary native pairs never
+    // become ours merely because a key was already held when the trigger rose.
+    private var heldKeys = Set<Int64>()
+    private static let modifierKeyCodes: Set<CGKeyCode> = [54, 55, 56, 57, 58, 59, 60, 61, 62, 63]
+    private var ordinaryKeyIsDown: Bool {
+        !heldKeys.isEmpty || (0..<128).contains {
+            let code = CGKeyCode($0)
+            return !Self.modifierKeyCodes.contains(code) && nativeKeyState(code)
+        }
+    }
     var needsTap: Bool { lock.withLock { (trigger != nil && eligible) || !buttons.isEmpty || !keys.isEmpty } }
-    var diagnostics: [String: Any] { lock.withLock { ["open": open, "held": held, "buttons": buttons.sorted(), "keys": keys.sorted(), "eligible": eligible, "pending": pending != nil, "reconciledReleases": reconciledReleases] } }
+    var diagnostics: [String: Any] { lock.withLock { ["open": open, "held": held, "buttons": buttons.sorted(), "keys": keys.sorted(), "heldKeys": heldKeys.sorted(), "eligible": eligible, "pending": pending != nil, "reconciledReleases": reconciledReleases] } }
+    /// InputTap observes even keyboard pairs routed to another surface.
+    func observeKeyboard(_ type: CGEventType, event: CGEvent) {
+        guard type == .keyDown || type == .keyUp else { return }
+        lock.withLock { recordKeyboard(type, event: event) }
+    }
+    private func recordKeyboard(_ type: CGEventType, event: CGEvent) {
+        guard type == .keyDown || type == .keyUp else { return }
+        let key = event.getIntegerValueField(.keyboardEventKeycode)
+        if type == .keyDown { heldKeys.insert(key) }
+        if type == .keyUp { heldKeys.remove(key) }
+    }
+    /// A disabled tap may miss releases. Fresh native samples cover keys held
+    /// across re-enabling, without retaining an obsolete observed down.
+    func resetKeyboardObservation() { lock.withLock { heldKeys.removeAll() } }
     /// Existing pair ownership takes precedence over another surface's new claims.
     func ownsPair(_ type: CGEventType, event: CGEvent) -> Bool {
         lock.withLock {
@@ -46,7 +75,14 @@ final class RadialInput {
             reconcileRelease(flags)
         }
     }
-    func end() { lock.withLock { pending = nil; open = false } }
+    var currentSessionID: UInt? { lock.withLock { sessionID } }
+    /// A queued menu close may belong to a gesture older than the pending hold.
+    func end(sessionID: UInt) {
+        lock.withLock {
+            guard self.sessionID == sessionID else { return }
+            pending = nil; open = false; self.sessionID = nil
+        }
+    }
     func suspendForSystem(releasingButton: Int64?, key: Int64?) {
         lock.withLock {
             cancel(); eligible = false; held = false
@@ -55,7 +91,8 @@ final class RadialInput {
         }
     }
     private func send(_ event: Event) {
-        DispatchQueue.main.async { [weak self] in self?.onEvent?(event) }
+        guard let sessionID else { return }
+        DispatchQueue.main.async { [weak self] in self?.onEvent?(sessionID, event) }
     }
     private func cancel() { pending = nil; if open { open = false; send(.cancel) } }
     private func reconcileRelease(_ flags: CGEventFlags) {
@@ -66,12 +103,15 @@ final class RadialInput {
         }
     }
     /// Timer and deterministic tests share the same deadline/eligibility check.
-    func advanceHold(flags: CGEventFlags, dragging: Bool, now: TimeInterval? = nil) {
+    func advanceHold(flags: CGEventFlags, dragging: Bool, now: TimeInterval? = nil, sessionID: UInt? = nil) {
         lock.withLock {
+            // Recheck under the same lock as the transition. The old timer may
+            // have sampled native state while a newer gesture began.
+            if let sessionID, pending?.id != sessionID { return }
             reconcileRelease(flags)
             guard let pending, (now ?? clock()) >= pending.deadline else { return }
             self.pending = nil
-            guard let trigger, held, eligible, !dragging, buttons.isEmpty, keys.isEmpty,
+            guard let trigger, held, eligible, !dragging, buttons.isEmpty, keys.isEmpty, !ordinaryKeyIsDown,
                   flags.intersection([.maskCommand, .maskControl, .maskAlternate, .maskShift]) == trigger.flag else { return }
             open = true
             send(.open(pending.point))
@@ -80,17 +120,19 @@ final class RadialInput {
     private func beginHold(at point: CGPoint) {
         sequence &+= 1
         let id = sequence
+        sessionID = id
         pending = Pending(id: id, deadline: clock() + Self.holdDuration, point: point)
         DispatchQueue.global(qos: .userInteractive).asyncAfter(deadline: .now() + Self.holdDuration) { [weak self] in
             guard let self, self.lock.withLock({ self.pending?.id == id }) else { return }
             let dragging = (0..<32).contains {
                 CGEventSource.buttonState(.combinedSessionState, button: CGMouseButton(rawValue: UInt32($0))!)
             }
-            self.advanceHold(flags: CGEventSource.flagsState(.combinedSessionState), dragging: dragging)
+            self.advanceHold(flags: CGEventSource.flagsState(.combinedSessionState), dragging: dragging, sessionID: id)
         }
     }
     func handle(_ type: CGEventType, event: CGEvent, dragging: Bool) -> Bool {
         lock.withLock {
+            recordKeyboard(type, event: event)
             if type == .flagsChanged {
                 guard let trigger else { held = false; return false }
                 let down = event.flags.contains(trigger.flag)
@@ -98,7 +140,7 @@ final class RadialInput {
                 if !down { pending = nil; if open { open = false; send(.release) }; held = false }
                 else if !held {
                     held = true
-                    if exact && eligible && !dragging && buttons.isEmpty && keys.isEmpty { beginHold(at: event.location) }
+                    if exact && eligible && !dragging && buttons.isEmpty && keys.isEmpty && !ordinaryKeyIsDown { beginHold(at: event.location) }
                 } else if !exact { cancel() }
                 return false
             }

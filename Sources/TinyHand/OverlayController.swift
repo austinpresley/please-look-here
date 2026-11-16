@@ -127,23 +127,24 @@ final class OverlayController {
             self.toolbar.setMagnifying(false); self.toolbar.showMessage(message)
             self.onActiveChanged?()
         }
-        inputTap.radial.onEvent = { [weak self] event in
+        inputTap.radial.onEvent = { [weak self] sessionID, event in
             guard let self else { return }
             switch event {
             case .open(let cg):
-                guard self.radialEligible else { self.inputTap.radial.end(); return }
-                self.radial.open(at: Self.appKitPoint(cg), style: self.style, mode: self.mode, canUndo: self.canUndo, canRedo: self.canRedo, hasInk: self.inkStrokes > 0)
+                guard self.inputTap.radial.currentSessionID == sessionID else { return }
+                guard self.radialEligible else { self.inputTap.radial.end(sessionID: sessionID); return }
+                self.radial.open(sessionID: sessionID, at: Self.appKitPoint(cg), style: self.style, mode: self.mode, canUndo: self.canUndo, canRedo: self.canRedo, hasInk: self.inkStrokes > 0)
                 self.updateToolbarVisibility()
-            case .move(let cg): self.radial.move(to: Self.appKitPoint(cg))
-            case .release: self.radial.release()
-            case .click(let cg): self.radial.click(at: Self.appKitPoint(cg))
-            case .cancel: self.radial.close()
+            case .move(let cg): self.radial.move(to: Self.appKitPoint(cg), sessionID: sessionID)
+            case .release: self.radial.release(sessionID: sessionID)
+            case .click(let cg): self.radial.click(at: Self.appKitPoint(cg), sessionID: sessionID)
+            case .cancel: self.radial.close(sessionID: sessionID)
             }
         }
         inputTap.onDismissControls = { [weak self] in self?.onDismissControls?() }
         inputTap.onControlStatusClick = { [weak self] in self?.onControlStatusClick?($0) }
         inputTap.onScreenLocked = { [weak self] in self?.stopForSystem("locked session input") }
-        radial.onClose = { [weak self] in self?.inputTap.radial.end(); self?.updateToolbarVisibility() }
+        radial.onClose = { [weak self] sessionID in self?.inputTap.radial.end(sessionID: sessionID); self?.updateToolbarVisibility() }
         inputTap.onMouseDown = { [weak self] button, feedback, point, flags in self?.pressed(button, feedback: feedback, at: point, flags: flags) }
         inputTap.onMouseUp = { [weak self] button, feedback in self?.released(button, feedback: feedback) }
         inputTap.onLeftDragged = { [weak self] point in self?.dragged(to: point) }
