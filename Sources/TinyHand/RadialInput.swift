@@ -4,6 +4,7 @@ import AppKit
 /// Flags and ordinary keyboard pairs always pass unchanged. Claimed mouse and
 /// Escape pairs drain after dismissal, deactivation, or an eligibility change.
 final class RadialInput {
+    typealias HoldScheduler = (TimeInterval, @escaping () -> Void) -> Void
     enum Event { case open(CGPoint), move(CGPoint), release, click(CGPoint), cancel }
     var onEvent: ((UInt, Event) -> Void)?
     private let lock = NSLock()
@@ -19,9 +20,14 @@ final class RadialInput {
     private var reconciledReleases = 0
     private let clock: () -> TimeInterval
     private let nativeKeyState: (CGKeyCode) -> Bool
+    private let scheduleHold: HoldScheduler
     init(clock: @escaping () -> TimeInterval = { ProcessInfo.processInfo.systemUptime },
-         nativeKeyState: @escaping (CGKeyCode) -> Bool = { CGEventSource.keyState(.combinedSessionState, key: $0) }) {
-        self.clock = clock; self.nativeKeyState = nativeKeyState
+         nativeKeyState: @escaping (CGKeyCode) -> Bool = { CGEventSource.keyState(.combinedSessionState, key: $0) },
+         scheduleHold: @escaping HoldScheduler = { delay, action in
+             DispatchQueue.global(qos: .userInteractive).asyncAfter(deadline: .now() + delay,
+                 execute: DispatchWorkItem(block: action))
+         }) {
+        self.clock = clock; self.nativeKeyState = nativeKeyState; self.scheduleHold = scheduleHold
     }
     private var buttons = Set<Int64>()
     private var keys = Set<Int64>()
@@ -122,7 +128,7 @@ final class RadialInput {
         let id = sequence
         sessionID = id
         pending = Pending(id: id, deadline: clock() + Self.holdDuration, point: point)
-        DispatchQueue.global(qos: .userInteractive).asyncAfter(deadline: .now() + Self.holdDuration) { [weak self] in
+        scheduleHold(Self.holdDuration) { [weak self] in
             guard let self, self.lock.withLock({ self.pending?.id == id }) else { return }
             let dragging = (0..<32).contains {
                 CGEventSource.buttonState(.combinedSessionState, button: CGMouseButton(rawValue: UInt32($0))!)

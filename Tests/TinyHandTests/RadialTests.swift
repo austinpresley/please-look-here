@@ -5,7 +5,7 @@ import Testing
 @Suite(.serialized) @MainActor struct RadialTests {
     private func input(clock: @escaping () -> TimeInterval = { ProcessInfo.processInfo.systemUptime },
                        nativeKeyState: @escaping (CGKeyCode) -> Bool = { _ in false }) -> RadialInput {
-        RadialInput(clock: clock, nativeKeyState: nativeKeyState)
+        RadialInput(clock: clock, nativeKeyState: nativeKeyState, scheduleHold: { _, _ in })
     }
     private func event(_ type: CGEventType, flags: CGEventFlags = [], button: Int64 = 0, key: Int64 = 0, repeatDown: Bool = false) -> CGEvent {
         let e = CGEvent(source: nil)!
