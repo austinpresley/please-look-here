@@ -2716,3 +2716,33 @@ normal OS grants or starting a live screen-sharing service. Real sound previews
 and live screen capture were exercised. Physical multiple-display/mixed-scale,
 Intel/older macOS runtime and a full VoiceOver audit remain unperformed. The
 preexisting radial reopen and physical Stream Deck acceptance gaps stay open.
+# App review implementation started, 15 November 2026
+
+Baseline: installed signed/notarized 1.1.0, build 20261114081700. Active source
+branch: `feature/app-review-improvements-20261115`. The S-036 through S-053 queue
+is in `app-review-implementation-2026-11-15.md`. All implementation subagents use
+Sol 6.1 High. No Max setting or hosted checks are used.
+
+Recovery: the initial all-ref Git bundle verified, and archives preserve the
+previous installed app, normal preference export, hands and all 92 untracked
+files. A second backup made with `scripts/backup-source.py` passed SHA-256 checks
+and a real temporary clone restored exact HEAD `e162b94`. Both copies are on the
+internal volume under `~/Library/Application Support/Look Here Please/Backups`.
+The source backup does not upload source or remove existing evidence.
+
+Local focused screenshot check: five ScreenshotRecoveryTests pass with isolated
+suite `com.austinpresley.tinyhand.review.capture-tests` and temporary hands.
+Coverage includes permission versus frame/encoding/file-write recovery, Retina
+crop conversion, negative display origins, clipped selection and empty input.
+The final incremental compile for these changes has no warnings. New result and
+selection surfaces pass their layout lints. Active light/dark UI checks and
+integrated regression/package checks are still pending.
+
+Available hardware was read without changing devices: one 1920x1080 display,
+Apple silicon, macOS 27.0, and no physical USB Stream Deck. Multiple-display,
+physical Deck, Intel and older-OS acceptance cannot be inferred from this host.
+
+GitHub workflow state was read through the repository API. Build 414155231 and
+Release 414155234 were both `disabled_manually`. Their local workflow definitions
+are now archived outside `.github/workflows` so a later source push cannot
+reintroduce automatic build/release triggers. No hosted workflow was dispatched.

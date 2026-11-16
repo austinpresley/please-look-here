@@ -153,3 +153,18 @@ button presses in the same owned gesture until every claimed release drains.
 Enabling a trigger while its modifier is already held also starts latched, using
 current session flags, and requires release before a fresh gesture. Rule: closing
 a control does not end ownership of an unfinished native button gesture.
+# App review screenshot recovery, 15 November 2026
+
+Symptom: screenshot frame, display or encoding failures could offer Screen
+Recording settings even when access was already allowed. Success feedback gave
+only a filename and could not reveal or copy the saved image.
+
+Cause: recovery checked whether the error belonged to the entire ScreenshotError
+enum, rather than its permission case. Success used a noninteractive toolbar hint.
+
+Fix: classify permission recovery separately from Retry, dispatch retries after
+capture cleanup, and present one interactive result panel retaining the latest
+encoded image. Region retry starts a fresh cancellable selection.
+
+Rule: choose recovery from the actual failure and keep completed capture actions
+separate from taking a new screenshot.

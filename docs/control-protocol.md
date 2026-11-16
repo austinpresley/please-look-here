@@ -34,6 +34,7 @@ operations, enum values and invalid numeric/boolean values are rejected.
 | cycle-tool | None | Select the next drawing tool and wrap; turn Interact off and preserve pointer activation/selection |
 | clear / undo / redo | None | Use the same annotation history as the toolbar |
 | capture | None | Start a screenshot asynchronously |
+| capture-region | None | Open a native drag selection; Escape cancels, release captures the selected region |
 | magnifier | enabled boolean | Start or stop live magnification independently of the selected pointer; Screen Recording is required |
 | gesture | slot: first, second or none | Show a hand pose for two seconds, or cancel it; invalid/unavailable non-hand targets reject before activation |
 | style | style ID; optional activate boolean | Select a pointer, optionally activate |
@@ -52,6 +53,12 @@ processes do not need drawing permission just to send requests.
 Capture acceptance is not capture completion. After `capture` succeeds, read status
 until `capturing` is false, then inspect `lastCaptureError`, `lastCapture` and
 `captureSize`. Clipboard-only captures have no saved path.
+
+Region capture first reports `selectingCaptureRegion: true`. A completed selection
+starts the regular asynchronous capture path; cancellation takes no screenshot.
+The result panel offers Reveal in Finder for saved files and Copy for the latest
+image. Retry opens a new selection after a region error. The optional
+`capture-region` shortcut starts unassigned.
 
 ## Validated settings
 

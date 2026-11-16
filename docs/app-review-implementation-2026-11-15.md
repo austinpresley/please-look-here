@@ -190,7 +190,7 @@ UX:
 - Use one result panel, with named destination and error-specific actions. Capture app controls remain excluded.
 - Escape cancels temporary UI. Native text editing keeps its usual keys. Errors say what failed and how to recover.
 
-Status: todo
+Status: implemented; active light/dark and native capture acceptance pending
 
 ### S-49 Control sound volume and audition
 
@@ -260,7 +260,7 @@ UX:
 - Use local git bundles and explicit files. No public source push, hosted workflows, or deletion of old evidence.
 - Escape cancels temporary UI. Native text editing keeps its usual keys. Errors say what failed and how to recover.
 
-Status: todo
+Status: implemented; final integrated source backup and status reconciliation pending
 
 ## Verification limits
 

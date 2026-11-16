@@ -27,6 +27,8 @@
 | Text | A typed annotation placed on screen. |
 | Number | A movable numbered marker. |
 | Screenshot | A still capture of the current display with pointer and annotations. |
+| Screenshot result | A temporary panel with Reveal in Finder, Copy and Close actions for the most recent completed capture. |
+| Capture Region | Select a rectangular part of the current display by dragging. Escape cancels without taking a screenshot. |
 | Original | The existing grip-follow motion and adaptive timer. |
 | Responsive | Faster adaptive grip follow with display-linked aiming. |
 | Unassigned | A command with no saved shortcut and no global key registration. |
