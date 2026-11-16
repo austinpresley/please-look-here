@@ -155,7 +155,7 @@ final class OverlayController {
             }
             self.wake()
         }
-        armView.ink.onChanged = { [weak self] in self?.annotationChanged() }
+        armView.annotations.onChanged = { [weak self] in self?.annotationChanged() }
         displayLink.onFrame = { [weak self] in self?.tick() }
         toolbar.onPick = { [weak self] in self?.pick($0) }
         toolbar.onMode = { [weak self] in _ = self?.setMode($0) }
@@ -419,6 +419,7 @@ final class OverlayController {
         }
         isActive = true
         currentFrame = nil
+        armView.annotations.activate()
         tapSound.warm()
         syncInput()
         installMonitors()
@@ -460,7 +461,7 @@ final class OverlayController {
         heldButtons.removeAll()
         downPoint = nil
         armView.held = false
-        armView.ink.reset()
+        armView.annotations.deactivate()
         window.ignoresMouseEvents = true
         window.orderOut(nil)
         toolbar.hide()
@@ -727,9 +728,13 @@ final class OverlayController {
     private func tick(aim: Bool = true) {
         guard isActive, let screen = currentScreen() else { return }
         let mouse = NSEvent.mouseLocation
-        if currentFrame != screen.frame {
+        let display = DisplayInkStore.Display(screen)
+        if currentFrame != screen.frame || armView.annotations.display != display {
             let moved = currentFrame != nil
-            if moved { cancelTapFeedback(); cancelHandGestures(); releaseDrawing(); armView.ink.reset() }
+            if moved { cancelTapFeedback(); cancelHandGestures(); releaseDrawing(); textEditor.cancel() }
+            if let display { armView.annotations.select(display) }
+            armView.updateInkColor()
+            annotationChanged()
             currentFrame = screen.frame
             window.setFrame(screen.frame, display: false)
             armView.frame = CGRect(origin: .zero, size: screen.frame.size)

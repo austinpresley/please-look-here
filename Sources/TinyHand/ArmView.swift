@@ -25,7 +25,8 @@ final class ArmView: NSView {
     private let gripDepthFrac: CGFloat = 0.12
     private let liftFrac: CGFloat = 0.06
 
-    let ink = Ink()
+    let annotations = DisplayInkStore()
+    var ink: Ink { annotations.ink }
     var held = false { didSet { if oldValue && !held { swing.release(at: CACurrentMediaTime()) } } }
     var inkWidth: CGFloat { Preferences.strokeWidth }
 
@@ -70,7 +71,7 @@ final class ArmView: NSView {
         root.masksToBounds = false
         layer = root
         wantsLayer = true
-        root.addSublayer(ink.layer)
+        root.addSublayer(annotations.layer)
         root.addSublayer(spotlight.layer)
         root.addSublayer(group)
         root.addSublayer(presentation.layer)
