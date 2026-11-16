@@ -103,7 +103,7 @@ import Testing
         // Keep the measured image, but remove its catalog entry before yielding
         // to the GPU so other suites never see this temporary pointer.
         let customAsset = try {
-            defer { CustomHands.remove(custom) }
+            defer { _ = try? CustomHands.remove(custom) }
             return try #require(custom.assetName.flatMap(HandAsset.load))
         }()
         for style in PointerStyle.builtInHands + [custom] {

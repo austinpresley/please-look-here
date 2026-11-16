@@ -25,6 +25,13 @@ final class SettingsModel: ObservableObject {
     private var handsObserver: Any?
     @Published var handMessage: String?
     @Published var gestureMessage: String?
+    @Published private(set) var removedHands: [HandRecoveryStore.Receipt] = []
+
+    private func refreshRemovedHands() {
+        guard FileManager.default.fileExists(atPath: CustomHands.directory.appendingPathComponent("hands.json").path) else { return }
+        do { removedHands = try HandRecoveryStore(directory: CustomHands.directory).pendingRemovals() }
+        catch { handMessage = error.localizedDescription }
+    }
 
     init() {
         observer = NotificationCenter.default.addObserver(forName: Preferences.changed, object: nil, queue: .main) { [weak self] _ in
@@ -36,6 +43,8 @@ final class SettingsModel: ObservableObject {
         HandAsset.preloadThumbnails(PointerStyle.allCases.compactMap(\.assetName)) { [weak self] in
             self?.revision += 1
         }
+        refreshRemovedHands()
+        if let message = CustomHands.recoveryMessage { handMessage = message }
     }
 
     struct HandDraft {
@@ -147,12 +156,41 @@ final class SettingsModel: ObservableObject {
     }
 
     func removeHand(_ style: PointerStyle) {
-        let pinned = Preferences.pinnedStyles.filter { $0 != style }
-        Preferences.pinnedStyles = pinned.isEmpty ? PointerStyle.defaultPinned : pinned
-        CustomHands.remove(style)
-        PointerCatalog.reconcile()
-        handMessage = nil
-        NotificationCenter.default.post(name: Preferences.changed, object: nil)
+        let name = style.title
+        do {
+            _ = try CustomHands.remove(style)
+            Preferences.performBatch {
+                let pinned = Preferences.pinnedStyles.filter { $0 != style }
+                Preferences.pinnedStyles = pinned.isEmpty ? PointerStyle.defaultPinned : pinned
+                PointerCatalog.reconcile()
+            }
+            handMessage = "\(name) was removed. Undo restores its artwork and settings."
+            refreshRemovedHands()
+        } catch { handMessage = error.localizedDescription }
+        revision += 1
+    }
+
+    func undoHandRemoval() {
+        guard let receipt = removedHands.first else { return }
+        do {
+            let warning = try CustomHands.restore(receipt)
+            Preferences.performBatch {
+                var disabled = Preferences.disabledPointerIDs
+                if receipt.state.disabled { disabled.insert(receipt.hand.id) }
+                else { disabled.remove(receipt.hand.id) }
+                Preferences.disabledPointerIDs = disabled
+                if let style = PointerStyle(rawValue: receipt.hand.id),
+                   receipt.state.pinnedIDs.contains(receipt.hand.id) {
+                    let originalPins = receipt.state.pinnedIDs.compactMap(PointerStyle.init(rawValue:))
+                    // Undo restores the saved toolbar snapshot, including the
+                    // sole-pin case, without exceeding the toolbar's capacity.
+                    if originalPins.contains(style) { Preferences.pinnedStyles = originalPins }
+                }
+                PointerCatalog.reconcile()
+            }
+            handMessage = warning ?? "\(receipt.hand.name) was restored."
+            refreshRemovedHands()
+        } catch { handMessage = error.localizedDescription }
         revision += 1
     }
 

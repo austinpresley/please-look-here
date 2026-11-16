@@ -94,7 +94,7 @@ import Testing
     @Test func customAssetLossRestorationAndSafeRecoveryIgnoreStaleRenderCache() throws {
         let image = try #require(HandAsset.load("hand_lavender")?.image)
         let custom = try CustomHands.add(image, ink: 0x123456, name: "Fixture hand")
-        defer { CustomHands.remove(custom); Preferences.resetAll() }
+        defer { _ = try? CustomHands.remove(custom); Preferences.resetAll() }
         let path = CustomHands.directory.appendingPathComponent(custom.rawValue + ".png")
         let bytes = try Data(contentsOf: path)
         Preferences.pinnedStyles = [custom]
@@ -133,7 +133,7 @@ import Testing
     @Test func removedManifestEntryDoesNotResumeSelectionWhenRestored() throws {
         let image = try #require(HandAsset.load("hand_lavender")?.image)
         let custom = try CustomHands.add(image, ink: 0x123456, name: "Return fixture")
-        defer { CustomHands.remove(custom); Preferences.resetAll() }
+        defer { _ = try? CustomHands.remove(custom); Preferences.resetAll() }
         let manifest = CustomHands.directory.appendingPathComponent("hands.json")
         let bytes = try Data(contentsOf: manifest)
         PointerStyle.saved = custom
@@ -147,7 +147,7 @@ import Testing
         #expect(PointerCatalog.selectableStyles.contains(custom))
         #expect(PointerStyle.saved == .lavender)
         try PointerCatalog.setEnabled(false, for: custom)
-        CustomHands.remove(custom)
+        try CustomHands.remove(custom)
         try bytes.write(to: manifest)
         CustomHands.reload()
         #expect(PointerCatalog.entries.first { $0.style == custom }?.enabled == false)
@@ -257,7 +257,7 @@ import Testing
         let overlay = OverlayController()
         let api = ControlBridge(overlay: overlay, openSettings: { _ in }, openHandCreator: {})
         let custom = try CustomHands.add(try #require(HandAsset.load("hand_lavender")?.image), ink: 0, name: "Cycle fixture")
-        defer { CustomHands.remove(custom); Preferences.resetAll() }
+        defer { _ = try? CustomHands.remove(custom); Preferences.resetAll() }
         Preferences.pinnedStyles = [.lavender]
         #expect(overlay.pick(PointerStyle.builtInHands.last!))
         #expect(try request(api, "cycle-pointer")["ok"] as? Bool == true)

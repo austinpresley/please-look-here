@@ -381,12 +381,23 @@ enum CustomHands {
     }
 
     private static var loaded: [CustomHand]?
+    private(set) static var recoveryMessage: String?
 
     static var all: [CustomHand] {
         if let loaded = loaded {
             return loaded
         }
-        let list = (try? Data(contentsOf: listURL)).flatMap { try? JSONDecoder().decode([CustomHand].self, from: $0) } ?? []
+        let list: [CustomHand]
+        do {
+            if FileManager.default.fileExists(atPath: listURL.path) {
+                try HandRecoveryStore(directory: directory).recoverInterruptedRemovals()
+                list = try HandRecoveryStore(directory: directory).readManifest()
+            } else { list = [] }
+            recoveryMessage = nil
+        } catch {
+            recoveryMessage = "Unable to load custom hands. Check access to \(directory.path), then reopen Settings. \(error.localizedDescription)"
+            list = []
+        }
         loaded = list
         return list
     }
@@ -403,7 +414,12 @@ enum CustomHands {
     static func reload() {
         let previous = loaded
         loaded = nil
-        if let previous, previous != all {
+        let current = all
+        if recoveryMessage != nil, let previous {
+            loaded = previous
+            return
+        }
+        if let previous, previous != current {
             NotificationCenter.default.post(name: changed, object: nil)
         }
     }
@@ -423,13 +439,28 @@ enum CustomHands {
         return style
     }
 
-    static func remove(_ style: PointerStyle) {
+    @discardableResult
+    static func remove(_ style: PointerStyle, extensions: [String: Data] = [:]) throws -> HandRecoveryStore.Receipt {
         guard let assetName = style.assetName, style.isCustom else {
-            return
+            throw HandRecoveryStore.Problem(message: "Only custom hands can be removed from the library.")
         }
-        try? FileManager.default.removeItem(at: directory.appendingPathComponent("\(assetName).png"))
+        let state = HandRecoveryStore.State(pinnedIDs: Preferences.pinnedStyles.map(\.rawValue),
+            disabled: Preferences.disabledPointerIDs.contains(style.rawValue), selectedID: PointerStyle.savedID,
+            extensions: extensions)
+        let receipt = try HandRecoveryStore(directory: directory).remove(style.rawValue, state: state)
         HandAsset.forget(assetName)
-        try? save(all.filter { $0.id != style.rawValue })
+        HandGestureCatalog.forget()
+        reload()
+        return receipt
+    }
+
+    @discardableResult
+    static func restore(_ receipt: HandRecoveryStore.Receipt) throws -> String? {
+        let warning = try HandRecoveryStore(directory: directory).restore(receipt)
+        HandAsset.forget(receipt.hand.id)
+        HandGestureCatalog.forget()
+        reload()
+        return warning
     }
 
     private static func save(_ list: [CustomHand]) throws {

@@ -13,6 +13,7 @@ enum HandGestureSlot: String, CaseIterable {
 enum HandGestureCatalog {
     private struct Cached { let signature: String; let image: CGImage }
     private static var cache: [String: Cached] = [:]
+    static func forget() { cache.removeAll() }
     static func url(for slot: HandGestureSlot, style: PointerStyle) -> URL {
         CustomHands.directory.appendingPathComponent("Gestures", isDirectory: true)
             .appendingPathComponent("\(style.rawValue)-\(slot.rawValue).png")

@@ -328,9 +328,8 @@ struct CustomHandChip: View {
                     .background(Circle().fill(Color.primary.opacity(hovering ? 0.12 : 0)))
             }
             .buttonStyle(.plain)
-            .focusable(false)
-            .opacity(hovering ? 1 : 0)
-            .help("Delete \(style.title)")
+            .accessibilityLabel("Remove \(style.title)")
+            .help("Remove \(style.title). Undo is available in the pointer library.")
         }
         .padding(.horizontal, 6)
         .padding(.vertical, 5)

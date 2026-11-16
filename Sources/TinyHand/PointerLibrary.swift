@@ -28,6 +28,12 @@ struct PointerLibrary: View {
             if let message = model.handMessage {
                 Text(message).font(.callout).foregroundStyle(.secondary)
             }
+            if let removed = model.removedHands.first {
+                Button("Undo Remove \(removed.hand.name)") { model.undoHandRemoval() }
+                    .help("Restore this hand, its gesture artwork and saved settings")
+                    .accessibilityIdentifier("undo-remove-hand")
+                    .gridProbe("library.undoRemoval", area: "library")
+            }
             LazyVGrid(columns: columns, alignment: .leading, spacing: Space.sm) {
                 ForEach(PointerCatalog.entries, id: \.style) { entry in
                     PointerLibraryCell(entry: entry, model: model)
@@ -82,6 +88,13 @@ private struct PointerLibraryCell: View {
                     .help("Select \(entry.style.title) without turning the pointer on")
             }
             .gridProbe("\(area).controls", area: area)
+            if entry.style.isCustom {
+                Button("Remove Hand") { model.removeHand(entry.style) }
+                    .controlSize(.small)
+                    .accessibilityLabel("Remove \(entry.style.title)")
+                    .help("Remove this hand from the library. Undo is available above the library.")
+                    .gridProbe("\(area).remove", area: area)
+            }
             if model.pointerErrorID == entry.style.rawValue, let message = model.pointerMessage {
                 Text(message).font(.caption).fixedSize(horizontal: false, vertical: true)
                     .gridProbe("\(area).error", area: area)
@@ -97,7 +110,7 @@ private struct PointerLibraryCell: View {
             Button(Preferences.pinnedStyles.contains(entry.style) ? "Unpin from Toolbar" : "Pin to Toolbar") { model.pin(entry.style) }
             if entry.style.isCustom {
                 Divider()
-                Button("Delete Hand") { model.removeHand(entry.style) }
+                Button("Remove Hand") { model.removeHand(entry.style) }
             }
         }
     }
