@@ -77,6 +77,7 @@ private final class EngineTapAudioDriver: TapAudioDriver {
 // audited wrapper is the transfer point for legacy audio callbacks, not the driver.
 final class TapSound: @unchecked Sendable {
     typealias DriverFactory = (AVAudioFormat, @escaping () -> Void) -> TapAudioDriver
+    typealias DeadlineScheduler = @Sendable (TimeInterval, @escaping @Sendable () -> Void) -> Void
     private final class Receipt {
         private let lock = NSLock()
         private var value = false
@@ -111,6 +112,7 @@ final class TapSound: @unchecked Sendable {
     private let format: AVAudioFormat
     private let factory: DriverFactory
     private let renderGrace: TimeInterval
+    private let deadlineScheduler: DeadlineScheduler?
     // The serial queue owns these fields and every driver operation.
     private var choice: TapSoundChoice
     private var driver: TapAudioDriver?
@@ -122,10 +124,12 @@ final class TapSound: @unchecked Sendable {
     }
 
     init(_ choice: TapSoundChoice = Preferences.tapSound, renderGrace: TimeInterval = 1,
+         deadlineScheduler: DeadlineScheduler? = nil,
          driverFactory: @escaping DriverFactory = { EngineTapAudioDriver(format: $0, configurationChanged: $1) }) {
         self.choice = choice
         self.factory = driverFactory
         self.renderGrace = renderGrace
+        self.deadlineScheduler = deadlineScheduler
         var loaded: [TapSoundChoice: AVAudioPCMBuffer] = [:]
         for item in TapSoundChoice.allCases { if let buffer = Self.read(item) { loaded[item] = buffer } }
         buffers = loaded
@@ -173,17 +177,18 @@ final class TapSound: @unchecked Sendable {
         let receipt = Receipt(), token = generation
         driver.play(buffer) { @Sendable in receipt.finish() }
         let duration = Double(buffer.frameLength) / buffer.format.sampleRate
-        queue.asyncAfter(deadline: .now() + duration + renderGrace) { @Sendable [weak self] in
+        let watchdog = DispatchWorkItem { @Sendable [weak self] in
             guard let self, self.generation == token, !receipt.rendered else { return }
             Log.write("Tap did not render; discarding the audio engine")
             self.teardown()
         }
+        schedule(watchdog, after: duration + renderGrace)
     }
     @discardableResult private func start() -> Bool {
         idleStop?.cancel()
         let idle = DispatchWorkItem { @Sendable [weak self] in self?.teardown() }
         idleStop = idle
-        queue.asyncAfter(deadline: .now() + 30, execute: idle)
+        schedule(idle, after: 30)
         if let driver, driver.isRunning { return true }
         teardown(cancelIdle: false)
         let token = generation
@@ -201,6 +206,17 @@ final class TapSound: @unchecked Sendable {
         if cancelIdle { idleStop?.cancel(); idleStop = nil }
         driver?.stop()
         driver = nil
+    }
+
+    /// Alternate clocks can trigger from any thread. Driver work always returns
+    /// to the same serial audio queue, including under deterministic tests.
+    private func schedule(_ work: DispatchWorkItem, after delay: TimeInterval) {
+        if let deadlineScheduler {
+            let queue = queue
+            deadlineScheduler(delay) { @Sendable in queue.async(execute: work) }
+        } else {
+            queue.asyncAfter(deadline: .now() + delay, execute: work)
+        }
     }
     /// An asynchronous fence, also useful for deterministic local background smoke checks.
     func drain() async { await withCheckedContinuation { continuation in queue.async { continuation.resume() } } }

@@ -54,7 +54,9 @@ private final class OutputDriver: TapAudioDriver {
 
 @Suite(.serialized) @MainActor struct SoundOutputTests {
     private func player(_ probe: OutputProbe) -> TapSound {
-        TapSound(.click, driverFactory: { _, changed in
+        // Queue-ordering fixtures intentionally leave buffers unrendered. Real
+        // watchdog and idle deadlines are covered separately by AudioTests.
+        TapSound(.click, deadlineScheduler: { @Sendable _, _ in }, driverFactory: { _, changed in
             probe.rememberConfigurationChange(changed)
             return OutputDriver(probe)
         })
