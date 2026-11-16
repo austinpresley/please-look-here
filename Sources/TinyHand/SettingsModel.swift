@@ -4,7 +4,9 @@ import Carbon.HIToolbox
 import SwiftUI
 
 final class SettingsModel: ObservableObject {
-    @Published var section: SettingsSection = .general
+    @Published var section: SettingsSection = .general {
+        didSet { if section != oldValue { cancelShortcutNavigation() } }
+    }
     @Published var pinMessage: String?
     @Published var pointerMessage: String?
     @Published var pointerErrorID: String?
@@ -22,6 +24,9 @@ final class SettingsModel: ObservableObject {
     @Published var shortcutConflicts: [String: String] = [:]
     @Published private(set) var shortcutFocusRequest: ShortcutFocusRequest?
     var openPractice: ((PracticeLesson) -> Void)?
+    var onShortcutNavigationLayout: (() -> Void)?
+
+    func cancelShortcutNavigation() { shortcutFocusRequest = nil }
 
     func focusShortcut(_ target: PracticeShortcutTarget) {
         section = .shortcuts

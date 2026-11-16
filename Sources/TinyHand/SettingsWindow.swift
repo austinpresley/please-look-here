@@ -62,6 +62,7 @@ final class SettingsWindow: NSObject, NSWindowDelegate {
         if window == nil {
             build()
         }
+        model.cancelShortcutNavigation()
         if let section = section {
             model.section = section
         }
@@ -98,6 +99,7 @@ final class SettingsWindow: NSObject, NSWindowDelegate {
             return nil
         }
         GridProbes.shared.probes.removeAll()
+        model.cancelShortcutNavigation()
         model.section = section
         let env = ProcessInfo.processInfo.environment
         if env["TH_MAKE_HAND"] != nil {
@@ -145,17 +147,25 @@ final class SettingsWindow: NSObject, NSWindowDelegate {
         w.isReleasedWhenClosed = false
         w.minSize = CGSize(width: 784, height: 440)
         w.delegate = self
-        let host = NSHostingView(rootView: SettingsView(model: model))
+        let host = SettingsHostingView(model: model)
+        model.onShortcutNavigationLayout = { [weak host] in host?.scheduleShortcutNavigation() }
         host.focusRingType = .none
         w.contentView = host
         window = w
     }
 
     func windowWillClose(_ notification: Notification) {
+        model.cancelShortcutNavigation()
         permissionTimer?.invalidate()
         permissionTimer = nil
         onRecording?(false)
         onVisibilityChanged?(false)
+    }
+
+    func windowDidResignKey(_ notification: Notification) { model.cancelShortcutNavigation() }
+
+    func windowDidResize(_ notification: Notification) {
+        (window?.contentView as? SettingsHostingView)?.scheduleShortcutNavigation(revealFocused: true)
     }
 }
 
@@ -169,12 +179,13 @@ final class ShortcutRecorder: NSButton {
     private var clickMonitor: Any?
     private let keys = NSStackView()
 
-    init(shortcut: Shortcut?) {
+    init(shortcut: Shortcut?, command: String? = nil) {
         self.shortcut = shortcut
         super.init(frame: .zero)
         isBordered = false
         setButtonType(.momentaryChange)
-        focusRingType = .none
+        focusRingType = .exterior
+        setNavigationCommand(command)
         wantsLayer = true
         layer?.cornerRadius = 7
         layer?.backgroundColor = NSColor.labelColor.withAlphaComponent(0.05).cgColor
@@ -194,6 +205,22 @@ final class ShortcutRecorder: NSButton {
         ])
         setLabel(shortcut?.display ?? "Unassigned")
     }
+
+    override var acceptsFirstResponder: Bool { true }
+
+    override var focusRingMaskBounds: NSRect { bounds }
+
+    override func drawFocusRingMask() {
+        NSBezierPath(roundedRect: bounds, xRadius: 7, yRadius: 7).fill()
+    }
+
+    func setNavigationCommand(_ command: String?) {
+        let value = command.map { "settings.shortcut.\($0)" }
+        identifier = value.map { NSUserInterfaceItemIdentifier($0) }
+        setAccessibilityIdentifier(value)
+    }
+
+    var isRecording: Bool { monitor != nil }
 
     func show(_ s: Shortcut?) {
         guard monitor == nil, s != shortcut else {
@@ -278,7 +305,7 @@ final class ShortcutRecorder: NSButton {
                 layer?.shadowColor = NSColor.black.cgColor
                 layer?.shadowOpacity = 0.15
                 layer?.shadowRadius = 0
-                layer?.shadowOffset = CGSize(width: 0, height: -1)
+                layer?.shadowOffset = CGSize(width: 0, height: -1) // grid: ok optical keycap shadow, not layout spacing
             }
         }
 

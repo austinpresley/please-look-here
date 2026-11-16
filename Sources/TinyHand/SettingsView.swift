@@ -65,7 +65,10 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: 0) {
             List(selection: Binding<SettingsSection?>(
                 get: { model.section },
-                set: { if let section = $0 { model.section = section } }
+                set: { if let section = $0 {
+                    model.cancelShortcutNavigation()
+                    model.section = section
+                } }
             )) {
                 ForEach(SettingsSection.allCases) { section in
                     HStack(spacing: Space.sm) {
@@ -101,7 +104,6 @@ struct SettingsView: View {
     }
 
     private var page: some View {
-        ScrollViewReader { scroll in
         ScrollView {
             VStack(alignment: .leading, spacing: Space.xxl) {
                 if model.section == .pointers && model.makingHand {
@@ -136,10 +138,8 @@ struct SettingsView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(nsColor: .windowBackgroundColor))
-        .onChange(of: model.shortcutFocusRequest) { request in
-            guard model.section == .shortcuts, let request else { return }
-            scroll.scrollTo(request.target.id, anchor: .center)
-        }
+        .onChange(of: model.shortcutFocusRequest) { _ in
+            model.onShortcutNavigationLayout?()
         }
     }
 

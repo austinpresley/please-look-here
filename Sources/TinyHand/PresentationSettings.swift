@@ -77,10 +77,8 @@ struct ShortcutsPage: View {
                 .font(.callout).foregroundStyle(.secondary)
             Card(title: "Quick controls at the cursor") {
                 Row("Hold to open", detail: "Only while the pointer is on. Starts unassigned.") {
-                    Picker("Radial menu modifier", selection: model.binding({ Preferences.radialTrigger?.rawValue ?? "" }, { Preferences.radialTrigger = RadialTrigger(rawValue: $0) })) {
-                        Text("Unassigned").tag("")
-                        ForEach(RadialTrigger.allCases, id: \.self) { Text($0.title).tag($0.rawValue) }
-                    }.labelsHidden().pickerStyle(.menu).frame(width: 160)
+                    ShortcutModifierPicker(selection: model.binding({ Preferences.radialTrigger?.rawValue ?? "" }, { Preferences.radialTrigger = RadialTrigger(rawValue: $0) }))
+                        .frame(width: 160)
                     Button("Clear") { Preferences.radialTrigger = nil }.disabled(Preferences.radialTrigger == nil)
                         .accessibilityLabel("Clear radial menu modifier")
                         .help("Remove the radial menu modifier. Leave it Unassigned.")
@@ -124,26 +122,17 @@ struct ShortcutsPage: View {
     }
 }
 
-/// Focus the row, never its recorder. Recording still requires an explicit click.
+/// The row marks the destination; its native control receives inactive focus.
 private struct PracticeShortcutDestination: ViewModifier {
     let target: PracticeShortcutTarget?
     @ObservedObject var model: SettingsModel
-    @FocusState private var focused: Bool
     func body(content: Content) -> some View {
         if let target {
             content
                 .id(target.id)
-                .focusable()
-                .focused($focused)
                 .overlay(RoundedRectangle(cornerRadius: Space.sm).strokeBorder(
                     model.shortcutFocusRequest?.target == target ? Color.accentColor : .clear, lineWidth: 2))
-                .onAppear { focusIfRequested(target) }
-                .onChange(of: model.shortcutFocusRequest) { _ in focusIfRequested(target) }
         } else { content }
-    }
-    private func focusIfRequested(_ target: PracticeShortcutTarget) {
-        guard model.shortcutFocusRequest?.target == target else { return }
-        DispatchQueue.main.async { focused = true }
     }
 }
 

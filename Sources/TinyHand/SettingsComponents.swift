@@ -170,7 +170,7 @@ struct ShortcutField: View {
     var body: some View {
         VStack(alignment: .trailing, spacing: Space.xs) {
             HStack(spacing: Space.sm) {
-                ShortcutRecordingField(shortcut: shortcut, model: model, label: label,
+                ShortcutRecordingField(shortcut: shortcut, model: model, command: command, label: label,
                                        allowsPlainKeys: allowsPlainKeys) { value in
                     let accepted = apply(value)
                     assignmentError = accepted ? nil : model.shortcutError
@@ -199,12 +199,13 @@ struct ShortcutField: View {
 private struct ShortcutRecordingField: NSViewRepresentable {
     let shortcut: Shortcut?
     let model: SettingsModel
+    var command: String?
     var label = "Shortcut"
     var allowsPlainKeys = false
     let apply: (Shortcut?) -> Bool
 
     func makeNSView(context: Context) -> ShortcutRecorder {
-        let r = ShortcutRecorder(shortcut: shortcut)
+        let r = ShortcutRecorder(shortcut: shortcut, command: command)
         r.setAccessibilityLabel(label)
         r.allowsPlainKeys = allowsPlainKeys
         r.onRecording = { model.onRecording?($0) }
@@ -217,6 +218,7 @@ private struct ShortcutRecordingField: NSViewRepresentable {
     }
 
     func updateNSView(_ nsView: ShortcutRecorder, context: Context) {
+        nsView.setNavigationCommand(command)
         nsView.show(shortcut)
     }
 }

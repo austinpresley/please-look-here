@@ -5,6 +5,7 @@ import Combine
 enum PracticeShortcutTarget: String, CaseIterable, Identifiable {
     case pointer = "toggle", interact = "mode", drawing = "pen", radial = "radial"
     var id: String { rawValue }
+    var controlIdentifier: String { "settings.shortcut.\(rawValue)" }
     var title: String {
         switch self {
         case .pointer: return "Turn pointer on or off"
