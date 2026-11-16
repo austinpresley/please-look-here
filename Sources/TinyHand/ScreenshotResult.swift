@@ -47,6 +47,10 @@ final class ScreenshotResult: NSObject {
         panel.setFrameOrigin(CGPoint(x: bounds.maxX - panel.frame.width - 20,
                                      y: bounds.maxY - panel.frame.height - 20))
         panel.orderFrontRegardless()
+        let environment = ProcessInfo.processInfo.environment
+        if environment["TINYHAND_TEST_MODE"] == "1" && environment["TH_FOCUS_CAPTURE_RESULT"] == "1" {
+            panel.makeKeyAndOrderFront(nil)
+        }
         panel.makeFirstResponder(nil)
         NSAccessibility.post(element: title, notification: .announcementRequested,
                              userInfo: [.announcement: title.stringValue,

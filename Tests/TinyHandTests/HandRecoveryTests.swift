@@ -136,6 +136,52 @@ import Testing
 }
 
 @Suite(.serialized) @MainActor struct HandRemovalSettingsTests {
+    @Test func undoRestoresTheRemovedHandsOverrideWithoutChangingOtherPointers() throws {
+        try #require(ProcessInfo.processInfo.environment["TINYHAND_DEFAULTS_SUITE"] != nil)
+        try #require(ProcessInfo.processInfo.environment["TH_HANDS_DIR"] != nil)
+        Preferences.resetAll()
+        let image = try #require(HandAsset.load("hand_lavender")?.image)
+        let custom = try CustomHands.add(image, ink: 0x123456, name: "Override recovery")
+        defer { _ = try? CustomHands.remove(custom); Preferences.resetAll() }
+        try Preferences.updatePointer(custom.rawValue) { $0.size = 0.09; $0.sound = .quack }
+        try Preferences.updatePointer("robot") { $0.sound = .coin }
+        let model = SettingsModel()
+        model.removeHand(custom)
+        try Preferences.updatePointer(custom.rawValue) { $0.size = 0.20; $0.sound = .pew }
+        model.undoHandRemoval()
+        #expect(Preferences.pointerConfiguration(for: custom.rawValue).size == 0.09)
+        #expect(Preferences.pointerConfiguration(for: custom.rawValue).sound == .quack)
+        #expect(Preferences.pointerConfiguration(for: "robot").sound == .coin)
+        try Preferences.updatePointer(custom.rawValue) { $0 = PointerOverride() }
+        model.removeHand(custom)
+        try Preferences.updatePointer(custom.rawValue) { $0.sound = .coin }
+        model.undoHandRemoval()
+        #expect(try PointerConfigurationDocument.load(from: Preferences.storage).pointers[custom.rawValue] == nil)
+    }
+
+    @Test func corruptOverrideArchiveDoesNotRemoveTheHand() throws {
+        try #require(ProcessInfo.processInfo.environment["TINYHAND_DEFAULTS_SUITE"] != nil)
+        try #require(ProcessInfo.processInfo.environment["TH_HANDS_DIR"] != nil)
+        Preferences.resetAll()
+        let custom = try CustomHands.add(try #require(HandAsset.load("hand_lavender")?.image), ink: 0, name: "Archive guard")
+        defer { _ = try? CustomHands.remove(custom); Preferences.resetAll() }
+        Preferences.storage.set(Data("invalid archive".utf8), forKey: PointerConfigurationDocument.storageKey)
+        let model = SettingsModel()
+        model.removeHand(custom)
+        #expect(CustomHands.hand(custom.rawValue) != nil)
+        #expect(model.handMessage?.contains("removed") == false)
+    }
+
+    @Test func recoveryCannotReplaceAnotherPointersSettings() throws {
+        var document = PointerConfigurationDocument()
+        try document.patch(["sound": "coin"], for: "robot")
+        let mismatched = try PointerRemovalConfiguration.snapshot(for: "robot", in: document)
+        #expect(throws: PointerConfigurationError.self) {
+            try PointerRemovalConfiguration.restoredArchive(mismatched, for: "custom-fixture", in: document)
+        }
+        #expect(document.pointers["robot"]?.sound == .coin)
+    }
+
     @Test func settingsUndoRestoresDisabledStatePinsAndGestureFiles() throws {
         try #require(ProcessInfo.processInfo.environment["TINYHAND_DEFAULTS_SUITE"] != nil)
         try #require(ProcessInfo.processInfo.environment["TH_HANDS_DIR"] != nil)

@@ -159,7 +159,11 @@ final class SettingsModel: ObservableObject {
     func removeHand(_ style: PointerStyle) {
         let name = style.title
         do {
-            _ = try CustomHands.remove(style)
+            let configurations = try PointerConfigurationDocument.load(from: Preferences.storage)
+            let snapshot = try PointerRemovalConfiguration.snapshot(for: style.rawValue, in: configurations)
+            _ = try CustomHands.remove(style, extensions: [PointerRemovalConfiguration.receiptKey: snapshot])
+            // Retain saved overrides while the ID is absent. The receipt still
+            // restores the original value if a later import edits that ID.
             Preferences.performBatch {
                 let pinned = Preferences.pinnedStyles.filter { $0 != style }
                 Preferences.pinnedStyles = pinned.isEmpty ? PointerStyle.defaultPinned : pinned
@@ -174,8 +178,18 @@ final class SettingsModel: ObservableObject {
     func undoHandRemoval() {
         guard let receipt = removedHands.first else { return }
         do {
+            // Validate and encode before restoring any artwork or marking the
+            // receipt restored. Legacy receipts have no configuration payload.
+            let configurationData = try receipt.state.extensions[PointerRemovalConfiguration.receiptKey].map {
+                try PointerRemovalConfiguration.restoredArchive($0, for: receipt.hand.id,
+                    in: PointerConfigurationDocument.load(from: Preferences.storage))
+            }
             let warning = try CustomHands.restore(receipt)
             Preferences.performBatch {
+                if let configurationData {
+                    Preferences.storage.set(configurationData, forKey: PointerConfigurationDocument.storageKey)
+                    Preferences.notifyPointerConfigurationChanged()
+                }
                 var disabled = Preferences.disabledPointerIDs
                 if receipt.state.disabled { disabled.insert(receipt.hand.id) }
                 else { disabled.remove(receipt.hand.id) }
