@@ -7,6 +7,7 @@ final class ControlBridge {
     private let openSettings: (String?) -> Void
     private let openHandCreator: () -> Void
     private let accessibility: () -> Bool
+    private let thumbnails = PointerThumbnailCache()
     var verifyMenuBar: (([String: Any]) -> [String: Any])?
     var verifyShortcuts: (([String: Any]) -> [String: Any])?
     private let snapshotSettings: ((String) -> Bool)?
@@ -375,19 +376,16 @@ final class ControlBridge {
     }
 
     private func styles() -> [[String: Any]] {
-        PointerCatalog.entries.map { entry in
+        let entries = PointerCatalog.entries
+        thumbnails.retain(ids: Set(entries.filter(\.available).map { $0.style.rawValue }))
+        return entries.map { entry in
             let style = entry.style
             var item: [String: Any] = ["id": style.rawValue, "name": style.title, "type": style.catalogType,
                                        "enabled": entry.enabled, "available": entry.available, "selectable": entry.selectable,
                                        "pinned": Preferences.pinnedStyles.contains(style)]
-            // Use Look Here Please's own cropped 128px thumbnails, including custom hands.
-            if entry.available, let image = Toolbar.icon(for: style),
-               let tiff = image.tiffRepresentation, let bitmap = NSBitmapImageRep(data: tiff),
-               let png = bitmap.representation(using: .png, properties: [:]) {
-                // Encode the ID rather than treating custom asset IDs as path components.
-                let filename = Data(style.rawValue.utf8).map { String(format: "%02x", $0) }.joined() + ".png"
-                let url = URL(fileURLWithPath: ControlTransport.directory).appendingPathComponent(filename)
-                if (try? png.write(to: url, options: .atomic)) != nil { item["thumbnail"] = url.path }
+            if entry.available, let path = thumbnails.path(for: style.rawValue,
+                signature: PointerThumbnailCache.signature(for: style), image: { Toolbar.icon(for: style) }) {
+                item["thumbnail"] = path
             }
             return item
         }

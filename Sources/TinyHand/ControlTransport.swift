@@ -16,6 +16,15 @@ enum ControlTransport {
         return String(cString: path) + id + ".ctl"
     }()
     static let path = directory + "/s"
+    /// Tests must explicitly opt into a disposable thumbnail directory. A
+    /// missing bundle identifier or empty override never falls back to cwd.
+    static var thumbnailDirectory: String {
+        let environment = ProcessInfo.processInfo.environment
+        if let suite = environment["TINYHAND_DEFAULTS_SUITE"], !suite.isEmpty {
+            return environment["TH_THUMBNAILS_DIR"] ?? ""
+        }
+        return directory
+    }
     static let requestLimit = 16_384
     static let responseLimit = 2_097_152
 
@@ -29,6 +38,23 @@ enum ControlTransport {
               path.utf8CString.count <= MemoryLayout.size(ofValue: sockaddr_un().sun_path) else {
             throw Failure(message: "Cannot resolve the Look Here Please control endpoint")
         }
+        _ = try secureOutputDirectory(directory)
+    }
+
+    /// Validate before constructing any file URL or creating anything. In
+    /// particular URL(fileURLWithPath: "") resolves to the working directory.
+    static func secureOutputDirectory(_ directory: String) throws -> URL {
+        guard directory.hasPrefix("/"), !directory.contains("\0") else {
+            throw Failure(message: "Cannot resolve the thumbnail output directory")
+        }
+        let url = URL(fileURLWithPath: directory, isDirectory: true)
+        let resolved = url.standardizedFileURL.resolvingSymlinksInPath().path
+        let working = URL(fileURLWithPath: FileManager.default.currentDirectoryPath).resolvingSymlinksInPath().path
+        let home = FileManager.default.homeDirectoryForCurrentUser.resolvingSymlinksInPath().path
+        guard resolved != "/", resolved != home, resolved != working,
+              !resolved.hasPrefix(working + "/") else {
+            throw Failure(message: "Unsafe thumbnail output directory")
+        }
         if mkdir(directory, 0o700) != 0 && errno != EEXIST {
             throw Failure(message: "Cannot create control directory")
         }
@@ -37,6 +63,7 @@ enum ControlTransport {
               info.st_mode & S_IFMT == S_IFDIR, info.st_mode & 0o777 == 0o700 else {
             throw Failure(message: "Unsafe control directory")
         }
+        return url
     }
 
     static func address() -> sockaddr_un {

@@ -47,4 +47,50 @@ real hand files, installs, signing or UI automation are used in this worktree.
 
 ## S-044 thumbnails
 
-Implementation and test evidence pending.
+PointerThumbnailCache retains encoded PNG data and the source asset signature.
+Unchanged polling skips AppKit icon rendering, PNG encoding and filesystem writes.
+A changed source signature invalidates only that icon. Deleted or altered export
+files are repaired from retained bytes without encoding again. Native generated
+icons have an explicit renderer version. Existing hex-encoded filenames and the
+128 px native cropped artwork are retained, including custom hands.
+
+The first request resolves lazy AppKit artwork on the catalog queue. ImageIO PNG
+encoding runs on an explicitly enqueued utility worker, because dispatch_sync can
+run on the calling thread. The synchronous control reply waits for that first
+export. Later polls use cached files. Removed/unavailable IDs release cached data;
+existing export files are not deleted.
+
+ControlTransport validates absolute paths before creating any URL, and rejects
+empty/relative paths, root, home, the checkout and descendants, symbolic links,
+non-directories, unexpected ownership and non-private directory permissions.
+Thumbnail files must be regular same-user files. An unavailable endpoint omits
+thumbnail paths instead of constructing a cwd-relative URL. With isolated defaults,
+TH_THUMBNAILS_DIR must explicitly identify a disposable directory. The normal app
+uses its existing private control directory.
+
+scripts/run-tests.sh now uses a unique mktemp root, unique defaults suite and
+separate Hands/Thumbnails paths, and accepts Swift test arguments. Its cleanup
+removes only that newly created temporary root. No existing root PNG was removed.
+
+Verification: five new thumbnail tests passed locally. They check repeated encode
+and render counts, encoding off-main, stable file modification time and inode,
+source invalidation, missing/tampered export repair, unsafe paths and symlinks,
+custom asset changes, and actual repeated ControlBridge styles responses.
+
+Combined final validation: 46 tests passed across seven suites with a unique
+TINYHAND_DEFAULTS_SUITE and isolated TH_HANDS_DIR/TH_THUMBNAILS_DIR. The filter was
+`HandRecoveryTests|HandRemovalSettingsTests|PointerThumbnailTests|PointerCatalogTests|GestureTests|ShadowTests|ControlTests`.
+SwiftPM compiled the application and tests locally in the existing language mode.
+`git diff --check`, `bash -n scripts/run-tests.sh`, and PointerLibrary grid lint
+passed. No hosted workflow was created or run. No packaging helper, install,
+signing, notarization, normal preference domain, real Hands folder or UI automation
+was used.
+
+Integration notes: ControlBridge changes are confined to its cache property and
+styles() output loop. Existing cycling/transport protocol fields are unchanged.
+CustomHands.remove now throws and returns its recovery receipt. Existing unit-test
+cleanup call sites were updated explicitly. Parent should preserve that contract
+when integrating other agents' library/settings edits. Parent still owns light/dark
+Settings inspection, actual keyboard/VoiceOver flow, release builds and packaging.
+The per-pointer override hook described above still needs the separate override
+implementation to supply and restore its payload.
