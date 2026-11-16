@@ -136,8 +136,8 @@ struct PointersPage: View {
                     Text(message).font(.system(size: 12)).foregroundColor(.red).padding(.horizontal, 4)
                 }
             }
-            HandGestureSettings(model: model)
             PointerLibrary(model: model)
+            SelectedPointerDetails(model: model)
         }
         .coordinateSpace(name: "pointersPage")
         .overlay(alignment: .topLeading) {
