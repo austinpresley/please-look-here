@@ -12,8 +12,8 @@ enum PointerMode: String, CaseIterable {
 }
 
 enum DrawingTool: String, CaseIterable {
-    case pen, rectangle, arrow, text, number
-    /// Protocol and toolbar order. Always wrap, including Number back to Pen.
+    case pen, rectangle, arrow, text, number, eraser, highlighter
+    /// Protocol and toolbar order. Existing tools retain their relative order and raw values.
     var next: DrawingTool { Self.allCases[(Self.allCases.firstIndex(of: self)! + 1) % Self.allCases.count] }
     var title: String { rawValue.capitalized }
     var symbol: String {
@@ -23,6 +23,8 @@ enum DrawingTool: String, CaseIterable {
         case .arrow: return "arrow.up.right"
         case .text: return "textformat"
         case .number: return "number.circle"
+        case .eraser: return "eraser"
+        case .highlighter: return "highlighter"
         }
     }
     var key: String {
@@ -32,6 +34,7 @@ enum DrawingTool: String, CaseIterable {
         case .arrow: return "A"
         case .text: return "T"
         case .number: return "N"
+        case .eraser, .highlighter: return ""
         }
     }
 }
@@ -66,6 +69,7 @@ struct AnnotationStyle: Equatable {
     var width: CGFloat
     var opacity: CGFloat
     var smoothing: StrokeSmoothing
+    var isHighlighter = false
 }
 
 struct Annotation: Equatable, Identifiable {
@@ -146,6 +150,12 @@ struct AnnotationDocument {
 }
 
 enum AnnotationGeometry {
+    static func textBounds(_ text: String, at point: CGPoint, fontSize: CGFloat) -> CGRect {
+        let font = NSFont.systemFont(ofSize: fontSize, weight: .semibold)
+        let size = (text as NSString).size(withAttributes: [.font: font])
+        return CGRect(x: point.x, y: point.y - ceil(size.height), width: ceil(size.width) + 4, height: ceil(size.height) + 2)
+    }
+
     /// Neighbor-weighted smoothing keeps endpoints at their real input locations.
     static func smooth(_ points: [CGPoint], strength: StrokeSmoothing) -> [CGPoint] {
         let radius = strength.radius

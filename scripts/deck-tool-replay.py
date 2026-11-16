@@ -13,7 +13,7 @@ sys.dont_write_bytecode = True
 spec = importlib.util.spec_from_file_location("deck_replay", pathlib.Path(__file__).with_name("deck-replay.py"))
 base = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(base)
-TOOLS = ["pen", "rectangle", "arrow", "text", "number"]
+TOOLS = ["pen", "rectangle", "arrow", "text", "number", "eraser", "highlighter"]
 
 
 def main():
@@ -121,7 +121,7 @@ def main():
         reset(interact=True)
         stable("external-off-interact")
         for active in (False, True):
-            reset("number", active, True)
+            reset(TOOLS[-1], active, True)
             for tool in TOOLS:
                 press()
                 check("cycle to " + tool + ", active=" + str(active), wait(lambda: state()["tool"] == tool and not state()["interact"]))
@@ -137,7 +137,7 @@ def main():
         stable("fixed-number-keeps-target-on-external-text-off-interact")
 
         # Differently configured keys must remain distinguishable against ONE
-        # acknowledged app state. Keep all five fixed keys plus cycle visible.
+        # acknowledged app state. Keep all fixed keys plus cycle visible.
         configure("cycle")
         fixed_keys = {tool: "fixed-key-" + tool for tool in TOOLS}
         for tool, key in fixed_keys.items():
@@ -154,7 +154,7 @@ def main():
                 matches(filename, target, .5 if pending else 6, key=key)
                 images[tool] = target
                 files[tool] = filename + ".png"
-            check(name + " fixed identities remain distinct in the same state", len({images[t] for t in TOOLS}) == 5)
+            check(name + " fixed identities remain distinct in the same state", len({images[t] for t in TOOLS}) == len(TOOLS))
             simultaneous.append({"name": name, "state": observed, "pending": pending, "frames": files})
             (out / "simultaneous-frame-manifest.json").write_text(json.dumps(simultaneous, indent=2))
 
@@ -198,7 +198,7 @@ def main():
             proxy.fault = "delay"
             for _ in range(7): press()
             matches("rapid-pending", frame("rapid-pending", before, transient="pending"), .5)
-            check("seven rapid complete presses advance seven times", wait(lambda: len(mutations()) == begin + 7 and state()["tool"] == "arrow"))
+            check("seven rapid complete presses advance seven times", wait(lambda: len(mutations()) == begin + 7 and state()["tool"] == advance(before["tool"], 7)))
             stable("rapid-complete")
             check("cycle requests have no sampled tool", all(set(r) == {"version", "operation"} for r in mutations()[begin:]))
 
@@ -286,7 +286,7 @@ def main():
         ctl("interact", enabled=True); ctl("off")
         restart(deny=True)
         stable("permission-off-interact")
-        for choice in ("cycle", "pen", "rectangle", "arrow", "text", "number"):
+        for choice in ["cycle"] + TOOLS:
             configure(choice); before = state(); press()
             matches("permission-rejected-" + choice, frame("permission-rejected-" + choice, before, transient="rejected", reason="Allow Drawing"))
             check("permission denial preserves tool/activation/Interact " + choice, unchanged(before, state()))

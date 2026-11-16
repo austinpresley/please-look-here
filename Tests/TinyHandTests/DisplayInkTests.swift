@@ -55,6 +55,7 @@ import Testing
         store.select(resized)
         #expect(store.ink.document.annotations == original)
         #expect(store.ink.scale == 2)
+        #expect(store.ink.layer.sublayers?.first?.contentsScale == 2)
         store.ink.clear(); store.ink.undo()
         #expect(store.ink.document.annotations == original)
     }

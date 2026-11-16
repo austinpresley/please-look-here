@@ -23,7 +23,8 @@ import Testing
 
     @Test func everyDrawingToolHasAnEnumerator() throws {
         let codes = try dictionary().nodes(forXPath: "//enumerator/@code").compactMap(\.stringValue)
-        #expect(codes.count == 5)
+        #expect(codes.count == DrawingTool.allCases.count)
+        #expect(Set(ScriptDrawingTool.codes.keys) == Set(DrawingTool.allCases.map(\.rawValue)))
         for code in codes {
             #expect(ScriptDrawingTool.codes.values.contains(code.utf8.reduce(0) { $0 << 8 | OSType($1) }), "unmapped \(code)")
         }

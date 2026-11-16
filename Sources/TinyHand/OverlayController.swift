@@ -382,6 +382,8 @@ final class OverlayController {
     }
     private func annotationChanged() {
         toolbar.setUndoEnabled(canUndo)
+        toolbar.setClearEnabled(inkStrokes > 0)
+        radial.updateHistory(canUndo: canUndo, canRedo: canRedo, hasInk: inkStrokes > 0)
         onActiveChanged?()
     }
     private var radialEligible: Bool {
@@ -496,6 +498,7 @@ final class OverlayController {
 
     private func pressed(_ button: Int64, feedback: InputTap.Feedback, at cgPoint: CGPoint, flags: CGEventFlags) {
         guard isActive else { return }
+        tick() // Reconcile the display before interpreting display-local annotation input.
         cancelHandGestures()
         heldButtons.insert(button)
         armView.press(); armView.held = true
@@ -663,7 +666,13 @@ final class OverlayController {
         if mode == .point && [.leftMouseUp, .rightMouseUp, .otherMouseUp].contains(event.type) { armView.held = false }
         if event.type == .flagsChanged { gestures.retainModifiers(event.modifierFlags); applyGesture() }
         if event.type == .keyUp { gestures.releaseKey(UInt32(event.keyCode)); applyGesture() }
-        if event.type == .keyDown && event.keyCode == 53 { cancelHandGestures() }
+        if event.type == .keyDown && event.keyCode == 53 {
+            cancelHandGestures()
+            if canUseDrawingShortcuts, armView.ink.isDrawing {
+                armView.ink.cancel()
+                downPoint = nil; buttonSeenDown = false
+            }
+        }
         if mode == .point && !own && !isCapturing && !textEditor.isShowing {
             switch event.type {
             case .leftMouseDown, .rightMouseDown, .otherMouseDown:

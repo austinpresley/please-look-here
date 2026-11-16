@@ -43,7 +43,7 @@ struct RadialItem {
 struct RadialSession {
     let geometry: RadialGeometry
     let root: [RadialItem]
-    let groups: [String: [RadialItem]]
+    private(set) var groups: [String: [RadialItem]]
     private(set) var group: String?
     private(set) var page = 0
     private(set) var armed: Bool
@@ -71,6 +71,14 @@ struct RadialSession {
     var candidate: RadialItem? {
         guard armed, pageArmed, let highlighted, items.indices.contains(highlighted), items[highlighted].enabled else { return nil }
         return items[highlighted].request == nil ? nil : items[highlighted]
+    }
+    mutating func updateHistory(canUndo: Bool, canRedo: Bool, hasInk: Bool) {
+        let enabled = ["undo": canUndo, "redo": canRedo, "clear": hasInk]
+        groups["history"] = groups["history"]?.map { item in
+            var item = item
+            if let value = enabled[item.id] { item.enabled = value }
+            return item
+        }
     }
     mutating func activate(_ slot: Int) -> [String: Any]? {
         guard items.indices.contains(slot), items[slot].enabled else { return nil }

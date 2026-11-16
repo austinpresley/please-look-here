@@ -111,7 +111,7 @@ final class MenuBarControls: NSObject, NSPopoverDelegate, NSMenuDelegate {
         tools.target = self; tools.action = #selector(choseTool); tools.setAccessibilityLabel("Drawing tool")
         for (index, tool) in DrawingTool.allCases.enumerated() {
             tools.setImage(NSImage(systemSymbolName: tool.symbol, accessibilityDescription: tool.title), forSegment: index)
-            tools.setWidth(48, forSegment: index)
+            tools.setWidth(32, forSegment: index)
         }
         addRow(tools)
         let history = horizontal([button("undo", "Undo Annotation", "arrow.uturn.backward", title: "Undo") { [weak self] in self?.send("undo") },
@@ -298,7 +298,11 @@ final class MenuBarControls: NSObject, NSPopoverDelegate, NSMenuDelegate {
         // Native fallback when Accessibility is unavailable and there is no tap.
         if !explicitClosing, statusFrame?.contains(NSEvent.mouseLocation) == true { statusWasOpen = true }
     }
-    private func resize() { content.layoutSubtreeIfNeeded(); popover.contentSize = CGSize(width: width, height: root.fittingSize.height) }
+    private func resize() {
+        for index in DrawingTool.allCases.indices { tools.setWidth(width <= 280 ? 28 : 32, forSegment: index) }
+        content.layoutSubtreeIfNeeded()
+        popover.contentSize = CGSize(width: width, height: root.fittingSize.height)
+    }
     private func syncLease() {
         var frames = statusFrame.map { [$0] } ?? []
         if popover.isShown, let window = content.window { frames.append(window.frame) }

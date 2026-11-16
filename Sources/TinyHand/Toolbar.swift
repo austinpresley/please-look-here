@@ -164,6 +164,7 @@ final class Toolbar: NSObject, NSWindowDelegate {
         }
         tools.addArrangedSubview(Self.divider())
         clearButton = button(symbol: "trash", tip: Preferences.clearShortcut.help("Clear Drawing")) { [weak self] in self?.onClear?() }
+        clearButton.isEnabled = false
         tools.addArrangedSubview(clearButton)
         NotificationCenter.default.addObserver(forName: Preferences.changed, object: nil, queue: .main) { [weak self] _ in self?.refresh() }
         refresh()
@@ -233,6 +234,7 @@ final class Toolbar: NSObject, NSWindowDelegate {
     func select(_ style: PointerStyle) { current = style; refresh() }
     func setMode(_ value: PointerMode) { interact.state = value.isInteractive ? .on : .off; tools.isHidden = value.isInteractive; resize() }
     func setUndoEnabled(_ value: Bool) { undoButton.isEnabled = value }
+    func setClearEnabled(_ value: Bool) { clearButton.isEnabled = value }
     func setCapturing(_ value: Bool) { captureButton.isEnabled = !value }
     func setSoundOn(_ value: Bool) {
         soundButton.image = NSImage(systemSymbolName: value ? "speaker.wave.2.fill" : "speaker.slash.fill", accessibilityDescription: "Tap sound")

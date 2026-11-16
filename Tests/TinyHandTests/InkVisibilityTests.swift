@@ -16,8 +16,9 @@ import Testing
         try body()
     }
 
-    @Test func wholeObjectExpirationHidesTextAndMarkersWithoutDeletingHistory() throws {
-        try withPolicy(.wholeLine) {
+    @Test(arguments: [InkFadeStyle.wholeLine, .trail])
+    func wholeObjectExpirationHidesTextAndMarkersWithoutDeletingHistory(_ style: InkFadeStyle) throws {
+        try withPolicy(style) {
             var time: TimeInterval = 0
             let ink = Ink(clock: { time })
             ink.addText("Label", at: CGPoint(x: 80, y: 80), width: 8)
@@ -40,8 +41,8 @@ import Testing
         }
     }
 
-    @Test func trailPolicyExpiresTextAndMarkersAndRestoresDeletedObjectsFresh() throws {
-        try withPolicy(.trail) {
+    @Test func trailPolicyExpiresTextAndMarkersAndRestoresDeletedObjectsFresh() {
+        withPolicy(.trail) {
             var time: TimeInterval = 0
             let ink = Ink(clock: { time })
             ink.addText("Trail label", at: CGPoint(x: 80, y: 80), width: 8)
@@ -96,6 +97,20 @@ import Testing
             ink.end()
             #expect(ink.document.annotations.count == 1)
         }
+    }
+
+    @Test func statusReadThatDiscoversExpirationAlsoRefreshesControls() {
+        var time: TimeInterval = 0
+        let ink = Ink(clock: { time }, lifetimePolicy: { InkLifetimePolicy(style: .wholeLine, delay: 1, trailDelay: 1, trailSpeed: 100) })
+        ink.addText("Label", at: CGPoint(x: 40, y: 40), width: 4)
+        var observedCounts: [Int] = []
+        ink.onChanged = { [weak ink] in observedCounts.append(ink?.count ?? -1) }
+        time = 2
+        #expect(ink.count == 0)
+        #expect(observedCounts == [0])
+        ink.advanceTrails()
+        #expect(observedCounts == [0])
+        #expect(ink.canUndo)
     }
 
     @Test func shapeFadingAndPermanentTextUseTheCapturedPolicy() {

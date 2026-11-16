@@ -272,7 +272,7 @@ import Testing
                             let faces = ToolChoice.allCases.filter { $0 != .cycle }.map { target in
                                 face(.chooseTool, .connected(observed), settings: KeySettings(["tool": target.rawValue]))
                             }
-                            #expect(Set(faces.map(\.label)).count == 5)
+                            #expect(Set(faces.map(\.label)).count == ToolChoice.allCases.count - 1)
                             for (target, shown) in zip(ToolChoice.allCases.filter { $0 != .cycle }, faces) {
                                 let selected = target == actual && active && !interact && accessibility && !capturing
                                 #expect(shown.glyph == .tool(target))

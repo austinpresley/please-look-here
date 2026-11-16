@@ -41,7 +41,7 @@ extension AppDelegate {
         }
         set {
             guard let tool = ScriptDrawingTool.codes.first(where: { $0.value == newValue })?.key else {
-                return ScriptFailure.report("Choose pen tool, rectangle tool, arrow tool, text tool or number tool.")
+                return ScriptFailure.report("Choose pen tool, rectangle tool, arrow tool, text tool, number tool, eraser tool or highlighter tool.")
             }
             runScriptOperation(["operation": "tool", "tool": tool])
         }
@@ -77,7 +77,7 @@ enum ScriptFailure {
 }
 
 enum ScriptDrawingTool {
-    static let codes: [String: OSType] = ["pen": fourCharacters("LkPn"), "rectangle": fourCharacters("LkRc"), "arrow": fourCharacters("LkAr"), "text": fourCharacters("LkTx"), "number": fourCharacters("LkNm")]
+    static let codes: [String: OSType] = ["pen": fourCharacters("LkPn"), "rectangle": fourCharacters("LkRc"), "arrow": fourCharacters("LkAr"), "text": fourCharacters("LkTx"), "number": fourCharacters("LkNm"), "eraser": fourCharacters("LkEr"), "highlighter": fourCharacters("LkHi")]
 
     private static func fourCharacters(_ value: String) -> OSType {
         value.utf8.reduce(0) { $0 << 8 | OSType($1) }

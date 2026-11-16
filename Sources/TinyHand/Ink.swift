@@ -6,6 +6,8 @@ final class Ink {
     private(set) var document = AnnotationDocument()
     private var draft: Annotation?
     private var editingMarker: Annotation?
+    private var eraserPress = false
+    private var erasing: UUID?
     private var pressPoint: CGPoint?
     private var markerOffset = CGPoint.zero
     private var changedMarker = false
@@ -21,12 +23,21 @@ final class Ink {
     deinit { trailTimer?.invalidate() }
     var onChanged: (() -> Void)?
     var color = Ink.purple
-    var scale: CGFloat = 2
+    var scale: CGFloat = 2 {
+        didSet {
+            guard scale != oldValue else { return }
+            func update(_ layer: CALayer) {
+                layer.contentsScale = scale
+                layer.sublayers?.forEach(update)
+            }
+            update(layer)
+        }
+    }
     var tool: DrawingTool = .pen
     var opacity: CGFloat = 1
     var smoothing: StrokeSmoothing = .light
     var hasActiveTrails: Bool { visibility.hasActiveTrails }
-    var isDrawing: Bool { draft != nil || editingMarker != nil }
+    var isDrawing: Bool { draft != nil || editingMarker != nil || eraserPress }
     var canUndo: Bool { document.canUndo }
     var canRedo: Bool { document.canRedo }
     var count: Int {
@@ -44,8 +55,18 @@ final class Ink {
     func begin(at point: CGPoint, width: CGFloat) {
         cancel()
         pressPoint = point
-        let style = AnnotationStyle(color: AnnotationColor(color), width: width, opacity: opacity, smoothing: smoothing)
+        var style = AnnotationStyle(color: AnnotationColor(color), width: width, opacity: opacity, smoothing: smoothing)
+        if tool == .highlighter {
+            style.width *= 3
+            style.opacity *= 0.35
+            style.isHighlighter = true
+        }
         refreshVisibility()
+        if tool == .eraser {
+            eraserPress = true
+            erasing = AnnotationHitTest.topmost(at: point, in: document.annotations, visibility: { self.visibility.state(for: $0) })?.id
+            return
+        }
         if tool == .number, let marker = document.marker(at: point, visible: { self.visibility.state(for: $0).visible }), case .number(_, let center) = marker.shape {
             editingMarker = marker
             markerOffset = CGPoint(x: center.x - point.x, y: center.y - point.y)
@@ -54,11 +75,11 @@ final class Ink {
         }
         let shape: Annotation.Shape
         switch tool {
-        case .pen: shape = .pen([point])
+        case .pen, .highlighter: shape = .pen([point])
         case .rectangle: shape = .rectangle(point, point)
         case .arrow: shape = .arrow(point, point)
         case .number: shape = .number(document.nextNumber, point)
-        case .text: return
+        case .text, .eraser: return
         }
         draft = Annotation(shape: shape, style: style)
         if let draft { visibility.begin(draft, at: clock(), policy: lifetimePolicy()) }
@@ -92,7 +113,12 @@ final class Ink {
     }
 
     func end() {
-        if let marker = editingMarker {
+        if eraserPress {
+            refreshVisibility()
+            let before = document.annotations
+            if let erasing, visibility.state(for: erasing).visible { document.remove(erasing) }
+            visibility.reconcile(from: before, to: document.annotations, at: clock(), policy: lifetimePolicy())
+        } else if let marker = editingMarker {
             let before = document.annotations
             if changedMarker { document.replace(marker) } else { document.remove(marker.id) }
             visibility.reconcile(from: before, to: document.annotations, at: clock(), policy: lifetimePolicy())
@@ -102,6 +128,8 @@ final class Ink {
         } else if let draft { visibility.remove(draft.id) }
         draft = nil
         editingMarker = nil
+        eraserPress = false
+        erasing = nil
         pressPoint = nil
         render()
         onChanged?()
@@ -115,6 +143,8 @@ final class Ink {
         if let draft { visibility.remove(draft.id) }
         draft = nil
         editingMarker = nil
+        eraserPress = false
+        erasing = nil
         pressPoint = nil
         render()
     }
@@ -161,8 +191,8 @@ final class Ink {
         trailTimer = timer
     }
     // Kept as the existing deterministic clock-advance entry point for tests.
-    func advanceTrails() { refreshVisibility(notify: true) }
-    private func refreshVisibility(notify: Bool = false) {
+    func advanceTrails() { refreshVisibility() }
+    private func refreshVisibility() {
         let before = document.annotations.filter { visibility.state(for: $0.id).visible }.count
         visibility.advance(to: clock())
         CATransaction.begin(); CATransaction.setDisableActions(true)
@@ -174,7 +204,7 @@ final class Ink {
         CATransaction.commit()
         if visibility.needsClock { startTrailTimer() }
         else { trailTimer?.invalidate(); trailTimer = nil }
-        if notify && before != document.annotations.filter({ visibility.state(for: $0.id).visible }).count { onChanged?() }
+        if before != document.annotations.filter({ visibility.state(for: $0.id).visible }).count { onChanged?() }
     }
 
     private func makeLayer(_ annotation: Annotation) -> CALayer {
@@ -206,14 +236,13 @@ final class Ink {
     private func textLayer(_ text: String, point: CGPoint, fontSize: CGFloat, color: CGColor) -> CATextLayer {
         let label = CATextLayer()
         let font = NSFont.systemFont(ofSize: fontSize, weight: .semibold)
-        let size = (text as NSString).size(withAttributes: [.font: font])
         label.string = text
         label.font = font
         label.fontSize = fontSize
         label.foregroundColor = color
         label.contentsScale = scale
         label.anchorPoint = .zero
-        label.frame = CGRect(x: point.x, y: point.y - ceil(size.height), width: ceil(size.width) + 4, height: ceil(size.height) + 2)
+        label.frame = AnnotationGeometry.textBounds(text, at: point, fontSize: fontSize)
         return label
     }
 }

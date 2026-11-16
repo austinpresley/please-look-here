@@ -21,15 +21,17 @@
     <option value="arrow">Arrow</option>
     <option value="text">Text</option>
     <option value="number">Number</option>
+    <option value="eraser">Eraser</option>
+    <option value="highlighter">Highlighter</option>
   </select>
   <p id="error" role="status" hidden>Saved tool choice is invalid. Choose Cycle tools or a drawing tool.</p>
   <p id="help">Select a drawing tool and turn Interact off. Pointer On/Off stays the same. Drawing needs Accessibility permission.</p>
-  <p id="order">Cycle order: Pen, Rectangle, Arrow, Text, Number, then Pen. Cycle keys show the current tool. Fixed keys show their assigned tool. A check means that tool is selected and ready to draw.</p>
+  <p id="order">Cycle order: Pen, Rectangle, Arrow, Text, Number, Eraser, Highlighter, then Pen. Cycle keys show the current tool. Fixed keys show their assigned tool. A check means that tool is selected and ready to draw.</p>
 <script>
 let socket, context, settings = {};
 const tool = document.getElementById('tool');
 const error = document.getElementById('error');
-const choices = new Set(['cycle', 'pen', 'rectangle', 'arrow', 'text', 'number']);
+const choices = new Set(['cycle', 'pen', 'rectangle', 'arrow', 'text', 'number', 'eraser', 'highlighter']);
 
 function showSettings(value) {
   settings = value;

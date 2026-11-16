@@ -9,7 +9,7 @@ enum DeckAction: String, CaseIterable {
 }
 
 enum ToolChoice: String, CaseIterable {
-    case cycle, pen, rectangle, arrow, text, number
+    case cycle, pen, rectangle, arrow, text, number, eraser, highlighter
     var title: String { self == .cycle ? "Cycle tools" : rawValue.capitalized }
     var symbol: String {
         switch self {
@@ -19,6 +19,8 @@ enum ToolChoice: String, CaseIterable {
         case .arrow: return "arrow.up.right"
         case .text: return "textformat"
         case .number: return "number.circle"
+        case .eraser: return "eraser"
+        case .highlighter: return "highlighter"
         }
     }
 }

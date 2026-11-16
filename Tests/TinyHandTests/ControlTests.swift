@@ -150,13 +150,13 @@ import Testing
     }
 
     @Test func toolCycleOrderAndStrictPermissionRejection() throws {
-        #expect(DrawingTool.allCases.map(\.rawValue) == ["pen", "rectangle", "arrow", "text", "number"])
-        #expect(DrawingTool.allCases.map(\.next) == [.rectangle, .arrow, .text, .number, .pen])
+        #expect(DrawingTool.allCases.map(\.rawValue) == ["pen", "rectangle", "arrow", "text", "number", "eraser", "highlighter"])
+        #expect(DrawingTool.allCases.map(\.next) == [.rectangle, .arrow, .text, .number, .eraser, .highlighter, .pen])
         let api = bridge()
         Preferences.drawingTool = .text
         for mode in PointerMode.allCases {
             Preferences.pointerMode = mode
-            for fields: [String: Any] in [["operation": "cycle-tool"], ["operation": "tool", "tool": "pen"]] {
+            for fields: [String: Any] in [["operation": "cycle-tool"], ["operation": "tool", "tool": "pen"], ["operation": "tool", "tool": "eraser"], ["operation": "tool", "tool": "highlighter"]] {
                 let reply = try request(api, fields.merging(["version": 1]) { old, _ in old })
                 #expect(reply["ok"] as? Bool == false)
                 #expect((reply["error"] as? [String: Any])?["code"] as? String == "accessibility")
@@ -186,7 +186,7 @@ import Testing
         defer { overlay.deactivate() }
         #expect(overlay.isCapturing)
         let active = overlay.isActive
-        for fields: [String: Any] in [["operation": "cycle-tool"], ["operation": "tool", "tool": "pen"]] {
+        for fields: [String: Any] in [["operation": "cycle-tool"], ["operation": "tool", "tool": "pen"], ["operation": "tool", "tool": "eraser"], ["operation": "tool", "tool": "highlighter"]] {
             let reply = try request(api, fields.merging(["version": 1]) { old, _ in old })
             #expect((reply["error"] as? [String: Any])?["code"] as? String == "capturing")
             #expect(Preferences.drawingTool == .number && Preferences.pointerMode == .point && overlay.isActive == active)

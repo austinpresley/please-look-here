@@ -20,6 +20,8 @@ end tell</pre>
             <enumerator name="arrow tool" code="LkAr" description="Arrow."/>
             <enumerator name="text tool" code="LkTx" description="Text label."/>
             <enumerator name="number tool" code="LkNm" description="Numbered marker."/>
+            <enumerator name="eraser tool" code="LkEr" description="Remove one visible annotation with Undo."/>
+            <enumerator name="highlighter tool" code="LkHi" description="Translucent freehand highlight."/>
         </enumeration>
         <class name="application" code="capp" description="The Look Here Please application.">
             <cocoa class="NSApplication"/>

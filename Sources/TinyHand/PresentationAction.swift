@@ -3,7 +3,7 @@ import Carbon.HIToolbox
 enum PresentationAction: String, CaseIterable {
     case mode, capture, magnifier, toolbar, nextPointer, previousPointer, sound, matchInk
     case captureRegion = "capture-region"
-    case pen, rectangle, arrow, text, number, undo, redo, settings, exitPointer
+    case pen, rectangle, arrow, text, number, eraser, highlighter, undo, redo, settings, exitPointer
     case gesture1, gesture2
 
     var title: String {

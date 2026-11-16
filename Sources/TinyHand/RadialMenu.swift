@@ -70,6 +70,11 @@ final class RadialMenu {
         update(); canvas.needsDisplay = true; panel.orderFrontRegardless()
     }
     func move(to point: CGPoint) { session?.move(point); update() }
+    func updateHistory(canUndo: Bool, canRedo: Bool, hasInk: Bool) {
+        guard session != nil else { return }
+        session?.updateHistory(canUndo: canUndo, canRedo: canRedo, hasInk: hasInk)
+        update()
+    }
     func release() {
         if releaseSelects, let command = session?.candidate?.request { commit(command) } else { close() }
     }
