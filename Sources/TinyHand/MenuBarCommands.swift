@@ -41,6 +41,7 @@ final class MenuBarCommands: NSObject {
         add("clear", "Clear Drawing", "clear", to: drawing)
         let presentation = group("Presentation")
         add("capture", "Take Screenshot", "capture", to: presentation)
+        add("capture-region", "Capture Region…", "capture-region", to: presentation)
         add("magnifier", "Magnification", "magnifier", ["enabled": true], to: presentation)
         add("toolbar", "Show Toolbar", "configure", ["settings": ["showToolbar": true]], to: presentation)
         menu.addItem(.separator())
@@ -109,6 +110,7 @@ final class MenuBarCommands: NSObject {
         items["redo"]?.isEnabled = overlay.canRedo && !overlay.isCapturing
         items["clear"]?.isEnabled = overlay.inkStrokes > 0 && !overlay.isCapturing
         items["capture"]?.isEnabled = !overlay.isCapturing
+        items["capture-region"]?.isEnabled = !overlay.isCapturing && !overlay.isSelectingScreenshotRegion
         items["capture"]?.title = overlay.isCapturing ? "Taking Screenshot…" : "Take Screenshot"
         items["magnifier"]?.state = overlay.isMagnifying ? .on : .off
         items["magnifier"]?.isEnabled = !overlay.isCapturing

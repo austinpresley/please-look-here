@@ -236,7 +236,7 @@ final class MenuBarControls: NSObject, NSPopoverDelegate, NSMenuDelegate {
     }
     private func send(_ request: [String: Any]) {
         actionCounts[request["operation"] as? String ?? "", default: 0] += 1
-        let leavesControls = ["capture", "settings", "magnifier", "gesture"].contains(request["operation"] as? String ?? "")
+        let leavesControls = ["capture", "capture-region", "settings", "magnifier", "gesture"].contains(request["operation"] as? String ?? "")
         if leavesControls { close() }
         let result = perform(request)
         message.stringValue = result; message.isHidden = result.isEmpty

@@ -2,6 +2,7 @@ import Carbon.HIToolbox
 
 enum PresentationAction: String, CaseIterable {
     case mode, capture, magnifier, toolbar, nextPointer, previousPointer, sound, matchInk
+    case captureRegion = "capture-region"
     case pen, rectangle, arrow, text, number, undo, redo, settings, exitPointer
     case gesture1, gesture2
 
@@ -9,6 +10,7 @@ enum PresentationAction: String, CaseIterable {
         switch self {
         case .mode: return "Toggle Interact"
         case .capture: return "Take Screenshot"
+        case .captureRegion: return "Capture Region…"
         case .magnifier: return "Toggle Magnification"
         case .gesture1: return "Hold Gesture 1"
         case .gesture2: return "Hold Gesture 2"

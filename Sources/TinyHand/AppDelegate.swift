@@ -110,6 +110,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         switch action {
         case .mode: overlay.toggleMode()
         case .capture: overlay.captureScreenshot()
+        case .captureRegion: overlay.captureRegion()
         case .magnifier: _ = overlay.setMagnification(!overlay.isMagnifying)
         case .toolbar: overlay.toggleToolbar()
         case .nextPointer: overlay.cyclePointer(by: 1)

@@ -12,6 +12,7 @@ final class OverlayController {
     private let inputTap = InputTap()
     private let toolbar = Toolbar()
     private let screenshotResult = ScreenshotResult()
+    private let screenshotSelection = ScreenshotSelection()
     let radial = RadialMenu()
     private let accessibility: () -> Bool
     private let screenRecording: () -> Bool
@@ -59,6 +60,7 @@ final class OverlayController {
     private var previousCatalog: [PointerCatalog.Entry] = []
     private(set) var isActive = false
     private(set) var isCapturing = false
+    var isSelectingScreenshotRegion: Bool { screenshotSelection.isVisible }
     private(set) var isMagnifying = false
     private(set) var lastMagnifierError: String?
     var magnifierDiagnostics: [String: Any] { magnifier.diagnostics }
@@ -436,6 +438,7 @@ final class OverlayController {
     func toggle() { if isActive { deactivate() } else { _ = activate() } }
     func exit() { deactivate() }
     func deactivate() {
+        screenshotSelection.cancel()
         screenshotResult.close()
         guard isActive else { return }
         isActive = false
@@ -548,11 +551,24 @@ final class OverlayController {
         refreshShortcutContext()
     }
 
-    func captureScreenshot(fromToolbar: Bool = false) {
-        guard !isCapturing else { return }
+    func captureRegion() {
+        guard !isCapturing, !screenshotSelection.isVisible, let screen = currentScreen() else { return }
+        screenshotResult.close()
+        releaseDrawing()
+        radial.close()
+        screenshotSelection.show(on: screen) { [weak self] rect in
+            guard let self else { return }
+            self.presentationContextChanged()
+            if let rect { self.captureScreenshot(fromToolbar: true, region: rect, screen: screen) }
+        }
+        presentationContextChanged()
+    }
+
+    func captureScreenshot(fromToolbar: Bool = false, region: CGRect? = nil, screen selectedScreen: NSScreen? = nil) {
+        guard !isCapturing, !screenshotSelection.isVisible else { return }
         screenshotResult.close()
         if !isActive { _ = activate() }
-        guard let screen = currentScreen() else { return }
+        guard let screen = selectedScreen ?? currentScreen() else { return }
         releaseDrawing()
         cancelTapFeedback()
         cancelHandGestures()
@@ -582,7 +598,14 @@ final class OverlayController {
             }
             do {
                 try await Task.sleep(nanoseconds: 50_000_000)
-                let image = try await ScreenCapture().screenshot(screen: screen, overlayID: CGWindowID(self.window.windowNumber))
+                let captured = try await ScreenCapture().screenshot(screen: screen, overlayID: CGWindowID(self.window.windowNumber))
+                let image: CGImage
+                if let region {
+                    guard let pixels = ScreenshotRegion.pixels(for: region, on: screen.frame,
+                                                               imageSize: CGSize(width: captured.width, height: captured.height)),
+                          let crop = captured.cropping(to: pixels) else { throw ScreenshotError.encoding }
+                    image = crop
+                } else { image = captured }
                 try Task.checkCancellation()
                 let data = try await Task.detached(priority: .userInitiated) { try ScreenCapture.png(image) }.value
                 try Task.checkCancellation()
@@ -616,7 +639,10 @@ final class OverlayController {
                     if response == .alertFirstButtonReturn {
                         if recovery == .permissionSettings { ScreenCapture.openPermissionSettings() }
                         else {
-                            DispatchQueue.main.async { [weak self] in self?.captureScreenshot(fromToolbar: fromToolbar) }
+                            DispatchQueue.main.async { [weak self] in
+                                if region != nil { self?.captureRegion() }
+                                else { self?.captureScreenshot(fromToolbar: fromToolbar) }
+                            }
                         }
                     }
                     if wasVisible && self.isActive { self.window.orderFrontRegardless() }

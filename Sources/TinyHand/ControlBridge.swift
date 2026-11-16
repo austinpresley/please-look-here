@@ -11,7 +11,7 @@ final class ControlBridge {
     var verifyShortcuts: (([String: Any]) -> [String: Any])?
     private let snapshotSettings: ((String) -> Bool)?
     static var operations: [String] {
-        let normal = ["status", "styles", "cycle-pointer", "cycle-tool", "enable-pointer", "on", "off", "toggle", "clear", "undo", "redo", "interact", "mode", "tool", "capture", "magnifier", "gesture", "style", "laser", "configure", "toggle-sound", "toggle-current-sound", "pin", "settings", "custom-hands"]
+        let normal = ["status", "styles", "cycle-pointer", "cycle-tool", "enable-pointer", "on", "off", "toggle", "clear", "undo", "redo", "interact", "mode", "tool", "capture", "capture-region", "magnifier", "gesture", "style", "laser", "configure", "toggle-sound", "toggle-current-sound", "pin", "settings", "custom-hands"]
         return ProcessInfo.processInfo.environment["TINYHAND_TEST_MODE"] == "1" ? normal + ["snapshot-settings", "run-applescript", "test-shortcuts", "test-radial", "test-menu-bar", "test-presentation"] : normal
     }
 
@@ -82,6 +82,7 @@ final class ControlBridge {
                 // current tool here, never from a plugin's earlier observation.
                 try selectTool(Preferences.drawingTool.next)
             case "capture": overlay.captureScreenshot()
+            case "capture-region": overlay.captureRegion()
             case "magnifier":
                 let enabled = try readBool(request["enabled"])
                 if enabled && overlay.isCapturing { throw reject("Magnification is unavailable while a screenshot is pending.", code: "unavailable") }
@@ -334,6 +335,7 @@ final class ControlBridge {
          "input": overlay.inputDiagnostics,
          "toolbarVisible": overlay.toolbarVisible, "toolbarFrame": [overlay.toolbarFrame.minX, overlay.toolbarFrame.minY, overlay.toolbarFrame.width, overlay.toolbarFrame.height],
          "annotations": overlay.inkStrokes, "capturing": overlay.isCapturing, "motionClock": overlay.motionClock,
+         "selectingCaptureRegion": overlay.isSelectingScreenshotRegion,
          "shadowRendering": overlay.shadowDiagnostics,
          "magnifying": overlay.isMagnifying, "magnifier": overlay.magnifierDiagnostics, "lastMagnifierError": overlay.lastMagnifierError ?? "",
          "gesture": overlay.activeGesture?.rawValue ?? "",
