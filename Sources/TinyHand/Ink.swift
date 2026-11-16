@@ -10,10 +10,14 @@ final class Ink {
     private var markerOffset = CGPoint.zero
     private var changedMarker = false
     private var rendered: [UUID: (Annotation, CALayer)] = [:]
-    private var trails: [UUID: InkTrail] = [:]
+    private var visibility = InkVisibility()
     private var trailTimer: Timer?
     private let clock: () -> TimeInterval
-    init(clock: @escaping () -> TimeInterval = { CACurrentMediaTime() }) { self.clock = clock }
+    private let lifetimePolicy: () -> InkLifetimePolicy
+    init(clock: @escaping () -> TimeInterval = { CACurrentMediaTime() },
+         lifetimePolicy: @escaping () -> InkLifetimePolicy = { .current }) {
+        self.clock = clock; self.lifetimePolicy = lifetimePolicy
+    }
     deinit { trailTimer?.invalidate() }
     var onChanged: (() -> Void)?
     var color = Ink.purple
@@ -21,12 +25,14 @@ final class Ink {
     var tool: DrawingTool = .pen
     var opacity: CGFloat = 1
     var smoothing: StrokeSmoothing = .light
-    var keep: Bool { Preferences.inkFadeStyle == .permanent }
-    var hasActiveTrails: Bool { !trails.isEmpty }
+    var hasActiveTrails: Bool { visibility.hasActiveTrails }
     var isDrawing: Bool { draft != nil || editingMarker != nil }
     var canUndo: Bool { document.canUndo }
     var canRedo: Bool { document.canRedo }
-    var count: Int { document.annotations.count }
+    var count: Int {
+        refreshVisibility()
+        return document.annotations.filter { visibility.state(for: $0.id).visible }.count
+    }
 
     static let purple = CGColor(srgbRed: 0.53, green: 0.33, blue: 0.95, alpha: 1)
     static let red = CGColor(srgbRed: 1, green: 0.16, blue: 0.12, alpha: 1)
@@ -39,7 +45,8 @@ final class Ink {
         cancel()
         pressPoint = point
         let style = AnnotationStyle(color: AnnotationColor(color), width: width, opacity: opacity, smoothing: smoothing)
-        if tool == .number, let marker = document.marker(at: point), case .number(_, let center) = marker.shape {
+        refreshVisibility()
+        if tool == .number, let marker = document.marker(at: point, visible: { self.visibility.state(for: $0).visible }), case .number(_, let center) = marker.shape {
             editingMarker = marker
             markerOffset = CGPoint(x: center.x - point.x, y: center.y - point.y)
             changedMarker = false
@@ -54,10 +61,7 @@ final class Ink {
         case .text: return
         }
         draft = Annotation(shape: shape, style: style)
-        if tool == .pen && Preferences.inkFadeStyle == .trail, let draft {
-            trails[draft.id] = InkTrail(at: point, time: clock())
-            startTrailTimer()
-        }
+        if let draft { visibility.begin(draft, at: clock(), policy: lifetimePolicy()) }
         render()
     }
 
@@ -77,7 +81,7 @@ final class Ink {
             guard let last = points.last, hypot(point.x - last.x, point.y - last.y) >= 1.5 else { return }
             points.append(point)
             annotation.shape = .pen(points)
-            trails[annotation.id]?.append(point, time: clock())
+            visibility.append(point, to: annotation.id, at: clock())
         case .rectangle(let a, _): annotation.shape = .rectangle(a, point)
         case .arrow(let a, _): annotation.shape = .arrow(a, point)
         case .number(let n, _): annotation.shape = .number(n, point)
@@ -88,47 +92,44 @@ final class Ink {
     }
 
     func end() {
-        var committed: UUID?
         if let marker = editingMarker {
+            let before = document.annotations
             if changedMarker { document.replace(marker) } else { document.remove(marker.id) }
+            visibility.reconcile(from: before, to: document.annotations, at: clock(), policy: lifetimePolicy())
         } else if let annotation = draft, annotation.isMeaningful {
             document.append(annotation)
-            committed = annotation.id
-            trails[annotation.id]?.finished = true
-        }
+            visibility.finish(annotation.id, at: clock())
+        } else if let draft { visibility.remove(draft.id) }
         draft = nil
         editingMarker = nil
         pressPoint = nil
         render()
-        if let id = committed, !keep, trails[id] == nil, let visible = rendered[id]?.1 {
-            let animation = CABasicAnimation(keyPath: "opacity")
-            animation.fromValue = 1
-            animation.toValue = 0
-            animation.beginTime = CACurrentMediaTime() + max(0.5, Preferences.fadeSeconds)
-            animation.duration = 0.6
-            animation.fillMode = .forwards
-            animation.isRemovedOnCompletion = false
-            visible.add(animation, forKey: "fade")
-        }
         onChanged?()
     }
 
     func addText(_ text: String, at point: CGPoint, width: CGFloat) {
         let style = AnnotationStyle(color: AnnotationColor(color), width: width, opacity: opacity, smoothing: smoothing)
-        document.append(Annotation(shape: .text(text, point), style: style))
-        render()
-        onChanged?()
+        edit { $0.append(Annotation(shape: .text(text, point), style: style)) }
     }
     func cancel() {
+        if let draft { visibility.remove(draft.id) }
         draft = nil
         editingMarker = nil
         pressPoint = nil
         render()
     }
-    func undo() { cancel(); document.undo(); render(); onChanged?() }
-    func redo() { cancel(); document.redo(); render(); onChanged?() }
-    func clear() { cancel(); document.clear(); render(); onChanged?() }
-    func reset() { cancel(); document.reset(); render(); onChanged?() }
+    private func edit(_ action: (inout AnnotationDocument) -> Void) {
+        cancel()
+        let before = document.annotations
+        action(&document)
+        visibility.reconcile(from: before, to: document.annotations, at: clock(), policy: lifetimePolicy())
+        render()
+        onChanged?()
+    }
+    func undo() { edit { $0.undo() } }
+    func redo() { edit { $0.redo() } }
+    func clear() { edit { $0.clear() } }
+    func reset() { edit { $0.reset() } }
 
     private func render() {
         var items = document.annotations
@@ -138,28 +139,19 @@ final class Ink {
         for id in rendered.keys.filter({ !ids.contains($0) }) {
             rendered.removeValue(forKey: id)?.1.removeFromSuperlayer()
         }
-        trails = trails.filter { ids.contains($0.key) }
-        if trails.isEmpty { trailTimer?.invalidate(); trailTimer = nil }
         CATransaction.begin()
         CATransaction.setDisableActions(true)
         for item in items {
             if let existing = rendered[item.id], existing.0 == item { continue }
             let replacement = makeLayer(item)
-            if Preferences.inkFadeStyle == .trail, trails[item.id] == nil, rendered[item.id] == nil,
-               case .pen(let points) = item.shape, let first = points.first {
-                var trail = InkTrail(at: first, time: clock())
-                for point in points.dropFirst() { trail.append(point, time: clock()) }
-                trail.finished = draft?.id != item.id
-                trails[item.id] = trail
-                startTrailTimer()
-            }
-            if let trail = trails[item.id], let shape = replacement as? CAShapeLayer { shape.strokeStart = trail.fraction }
             if let previous = rendered[item.id]?.1 {
                 layer.replaceSublayer(previous, with: replacement)
             } else { layer.addSublayer(replacement) }
             rendered[item.id] = (item, replacement)
         }
+        layer.sublayers = items.compactMap { rendered[$0.id]?.1 }
         CATransaction.commit()
+        refreshVisibility()
     }
 
     private func startTrailTimer() {
@@ -168,16 +160,21 @@ final class Ink {
         RunLoop.main.add(timer, forMode: .common)
         trailTimer = timer
     }
-    func advanceTrails() {
-        let now = clock()
+    // Kept as the existing deterministic clock-advance entry point for tests.
+    func advanceTrails() { refreshVisibility(notify: true) }
+    private func refreshVisibility(notify: Bool = false) {
+        let before = document.annotations.filter { visibility.state(for: $0.id).visible }.count
+        visibility.advance(to: clock())
         CATransaction.begin(); CATransaction.setDisableActions(true)
-        for id in Array(trails.keys) {
-            trails[id]?.advance(to: now, delay: Preferences.trailDelay, speed: CGFloat(Preferences.trailSpeed))
-            if let trail = trails[id], let shape = rendered[id]?.1 as? CAShapeLayer { shape.strokeStart = trail.fraction }
-            if trails[id]?.complete == true { trails.removeValue(forKey: id) }
+        for (id, entry) in rendered {
+            let state = visibility.state(for: id)
+            entry.1.opacity = Float(state.opacity)
+            if let shape = entry.1 as? CAShapeLayer { shape.strokeStart = state.strokeStart }
         }
         CATransaction.commit()
-        if trails.isEmpty { trailTimer?.invalidate(); trailTimer = nil }
+        if visibility.needsClock { startTrailTimer() }
+        else { trailTimer?.invalidate(); trailTimer = nil }
+        if notify && before != document.annotations.filter({ visibility.state(for: $0.id).visible }).count { onChanged?() }
     }
 
     private func makeLayer(_ annotation: Annotation) -> CALayer {

@@ -83,7 +83,7 @@ final class OverlayController {
     var style: PointerStyle { armView.style }
     var canUndo: Bool { armView.ink.canUndo }
     var canRedo: Bool { armView.ink.canRedo }
-    var inkStrokes: Int { armView.ink.count }
+    var inkStrokes: Int { isActive ? armView.ink.count : 0 }
     var tapMaxWaitMs: Double { inputTap.maxWaitMs }
     var motionClock: String { displayLink.isRunning ? "displayLink" : timer == nil ? "sleeping" : "timer" }
     var inputDiagnostics: [String: Any] { inputTap.diagnostics }

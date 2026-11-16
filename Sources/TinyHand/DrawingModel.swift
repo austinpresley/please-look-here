@@ -132,9 +132,9 @@ struct AnnotationDocument {
         annotations = next
     }
     mutating func reset() { self = AnnotationDocument() }
-    func marker(at point: CGPoint) -> Annotation? {
+    func marker(at point: CGPoint, visible: (UUID) -> Bool = { _ in true }) -> Annotation? {
         annotations.reversed().first {
-            guard case .number(_, let center) = $0.shape else { return false }
+            guard visible($0.id), case .number(_, let center) = $0.shape else { return false }
             return hypot(center.x - point.x, center.y - point.y) <= $0.markerRadius + 4
         }
     }
