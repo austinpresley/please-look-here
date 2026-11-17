@@ -1,13 +1,77 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Look Here Please · Austin Presley</title>
-<meta name="description" content="Look Here Please, Austin Presley's playful native Mac pointer utility. Local review project status.">
-<meta property="og:title" content="Look Here Please"><meta property="og:description" content="Point it out. A playful native Mac pointer utility by Austin Presley.">
-<meta property="og:image" content="assets/og-dusk.jpg"><meta property="og:image:alt" content="Look Here Please. Point it out. By Austin Presley.">
-<link rel="icon" type="image/svg+xml" href="assets/mark.svg"><link rel="icon" type="image/png" href="assets/favicon.png"><link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-<style>
-:root{color-scheme:light dark;font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif;color:#47293d;background:#fff4df}*{box-sizing:border-box}body{margin:0}main{max-width:960px;margin:auto;padding:48px 28px 40px}header{display:flex;align-items:center;gap:16px;font-weight:650}header img{width:64px;height:64px}h1{font-size:clamp(48px,9vw,88px);line-height:1.05;letter-spacing:-.05em;margin:60px 0 24px}p{font-size:19px;line-height:1.6;max-width:690px}.byline{font-size:15px}.status{border-top:1px solid #bf998e;margin-top:40px;padding-top:20px}.status p,footer{font-size:15px;line-height:1.7}a{color:inherit;text-underline-offset:4px}a:focus-visible{outline:3px solid #e64029;outline-offset:5px}footer{margin-top:48px}footer p{font-size:14px}@media(prefers-color-scheme:dark){:root{background:#251b24;color:#fff4df}.status{border-color:#735366}}
-</style></head><body><main><header><img src="assets/mark.svg" alt="Pointing glove and attention dot"><span>Look Here Please</span></header>
-<h1>Point it out.</h1><p>A playful native Mac pointer utility. Choose a hand or laser, annotate your screen, and reach quick controls from the cursor, menu bar or Stream Deck.</p><p class="byline">By Austin Presley</p>
-<section class="status" aria-label="Project status"><p>The expanded app is in local review on Austin's Mac. This repository update publishes branding and presentation only. The default main branch does not yet contain the expanded functional code. No public app release or product website is claimed.</p><p><a href="https://github.com/austinpresley/please-look-here">View the owned repository</a> · <a href="https://github.com/austinpresley/please-look-here/blob/main/docs/project-status.md">Read project status</a></p></section>
-<footer><p>Based on <a href="https://github.com/nilbuild/tinyhand">TinyHand by Kamran Ahmed</a>.<br><a href="https://github.com/austinpresley/please-look-here/blob/main/LICENSE">MIT license</a>. macOS 13 or later.</p></footer></main></body></html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Look Here Please | Point it out.</title>
+  <meta name="description" content="Pointers and screen annotations for Mac, by Austin Presley. A playful hand for your next explanation. Currently in local review.">
+  <meta property="og:title" content="Look Here Please. Point it out.">
+  <meta property="og:description" content="Pointers and screen annotations for Mac, by Austin Presley. Currently in local review.">
+  <meta property="og:image" content="assets/og-image.png">
+  <meta property="og:image:alt" content="Look Here Please, with the original purple pointing hand on cream.">
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <style>
+    :root{color-scheme:light dark;--cream:#F5F0E7;--lavender:#C9ABF0;--purple:#7050A0;--plum:#30233D;--dusk:#51426D;--page:var(--cream);--ink:var(--plum);--secondary:#665D70;--panel:#E9DFF2;--line:#D9CEDF;--link:var(--purple);font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif;background:var(--page);color:var(--ink)}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0}a{color:var(--link);text-underline-offset:4px}a:focus-visible{outline:3px solid var(--purple);outline-offset:5px;border-radius:3px}.skip{position:absolute;left:24px;top:-70px;padding:12px 18px;background:var(--ink);color:var(--page);z-index:2}.skip:focus{top:16px}.wrap{width:min(1120px,calc(100% - 64px));margin:auto}
+    header{display:flex;justify-content:space-between;align-items:center;gap:28px;padding-top:32px}.identity{display:flex;gap:12px;align-items:center;text-decoration:none}.identity .icon{width:48px;height:48px}.wordmark{width:220px;height:auto;display:block}.wordmark-dark{display:none}nav{display:flex;gap:24px;align-items:center;font-size:14px}nav a{text-decoration:none;color:var(--ink)}nav a:hover{text-decoration:underline}
+    .hero{display:grid;grid-template-columns:1.1fr 1fr;align-items:center;gap:16px;min-height:560px;padding:38px 0 20px}.hero-copy{position:relative;z-index:1}.hero h1{font-family:"Arial Rounded MT Bold",ui-rounded,system-ui,sans-serif;font-size:clamp(68px,8.6vw,112px);font-weight:700;line-height:1.04;letter-spacing:-.065em;margin:0 0 28px;max-width:620px}.hero .descriptor{font-size:24px;line-height:1.5;max-width:440px;margin:0 0 16px}.hero .detail{font-size:17px;line-height:1.7;color:var(--secondary);max-width:410px;margin:0}.hero .byline{font-size:14px;margin:24px 0 0;color:var(--secondary)}.hero-art{display:block;width:112%;max-width:none;margin-left:-5%;height:auto}.actions{display:flex;gap:20px;align-items:center;flex-wrap:wrap;margin-top:30px}.button{display:inline-block;background:var(--purple);color:#FFFCF6;text-decoration:none;padding:13px 19px;border-radius:12px;font-size:14px;font-weight:600}.button:hover{background:#5C3F89}.actions>a:not(.button){font-size:14px}
+    .pointers{padding:36px 0 44px;border-top:1px solid var(--line)}h2{font-family:"Arial Rounded MT Bold",ui-rounded,system-ui,sans-serif;font-size:34px;line-height:1.2;letter-spacing:-.025em;margin:0 0 16px}.section-intro{font-size:17px;line-height:1.65;max-width:590px;color:var(--secondary);margin:0}.hand-lineup{display:grid;grid-template-columns:repeat(6,1fr);gap:22px;margin:32px 0 0;padding:0;list-style:none}.hand-lineup figure{margin:0;text-align:center}.hand-frame{height:200px;display:flex;align-items:flex-end;justify-content:center}.hand-frame img{display:block;max-height:100%;max-width:100%;width:auto;height:auto}.hand-lineup figcaption{font-size:13px;margin-top:18px;color:var(--secondary)}
+    .features{display:grid;grid-template-columns:1fr 1fr;gap:38px 72px;padding:36px 0 66px}.features h3{font-size:21px;line-height:1.35;margin:0 0 10px;font-weight:650;letter-spacing:-.02em}.features p{font-size:16px;line-height:1.75;max-width:450px;margin:0;color:var(--secondary)}
+    .review{background:var(--panel);border-radius:24px;padding:36px 40px;display:grid;grid-template-columns:200px 1fr;gap:38px;align-items:start}.review h2{font-size:27px;margin:0}.review p{font-size:16px;line-height:1.75;margin:0 0 12px;max-width:700px}.review p:last-child{margin:0}.review .links{font-size:14px;display:flex;gap:20px;flex-wrap:wrap;margin-top:20px}.review strong{font-weight:650}footer{display:flex;justify-content:space-between;gap:30px;padding:36px 0 40px;color:var(--secondary);font-size:13px;line-height:1.8}footer p{margin:0}footer a{color:inherit}
+    @media(prefers-color-scheme:dark){:root{--page:#241E2D;--ink:var(--cream);--secondary:#C7BFD0;--panel:#3C304C;--line:#554661;--link:#D6BBFF}.wordmark-light{display:none}.wordmark-dark{display:block}.button{background:var(--lavender);color:var(--plum)}.button:hover{background:#D8BFF7}a:focus-visible{outline-color:var(--lavender)}}
+    @media(max-width:850px){.hero{min-height:490px;grid-template-columns:1.15fr 1fr}.hero h1{font-size:78px}.hero .descriptor{font-size:21px}.hand-frame{height:160px}.hand-lineup{gap:16px}.review{grid-template-columns:1fr;gap:16px}.features{gap:32px}}
+    @media(max-width:600px){.wrap{width:calc(100% - 40px)}header{padding-top:22px;gap:14px}.identity{gap:8px}.identity .icon{width:38px;height:38px}.wordmark{width:174px}nav{gap:14px;font-size:13px}nav .status-link{display:none}.hero{grid-template-columns:1fr;gap:0;min-height:0;padding-top:58px}.hero h1{font-size:72px;max-width:340px;margin-bottom:22px}.hero .descriptor{font-size:22px}.hero .detail{font-size:16px}.hero-art{width:90%;max-width:390px;margin:-12px -12px 0 auto}.hero .byline{margin-top:20px}.actions{margin-top:24px}.pointers{padding-top:30px}.pointers h2{font-size:29px}.hand-lineup{grid-template-columns:repeat(3,1fr);gap:32px 20px;margin-top:28px}.hand-frame{height:170px}.hand-lineup figcaption{margin-top:12px}.features{grid-template-columns:1fr;gap:28px;padding:8px 0 42px}.features h3{font-size:21px}.review{padding:26px;border-radius:20px}.review h2{font-size:25px}.review p{font-size:15px}footer{display:block;padding-top:28px}footer p+p{margin-top:16px}}
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <div class="wrap">
+    <header>
+      <a class="identity" href="#main" aria-label="Look Here Please home">
+        <img class="icon" src="assets/favicon.png" alt="" width="48" height="48">
+        <img class="wordmark wordmark-light" src="assets/wordmark.svg" alt="Look Here Please" width="220" height="32">
+        <img class="wordmark wordmark-dark" src="assets/wordmark-cream.svg" alt="Look Here Please" width="220" height="32">
+      </a>
+      <nav aria-label="Main navigation"><a class="status-link" href="#review">Project status</a><a href="https://github.com/austinpresley/please-look-here">GitHub</a></nav>
+    </header>
+    <main id="main">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <h1 id="hero-title">Point it out.</h1>
+          <p class="descriptor">Pointers and screen annotations for Mac.</p>
+          <p class="detail">Put a hand where you want people to look. Draw an arrow, highlight a detail, or add a note as you explain.</p>
+          <div class="actions"><a class="button" href="#review">Project status</a><a href="https://github.com/austinpresley/please-look-here">Explore the repository</a></div>
+          <p class="byline">By Austin Presley</p>
+        </div>
+        <img class="hero-art" src="assets/pointer.svg" alt="The original lavender pointing hand on a black stick, tilted up and to the right." width="1024" height="1024">
+      </section>
+      <section class="pointers" aria-labelledby="pointers-title">
+        <h2 id="pointers-title">A hand for the occasion.</h2>
+        <p class="section-intro">Go with the lavender toy, a classic glove, a robot or something softer. Use a laser when a hand would be too much.</p>
+        <ul class="hand-lineup" aria-label="A few of the app's pointer styles">
+          <li><figure><div class="hand-frame"><img src="assets/hands/lavender.png" alt="Purple toy pointing hand" width="257" height="380" loading="lazy"></div><figcaption>Lavender</figcaption></figure></li>
+          <li><figure><div class="hand-frame"><img src="assets/hands/glove.png" alt="Classic white pointing glove" width="254" height="380" loading="lazy"></div><figcaption>Cursor glove</figcaption></figure></li>
+          <li><figure><div class="hand-frame"><img src="assets/hands/coral.png" alt="Coral vinyl pointing hand" width="317" height="380" loading="lazy"></div><figcaption>Coral vinyl</figcaption></figure></li>
+          <li><figure><div class="hand-frame"><img src="assets/hands/robot.png" alt="Mint-colored robot pointing hand" width="345" height="380" loading="lazy"></div><figcaption>Robot</figcaption></figure></li>
+          <li><figure><div class="hand-frame"><img src="assets/hands/plush.png" alt="Soft plush pointing hand" loading="lazy"></div><figcaption>Plush</figcaption></figure></li>
+          <li><figure><div class="hand-frame"><img src="assets/hands/neon.png" alt="Neon pointing hand" loading="lazy"></div><figcaption>Neon</figcaption></figure></li>
+        </ul>
+      </section>
+      <section class="features" aria-label="In the local review app">
+        <article><h3>Point with personality.</h3><p>Choose from the hand collection or use a laser. Put the pointer on the detail you want people to notice.</p></article>
+        <article><h3>Mark up your screen.</h3><p>Draw, highlight, place arrows and shapes, or add text and number markers. Undo and clear as you go.</p></article>
+        <article><h3>Keep controls close.</h3><p>Use the menu bar, quick controls at your cursor, or Stream Deck. The floating toolbar is optional.</p></article>
+        <article><h3>Use the app underneath.</h3><p>Turn Interact on for normal clicks and drags, then turn it off to annotate again.</p></article>
+      </section>
+      <section class="review" id="review" aria-labelledby="review-title">
+        <h2 id="review-title">In local review.</h2>
+        <div><p>The expanded app is being tested on Austin's Mac. <strong>There is no public Look Here Please build yet.</strong> The default GitHub main branch still contains the earlier functional source.</p><p>This page describes the local review direction. Testing, builds and packaging run locally; hosted CI stays disabled.</p><div class="links"><a href="https://github.com/austinpresley/please-look-here/blob/main/docs/project-status.md">Read project status</a><a href="https://github.com/austinpresley/please-look-here">View the repository</a></div></div>
+      </section>
+    </main>
+    <footer><p>Look Here Please by Austin Presley.<br>macOS 13 or later.</p><p>Based on <a href="https://github.com/nilbuild/tinyhand">TinyHand by Kamran Ahmed</a>.<br><a href="https://github.com/austinpresley/please-look-here/blob/main/LICENSE">MIT license</a>.</p></footer>
+  </div>
+</body>
+</html>

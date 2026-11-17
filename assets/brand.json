@@ -1,0 +1,17 @@
+{
+  "name": "Look Here Please",
+  "tagline": "Point it out.",
+  "descriptor": "Pointers and screen annotations for Mac.",
+  "byline": "By Austin Presley",
+  "selectedIcon": "C11 Cream, S1 composition",
+  "palette": {
+    "cream": "#F5F0E7",
+    "lavender": "#C9ABF0",
+    "purple": "#7050A0",
+    "plum": "#30233D",
+    "dusk": "#51426D",
+    "paper": "#FFFCF6"
+  },
+  "wordmarkFont": "Arial Rounded MT Bold",
+  "sourceHand": "assets/hand_lavender.png"
+}
