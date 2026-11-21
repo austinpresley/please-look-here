@@ -1,0 +1,14 @@
+{
+  "version1Artifact": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/settings-redesign/settings-before-and-after.html",
+  "sha256": "78fa4e0ec7d816595f942905558e0913b8c1c9008e8ab4cf37e86df875fbf7e4",
+  "reviewTarget": "The first proposed design, across all seven pages and nested controls",
+  "goals": [
+    "One clear task per page",
+    "Related defaults have one home; shared and per-pointer scope are explicit",
+    "Common settings stay discoverable",
+    "Preserve existing behavior, independent overrides, permissions, shortcut scopes, import validation and persistent recovery",
+    "Native Mac hierarchy, density, keyboard access and light/dark contrast",
+    "Practice is local and does not change desktop modes",
+    "Concise labels and honest state; simplification must reduce decisions, not just hide them"
+  ]
+}

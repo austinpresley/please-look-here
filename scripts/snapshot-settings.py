@@ -7,7 +7,7 @@ import subprocess
 import time
 
 root = Path(__file__).resolve().parents[1]
-binary = Path.home() / 'Applications/Look Here Please.app/Contents/MacOS/TinyHand'
+binary = Path(os.environ.get('TINYHAND_SNAPSHOT_BINARY', Path.home() / 'Applications/Look Here Please.app/Contents/MacOS/TinyHand'))
 output = Path(os.environ.get('TINYHAND_VERIFICATION_DIR', root / 'dist/verification'))
 output.mkdir(parents=True, exist_ok=True)
 
@@ -23,7 +23,7 @@ state = control('status')['state']
 assert 'snapshot-settings' in state['capabilities'], 'Start the app with TINYHAND_TEST_MODE=1 and APP_SNAPSHOT=<output>; focus its Settings window first.'
 for theme in ['light', 'dark']:
     control('configure', settings={'theme': theme})
-    for section in os.environ.get('TINYHAND_SNAPSHOT_SECTIONS', 'general,shortcuts,drawing,pointers,appearance,sound,about').split(','):
+    for section in os.environ.get('TINYHAND_SNAPSHOT_SECTIONS', 'pointers,drawing,shortcuts,presets,general').split(','):
         control('settings', section=section)
         time.sleep(0.35)
         path = output / f'settings-{section}-{theme}.png'

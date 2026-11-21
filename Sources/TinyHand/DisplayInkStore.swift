@@ -22,6 +22,9 @@ final class DisplayInkStore {
     private var documents: [CGDirectDisplayID: Ink] = [:]
     private(set) var display: Display?
     private(set) var ink: Ink
+    var onEdited: ((UUID) -> Void)? {
+        didSet { ink.onEdited = onEdited; for document in documents.values { document.onEdited = onEdited } }
+    }
     var onChanged: (() -> Void)? {
         didSet {
             ink.onChanged = onChanged
@@ -45,7 +48,7 @@ final class DisplayInkStore {
             let selected = documents[target.id] ?? (display == nil ? ink : makeInk())
             documents[target.id] = selected
             ink = selected
-            ink.onChanged = onChanged
+            ink.onChanged = onChanged; ink.onEdited = onEdited
             layer.addSublayer(ink.layer)
         }
         display = target

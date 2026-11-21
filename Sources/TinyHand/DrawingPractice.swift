@@ -33,7 +33,7 @@ struct DrawingPracticeConfiguration: Equatable {
 
 /// Owns only local ink. Reusable by Settings and a future practice window.
 final class DrawingPracticeSession: ObservableObject {
-    enum Mode: String, CaseIterable { case interact = "Interact", draw = "Draw" }
+    enum Mode: String, CaseIterable { case interact = "Cursor", draw = "Draw" }
     private final class Policy { var value: InkLifetimePolicy; init(_ value: InkLifetimePolicy) { self.value = value } }
     let ink: Ink
     private let policy: Policy
@@ -72,8 +72,7 @@ final class DrawingPracticeSession: ObservableObject {
             return CGPoint(x: bounds.minX + bounds.width * (0.12 + 0.76 * fraction),
                            y: bounds.midY + sin(fraction * .pi * 4) * bounds.height * 0.20 + (index.isMultiple(of: 2) ? 3 : -3))
         }
-        // The shared sample is always a freehand line; practice uses the selected tool.
-        ink.tool = configuration.tool == .highlighter ? .highlighter : .pen
+        ink.tool = [.pen, .arrow, .highlighter].contains(configuration.tool) ? configuration.tool : .pen
         ink.begin(at: sample[0], width: configuration.width)
         // Render immediately so repeated slider changes keep a complete sample
         // visible. InkVisibility supplies the real delay and trail progression.

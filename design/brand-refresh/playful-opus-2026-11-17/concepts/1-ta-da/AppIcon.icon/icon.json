@@ -1,0 +1,83 @@
+{
+  "groups": [
+    {
+      "name": "Hat front and sparkles",
+      "layers": [
+        {
+          "name": "hat-front",
+          "image-name": "hat-front.svg",
+          "glass": false
+        }
+      ],
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.18
+      },
+      "translucency": {
+        "enabled": false,
+        "value": 0.5
+      }
+    },
+    {
+      "name": "Original hand",
+      "layers": [
+        {
+          "name": "Original hand PNG",
+          "image-name": "hand_glove.png",
+          "glass": false
+        }
+      ],
+      "position": {
+        "scale": 1.08,
+        "translation-in-points": [
+          -14.04,
+          279.44
+        ]
+      },
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.28
+      },
+      "translucency": {
+        "enabled": false,
+        "value": 0.5
+      }
+    },
+    {
+      "name": "Hat brim and opening",
+      "layers": [
+        {
+          "name": "hat-back",
+          "image-name": "hat-back.svg",
+          "glass": false
+        }
+      ],
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.18
+      },
+      "translucency": {
+        "enabled": false,
+        "value": 0.5
+      }
+    }
+  ],
+  "fill-specializations": [
+    {
+      "value": {
+        "automatic-gradient": "srgb:0.26275,0.18824,0.72157,1.00000"
+      }
+    },
+    {
+      "appearance": "dark",
+      "value": {
+        "automatic-gradient": "srgb:0.11373,0.08627,0.31373,1.00000"
+      }
+    }
+  ],
+  "supported-platforms": {
+    "squares": [
+      "macOS"
+    ]
+  }
+}

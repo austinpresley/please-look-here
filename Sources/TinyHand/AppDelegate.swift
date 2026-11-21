@@ -2,12 +2,9 @@ import AppKit
 import ApplicationServices
 import Carbon.HIToolbox
 
-final class AppDelegate: NSObject, NSApplicationDelegate {
-    private let overlay = OverlayController(accessibility: {
-        let env = ProcessInfo.processInfo.environment
-        return env["TINYHAND_TEST_MODE"] == "1" && env["TINYHAND_TEST_DENY_ACCESSIBILITY"] == "1" ? false : AXIsProcessTrusted()
-    })
-    private let settings = SettingsWindow()
+final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuItemValidation {
+    private let overlay: OverlayController
+    private let settings: SettingsWindow
     private let updater = Updater()
     private let welcome = WelcomeWindow()
     private let practice = GettingStartedPracticeWindow()
@@ -23,9 +20,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // Lets a test instance exercise real rejection paths without revoking the grant.
         let env = ProcessInfo.processInfo.environment
         return env["TINYHAND_TEST_MODE"] == "1" && env["TINYHAND_TEST_DENY_ACCESSIBILITY"] == "1" ? false : AXIsProcessTrusted()
-    }, openSettings: { [weak self] section in self?.openSettings(section.flatMap(SettingsSection.init(rawValue:))) },
+    }, openSettings: { [weak self] section in self?.openSettingsRoute(section) },
                                              openHandCreator: { [weak self] in self?.settings.showHandCreator() },
                                              snapshotSettings: { [weak self] in self?.settings.exportVerificationSnapshot(to: $0) ?? false })
+
+    override convenience init() {
+        self.init(overlay: OverlayController(accessibility: {
+            let env = ProcessInfo.processInfo.environment
+            return env["TINYHAND_TEST_MODE"] == "1" && env["TINYHAND_TEST_DENY_ACCESSIBILITY"] == "1" ? false : AXIsProcessTrusted()
+        }))
+    }
+    init(overlay: OverlayController, settings: SettingsWindow = SettingsWindow()) {
+        self.overlay = overlay; self.settings = settings; super.init()
+        overlay.radial.onOpenSettings = { [weak self] restoration in
+            guard let self else { restoration?.restore(); return }
+            self.openSettings(restoration: restoration)
+        }
+    }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.mainMenu = editingMenu()
@@ -40,6 +51,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             guard let self = self, self.overlay.setMode(mode) else { return }
             _ = self.overlay.activate()
         }
+        welcome.onSetKey = { [weak self] in self?.settings.showShortcut(.radial) }
         welcome.onPractice = { [weak self] in self?.openPractice() }
         menuBar.openPractice = { [weak self] in
             // Leave native menu tracking before presenting a key window.
@@ -61,13 +73,39 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         overlay.radial.perform = { [weak self] request in
             guard let self, let data = try? JSONSerialization.data(withJSONObject: request),
-                  let response = try? JSONSerialization.jsonObject(with: self.control.handle(data)) as? [String: Any] else { return "Action unavailable" }
-            return response["ok"] as? Bool == true ? "Selected" : ((response["error"] as? [String: Any])?["message"] as? String ?? "Action unavailable")
+                  let response = try? JSONSerialization.jsonObject(with: self.control.handle(data)) as? [String: Any] else { return .failure(.rejected(operation: request["operation"] as? String ?? "", code: "unavailable", reason: "The control bridge could not complete the command. Open Settings and try again.")) }
+            return .bridge(response, operation: request["operation"] as? String ?? "")
+        }
+        overlay.commandError.onRecover = { [weak self] action in
+            switch action {
+            case .settings: self?.openSettings()
+            case .accessibility:
+                if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") { NSWorkspace.shared.open(url) }
+            case .screenRecording: ScreenCapture.openPermissionSettings()
+            case .captureFolder: self?.settings.chooseCaptureFolder()
+            case .retryScreenshot: self?.overlay.retryQuickControlsScreenshot()
+            }
         }
         menuBar.start()
         overlay.onDismissControls = { [weak self] in self?.menuBar.close() }
         overlay.onControlStatusClick = { [weak self] in self?.menuBar.statusClickFromTap(secondary: $0) }
-        control.verifyMenuBar = { [weak self] in self?.menuBar.verify($0) ?? [:] }
+        control.verifyMenuBar = { [weak self] request in
+            guard let self else { return [:] }
+            switch request["surface"] as? String {
+            case "toolbar": self.menuBar.close(); return self.overlay.verifyToolbar(request)
+            case "welcome":
+                if request["open"] as? Bool == true {
+                    self.welcome.accessibility = { request["permission"] as? Bool ?? AXIsProcessTrusted() }
+                    self.welcome.show(forDrawing: request["forDrawing"] as? Bool ?? false)
+                }
+                return UsabilityVerification.capture(self.welcome.nativeWindow, request: request)
+            case "practice":
+                if request["open"] as? Bool == true { self.practice.show(PracticeLesson(rawValue: request["lesson"] as? Int ?? 1) ?? .drawing) }
+                let progress = self.practice.verify(request)
+                return UsabilityVerification.capture(self.practice.nativeWindow, request: request).merging(progress) { _, new in new }
+            default: return self.menuBar.verify(request)
+            }
+        }
         setupSettings()
         applyTheme()
         observer = NotificationCenter.default.addObserver(forName: Preferences.changed, object: nil, queue: .main) { [weak self] _ in
@@ -78,13 +116,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         _ = registerHotKeys()
         updater.start()
         control.verifyShortcuts = { [weak self] in self?.verifyShortcuts($0) ?? [:] }
+        control.verifySettings = { [weak self] in try self?.settings.verify($0) ?? [:] }
         do { try control.start() } catch { Log.write("local control unavailable: \(error.localizedDescription)") }
         if ProcessInfo.processInfo.environment["TINYHAND_TEST_MODE"] != "1" {
-            if !UserDefaults.standard.bool(forKey: WelcomeWindow.shownKey) { welcome.show() }
+            if !Preferences.storage.bool(forKey: WelcomeWindow.shownKey) { welcome.show() }
         }
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        // Finish recovery's focus obligation before server/hotkey teardown,
+        // even when the pointer is already inactive. Repeated dismissal is inert.
+        overlay.clearRecovery.dismissRecovery()
         control.stop()
         unregisterHotKeys()
         overlay.deactivate()
@@ -106,6 +148,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func setupSettings() {
+        settings.editQuickControlFavorites = { [weak self] in self?.overlay.openPointerBrowser(editing: true) }
         settings.openPractice = { [weak self] in self?.openPractice($0) }
         settings.applyToggleShortcut = { [weak self] value in self?.apply(value, action: nil, toggle: true) ?? false }
         settings.applyClearShortcut = { [weak self] value in self?.apply(value, action: nil, toggle: false) ?? false }
@@ -122,9 +165,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         _ = registerHotKeys()
     }
     @objc private func settingsAction() { openSettings() }
-    private func openSettings(_ section: SettingsSection? = nil) {
+    @objc private func focusClearRecovery() { _ = overlay.radial.focusRecovery(overlay.clearRecovery) }
+    func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
+        if menuItem.action == #selector(focusClearRecovery) { return overlay.clearRecovery.state.visible }
+        return true
+    }
+    private func openSettingsRoute(_ name: String?) {
         menuBar.close()
-        settings.show(section)
+        settings.showRoute(name)
+        _ = registerHotKeys()
+    }
+
+    private func openSettings(_ section: SettingsSection? = nil, restoration: QuickControlsFocusRestoration? = nil) {
+        menuBar.close()
+        settings.show(section, restoration: restoration)
         _ = registerHotKeys()
     }
     @objc private func quit() { NSApp.terminate(nil) }
@@ -134,6 +188,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }
         switch action {
+        case .quickControls: _ = overlay.openQuickControls()
         case .mode: overlay.toggleMode()
         case .capture: overlay.captureScreenshot()
         case .captureRegion: overlay.captureRegion()
@@ -283,9 +338,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         root.addItem(app)
         let edit = NSMenuItem()
         let editing = NSMenu(title: "Edit")
-        editing.addItem(withTitle: "Undo", action: Selector(("undo:")), keyEquivalent: "z")
-        let redo = editing.addItem(withTitle: "Redo", action: Selector(("redo:")), keyEquivalent: "z")
+        editing.addItem(withTitle: "Undo", action: #selector(AnnotationUndoResponder.undo(_:)), keyEquivalent: "z")
+        let redo = editing.addItem(withTitle: "Redo", action: #selector(AnnotationUndoResponder.redo(_:)), keyEquivalent: "z")
         redo.keyEquivalentModifierMask = [.command, .shift]
+        let recovery = editing.addItem(withTitle: "Focus Clear Recovery", action: #selector(focusClearRecovery), keyEquivalent: "u")
+        recovery.keyEquivalentModifierMask = [.command, .shift]; recovery.target = self
         editing.addItem(.separator())
         for (title, selector, key) in [("Cut", "cut:", "x"), ("Copy", "copy:", "c"), ("Paste", "paste:", "v"), ("Select All", "selectAll:", "a")] {
             editing.addItem(withTitle: title, action: Selector(selector), keyEquivalent: key)

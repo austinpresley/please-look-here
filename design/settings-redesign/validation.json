@@ -1,0 +1,24 @@
+{
+  "verifiedAt": "2026-11-17T04:08:18.867135-05:00",
+  "artifact": "settings-before-and-after.html",
+  "sha256": "78fa4e0ec7d816595f942905558e0913b8c1c9008e8ab4cf37e86df875fbf7e4",
+  "sourceBuild": "swift build --product TinyHand: passed locally",
+  "currentPages": 8,
+  "proposedPages": 7,
+  "controlMappings": 56,
+  "nativeCaptures": 16,
+  "embeddedImageReferences": 35,
+  "htmlChecks": {
+    "desktopPassed": 44,
+    "desktopWidth": 728,
+    "mobilePassed": 48,
+    "mobileWidth": 390,
+    "consoleErrors": 0
+  },
+  "review": {
+    "provider": "claudeAgent",
+    "model": "claude-opus-5-5",
+    "effort": "high"
+  },
+  "sourceCodeChangedByThisTask": false
+}

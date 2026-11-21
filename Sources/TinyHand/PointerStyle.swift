@@ -1,7 +1,9 @@
 import AppKit
+import ImageIO
 
-struct PointerStyle: Hashable {
+struct PointerStyle: Hashable, Identifiable {
     let rawValue: String
+    var id: String { rawValue }
 
     private init(_ rawValue: String) {
         self.rawValue = rawValue
@@ -388,6 +390,19 @@ struct HandAsset: Sendable {
         urls.append(exeDir.appendingPathComponent("assets/\(name).png"))
         urls.append(URL(fileURLWithPath: "assets/\(name).png"))
         return urls
+    }
+    /// Bundled complete canvases must not be measured as pointing hands or
+    /// resolved through the user's custom-hand directory.
+    static func bundledImageURL(_ name: String) -> URL? {
+        imageURLs(name).dropFirst().first { FileManager.default.fileExists(atPath: $0.path) }
+    }
+    static func loadBundledImage(_ name: String) -> CGImage? {
+        bundledImageURL(name).flatMap { CGImageSourceCreateWithURL($0 as CFURL, nil) }
+            .flatMap { CGImageSourceCreateImageAtIndex($0, 0, nil) }
+    }
+    static func bundledImageSignature(_ name: String) -> String {
+        guard let url = bundledImageURL(name), let attrs = try? FileManager.default.attributesOfItem(atPath: url.path) else { return "missing:\(name)" }
+        return "\(url.path):\((attrs[.modificationDate] as? Date)?.timeIntervalSince1970.bitPattern ?? 0):\(attrs[.size] ?? 0):\(attrs[.systemFileNumber] ?? 0)"
     }
     static func imageSignature(_ name: String) -> String {
         guard let url = imageURLs(name).first(where: { FileManager.default.fileExists(atPath: $0.path) }),

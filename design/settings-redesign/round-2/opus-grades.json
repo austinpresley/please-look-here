@@ -1,0 +1,40 @@
+{
+  "reviewer": {"model": "claude-opus-5-5", "effort": "high", "role": "independent critic of v1 proposal"},
+  "rubric": {"taskClarity": 20, "findability": 20, "cognitiveLoad": 15, "scopeInteraction": 20, "feedbackAccessibility": 15, "nativeCraft": 10},
+  "overall": {"score": 66, "grade": "D+", "verdict": "Better than current (~55) but unfinished; Effects and Controls need rework; Customize breaks independent overrides."},
+  "architecture": {
+    "keep": ["General", "Pointers (+ Customize and New Hand sheets)", "Drawing", "Presets & Backup", "About"],
+    "reject": ["Effects as a mixed-scope bucket", "Controls four-tab sub-navigation", "Favorites editors moved to Controls"],
+    "recommendedSidebar": ["General", "Pointers", "Pointer Defaults", "Tools", "Controls", "Presets & Backup", "About"]
+  },
+  "views": [
+    {"id": "general", "score": 74, "grade": "C", "parts": [15, 14, 13, 15, 10, 7], "topFailures": ["Permissions placed last", "Updates hidden behind Details… sheet", "No Not-requested state; prototype toggle styled as app link"]},
+    {"id": "pointers", "score": 63, "grade": "D", "parts": [16, 12, 12, 10, 7, 6], "topFailures": ["Tiles drop enabled/pinned/custom/missing state", "··· opens a sheet and changes live selected pointer; Pin/Unpin stateless", "New Hand and Edit Favorites below a 39-item grid"]},
+    {"id": "effects", "score": 56, "grade": "F", "parts": [9, 12, 10, 9, 9, 7], "topFailures": ["Subtitle claims shared defaults for global settings", "Default tap sound hidden while master mute visible", "Shared preview uses selected pointer and ignores its overrides"]},
+    {"id": "drawing", "score": 73, "grade": "C", "parts": [17, 16, 12, 11, 9, 8], "topFailures": ["Match-ink switch duplicates an InkChoice value", "Replay Sample, Undo and local Interact/Draw dropped", "Trail explanation lost; vague Advanced"]},
+    {"id": "controls", "score": 59, "grade": "F", "parts": [11, 11, 11, 11, 8, 7], "topFailures": ["Vague name plus four tabs", "Subtitle does not name contents", "Related items split across tabs"]},
+    {"id": "controls.keyboard", "score": 62, "grade": "D", "parts": [15, 12, 11, 9, 8, 7], "topFailures": ["Recorder rejects plain tool keys", "No Clear; conflict state never demonstrated", "Presenting collapsed; counts not assignment status; gesture availability lost"]},
+    {"id": "controls.quick", "score": 74, "grade": "C", "parts": [16, 15, 12, 14, 10, 7], "topFailures": ["Slot direction labels unverified", "Favorites identical to toolbar strip", "Chooser limited to six hands"]},
+    {"id": "controls.toolbar", "score": 66, "grade": "D", "parts": [14, 12, 12, 13, 9, 6], "topFailures": ["Pin in Pointers, order here", "Modal sheet for move/unpin", "Reset Favorites unguarded"]},
+    {"id": "controls.streamdeck", "score": 64, "grade": "D", "parts": [15, 12, 13, 12, 6, 6], "topFailures": ["Designer caption shown as UI; Download always shown", "Version, status and error messages lost", "No busy state"]},
+    {"id": "presets", "score": 72, "grade": "C", "parts": [16, 15, 12, 13, 9, 7], "topFailures": ["Undo always enabled and unnamed", "Preset Actions… vague modal; Remove unconfirmed", "Disabled count and fallback note dropped"]},
+    {"id": "about", "score": 81, "grade": "B-", "parts": [18, 16, 14, 17, 10, 6], "topFailures": ["Placeholder 'Build shown here'", "Open… buttons instead of link rows", "Hand art instead of app icon; updates link"]},
+    {"id": "customize.look", "score": 58, "grade": "F", "parts": [14, 14, 10, 7, 7, 6], "topFailures": ["Shadow popup merges independent shadow and shadowStyle overrides; ignores policy", "Two reset idioms", "Static header, unguarded Use Defaults for All, error state missing"]},
+    {"id": "customize.sound", "score": 67, "grade": "D+", "parts": [15, 14, 11, 13, 8, 6], "topFailures": ["'Use shared default' hides effective value", "Status line lost", "Inconsistent override idiom"]},
+    {"id": "customize.gestures", "score": 62, "grade": "D", "parts": [13, 11, 12, 12, 8, 6], "topFailures": ["Thumbnails show base hand", "Restore Starter always shown; non-hand and error states missing", "Use Defaults for All ambiguous here"]},
+    {"id": "newHand", "score": 65, "grade": "D", "parts": [14, 14, 12, 10, 9, 6], "topFailures": ["Done vs Add Hand; preview sheet replaces sheet", "Generate path collapsed", "Selection side effect, palm check and inline validation missing"]}
+  ],
+  "orderedChanges": [
+    "Customize: effective-value controls with per-field reset; separate shadow and style; respect policy; no tabs",
+    "Replace Effects with Pointer Defaults: scope footers, no disclosures, magnifier to Tools, preview override note",
+    "Pointers: tile state glyphs, side-effect-free ··· menu, favorites strips above library, New Hand by search, banners",
+    "Controls: single scroll, Clear per field, plain tool keys, assignment/conflict summaries",
+    "General: permissions first with not-requested state; inline updates",
+    "Drawing: Match swatch, Replay Sample, Undo, Trail caption, named disclosure",
+    "Presets: conditional named Undo, inline row actions, confirm Remove",
+    "Remove design notes and reviewer controls from app surfaces; align handlers with captions",
+    "New Hand: Cancel/Add Hand, inline validation, state selection side effect",
+    "About: native link rows, real icon and build"
+  ],
+  "visualChecks": {"method": "headless Chrome screenshots of a /tmp copy of preview.html at 720px", "darkChecked": ["effects", "controls.keyboard"], "notChecked": ["VoiceOver", "real keyboard traversal", "narrow widths", "long labels"]}
+}

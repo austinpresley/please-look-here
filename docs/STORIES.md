@@ -857,3 +857,94 @@ UX:
 - States: stopped app, invalid fields, missing permission and unavailable styles have explicit errors; no mutation is replayed automatically.
 - Words: operation names and protocol version are documented in `docs/control-protocol.md`.
 - Access: CLI and buttons call the same application behavior.
+
+
+### S-054 Redesign Quick controls around the approved v9 wheel
+
+Status: implemented, pending Claude's acceptance. This entry records the approved
+A/B/C redesign and does not promote visual or physical release acceptance.
+
+Acceptance:
+
+- Fixed root axes, complete child rings, directional Back, center arming and
+  re-anchoring follow the approved model. Pointer movement previews; activation
+  revalidates eligibility. Disabled identities retain their saved positions.
+- Wheel, hub and scrolling fallback share pointer art, ink chips and Interact
+  state. Light/dark, contrast, transparency and motion accommodations are covered.
+- All pointers ends/drains the radial session before a key-capable native browser.
+  Search is labelled; All and Quick controls scopes use library and saved slot
+  order respectively. Grid uses 64 pt columns, 8 pt gaps, at most seven columns,
+  36 pt art, two-line names, a current check and a full-name/count footer.
+- Search Down enters the grid, arrows follow its real column count, Return
+  chooses/closes, Escape closes and Tab stays inside. Modified chords pass through.
+- Edit Quick controls favourites selects a candidate without changing the live
+  pointer. Six destination rows assign/swap through Preferences, announce changes
+  and regain slot focus. Done, Escape and the footer share one finish routine.
+  At 320×360 and 320×180, the grid/editor share a scroll body and retain all rows.
+- Quick controls Clear offers persistent nonactivating Undo/Dismiss on its owning
+  display. A later edit, undo or redo expires the exact recovery revision. Hidden
+  controls leave the accessibility tree. Command-Z/Shift-Command-Z undo/redo
+  annotations while the wheel, list or recovery owns focus and in Draw. Search
+  keeps text undo; external Interact applications keep their shortcuts.
+  Command-Shift-U focuses valid recovery from Quick controls or Edit > Focus
+  Clear Recovery. Appearance does not take focus; Undo/Dismiss restore it.
+- Capture closes the wheel, list and browser, drains owned input pairs and
+  compositor changes, retains exclusion window IDs and restores only valid
+  recovery. Rejected commands and failed Quick-controls captures show a persistent
+  dismissible error with the reason and a Settings or Choose Folder action.
+- Settings Pointers exposes the favourites editor. Menu bar, Shortcuts, Getting
+  Started, glossary and control protocol use Quick controls terminology.
+- All local tests, isolated signed review packaging and snapshot checks are
+  recorded honestly in VALIDATION.md. No hosted CI, installed-app replacement,
+  normal preferences/grants changes, commits, pushes or PRs.
+
+UX: keep the live pointer separate from an editing candidate. Keep native window
+close and search focus. Full accessible assignment names include candidate,
+destination and replaced pointer even where visible buttons read Use/Here.
+Clear recovery does not activate the app. Capture verification fixtures describe
+visibility only; they do not claim a real display capture or physical input test.
+Error HUDs appear without taking focus, announce each distinct visible failure
+once and persist until recovery or dismissal. Browser names wrap measured
+characters at 11/14 pt within two lines; the footer and AX retain the full name.
+
+
+### S-055 Simplify native Settings
+
+Status: implemented and locally verified, 18 November 2026. Review build 20261118005910; evidence in VALIDATION.md.
+
+Apply the approved third UI pass as native Settings. Austin additionally requested
+that every Shortcuts section be collapsible and closed by default.
+
+Acceptance:
+- Seven sidebar pages: General, Pointers, Pointer defaults, Tools, Shortcuts,
+  Presets & Backup, About. Preserve the old section names as routes.
+- General groups permissions first, startup/updates and theme. Live Interact stays
+  in presentation controls. Show an honest missing-update-feed state.
+- Pointer defaults combines shared look/tap choices, global output and motion,
+  with a fixed shared preview and explicit per-pointer scope.
+- Tools contains Drawing, Magnification and Screenshots. Practice tool/mode and
+  annotation history stay local. Destination choices preserve the capture folder.
+- Pointers has toolbar and separate six-direction favorites, a searchable
+  four-column library without nested scrolling, combined filters and contextual
+  actions. Editing actions do not select the pointer.
+- Customize is one sheet with independent per-field defaults and gesture artwork.
+  New Hand uses Cancel/Add Hand and retains a typed name during image loading.
+- All seven Shortcuts groups start closed, including groups with saved keys.
+  Search, practice links and Show Conflict explicitly reveal their destination.
+  Removing a recording field cancels its local monitors and restores registration.
+- Presets use readable summaries and inline actions, named persistent recovery,
+  reviewed imports, confirmed removal and Reset with Export Backup First.
+- Build, tests, grid checks and active-window captures run locally. Preserve the
+  existing normal app, preferences and grants; deliver an isolated review build.
+  No hosted CI, commits, pushes or PRs.
+
+UX:
+- Navigation: Command-comma/menu/local settings route -> last selected page.
+  Normal Shortcuts visit -> closed groups; explicit row link -> expanded group
+  and inactive native control focus, never recording or assignment.
+- Surfaces: one Settings window; one sheet for Customize or New Hand; native
+  menus for tile actions and favorites. Save/import use their existing panels.
+- Words: Pointer defaults, Tools, Use Default, Add Hand, Save Current Setup.
+  Scope and failure reasons remain visible.
+- Access: native disclosure controls, recorders and menus; full pointer names and
+  states in accessibility labels; no new global shortcuts.

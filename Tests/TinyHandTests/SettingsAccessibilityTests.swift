@@ -22,7 +22,7 @@ import Testing
         }
     }
 
-    @Test func keyboardPinMovesKeepSelectionEnabledStateAndDragOwnership() {
+    @Test func keyboardPinMovesKeepSelectionAndEnabledState() {
         Preferences.resetAll()
         defer { Preferences.resetAll() }
         let model = SettingsModel()
@@ -37,13 +37,6 @@ import Testing
         #expect(Preferences.pinnedStyles == [.lavender, .laser, .robot])
         #expect(PointerStyle.saved == .laser)
         #expect(Preferences.disabledPointerIDs == disabled)
-        model.beginDrag(.robot)
-        model.setDraft([.robot, .lavender, .laser])
-        #expect(!model.canMovePin(.laser, direction: .left))
-        #expect(!model.movePin(.laser, direction: .left))
-        #expect(model.pinnedOrder == [.robot, .lavender, .laser])
-        #expect(Preferences.pinnedStyles == [.lavender, .laser, .robot])
-        model.cancelDrag()
         #expect(model.movePin(.robot, direction: .left))
         #expect(Preferences.pinnedStyles == [.lavender, .robot, .laser])
         #expect(PointerStyle.saved == .laser && Preferences.disabledPointerIDs == disabled)

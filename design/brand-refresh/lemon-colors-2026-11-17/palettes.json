@@ -1,0 +1,81 @@
+{
+  "selected_composition": "S1 Lemon pop",
+  "source_document": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-sol-2026-11-17/S1/AppIcon.icon",
+  "unchanged_layers": {
+    "hand.svg": "837493fe8283a54cc9a6c6437d538fa9b93c18ca13074a9e4e969569b8741631"
+  },
+  "variants": [
+    {
+      "id": "C1",
+      "name": "Lemon",
+      "background": "#F7CD35",
+      "dark_background": "#51426D"
+    },
+    {
+      "id": "C2",
+      "name": "Butter",
+      "background": "#FFE5A0",
+      "dark_background": "#514331"
+    },
+    {
+      "id": "C3",
+      "name": "Apricot",
+      "background": "#FFAF72",
+      "dark_background": "#603D37"
+    },
+    {
+      "id": "C4",
+      "name": "Tangerine",
+      "background": "#FA762D",
+      "dark_background": "#632E29"
+    },
+    {
+      "id": "C5",
+      "name": "Watermelon",
+      "background": "#FB696F",
+      "dark_background": "#592C4B"
+    },
+    {
+      "id": "C6",
+      "name": "Bubblegum",
+      "background": "#FFADD1",
+      "dark_background": "#552B56"
+    },
+    {
+      "id": "C7",
+      "name": "Lime",
+      "background": "#D7ED69",
+      "dark_background": "#3A492A"
+    },
+    {
+      "id": "C8",
+      "name": "Mint",
+      "background": "#78D9BD",
+      "dark_background": "#254941"
+    },
+    {
+      "id": "C9",
+      "name": "Lagoon",
+      "background": "#1E9EAA",
+      "dark_background": "#174F59"
+    },
+    {
+      "id": "C10",
+      "name": "Sky",
+      "background": "#73C7ED",
+      "dark_background": "#273D60"
+    },
+    {
+      "id": "C11",
+      "name": "Cream",
+      "background": "#F5F0E7",
+      "dark_background": "#51426D"
+    },
+    {
+      "id": "C12",
+      "name": "Midnight",
+      "background": "#24203D",
+      "dark_background": "#181627"
+    }
+  ]
+}

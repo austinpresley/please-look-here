@@ -1,0 +1,12 @@
+{
+  "baselineArtifact": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/settings-redesign/round-2/settings-refinement-before-and-after.html",
+  "baselineSha256": "5cd1ed9e3caa2284b2b31248cc3b7321f23a6ea3907f02efc4bc17b81249afe8",
+  "goals": [
+    "Bring the pointer library and shortcut search into the first viewport",
+    "Use consistent 13px labels, control alignment and spacing",
+    "Keep primary settings visible and keep their scopes clear",
+    "Retain independent overrides, filters, keyboard assignment and recovery behavior",
+    "Make every tool reachable without scrolling through unrelated settings",
+    "Preserve earlier proposal files and app source"
+  ]
+}

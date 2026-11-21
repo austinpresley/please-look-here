@@ -1,5 +1,649 @@
 # Look Here Please validation
 
+## Native Settings redesign, 18 November 2026
+
+The approved third design pass is implemented natively in the current working
+checkout. The isolated signed Review app is version 1.2.0, build 20261118005910,
+with bundled Stream Deck plugin 1.1.0.0. The normal installed app and normal
+preferences/grants were not replaced. Changes remain uncommitted; no push or PR.
+
+- `bash scripts/run-tests.sh`: 400 tests in 53 suites passed. The new Settings
+  tests cover collapsed sections with saved assignments, explicit links, legacy
+  routes, every save/copy transition, actual native control mounting, typed hand
+  names during valid image loading, and cancellation of a recorder on collapse.
+- After the final navigation/layout adjustments, the focused Settings and
+  ShortcutNavigation suites passed 13 tests; local grid lints passed.
+- `python3 scripts/verify-settings-redesign.py`: 54 live checks passed against
+  the packaged release executable in a disposable test bundle/domain. All seven
+  groups were closed and no recorders mounted on normal visits in both themes.
+  Expanding all groups mounted all 26 native destinations. A practice link opened
+  only Tool keys; returning to the page reset it to closed.
+- 40 app-owned active-window captures cover all seven pages, the three Tools
+  panes, every shortcut group separately, all-open and linked states, Customize
+  and New Hand in light/dark. All associated layout checks passed. The script
+  keeps the headless display awake during capture; it does not bypass locks.
+- Visual QA corrected the native menu image intrinsic size that widened Pointers,
+  kept full sidebar/direction labels visible, and verified the complete gesture
+  sheet and sound preview controls.
+- The original populated-preset verification loop exceeded its control deadline
+  because metadata edits invalidated all artwork caches. Preset-only edits now
+  retain artwork; import/restore still invalidates changed artwork. The original
+  populated loop passed after this correction.
+- `PATH="$PWD/.build/settings-packaging-venv/bin:$PATH" bash
+  scripts/build-review.sh --package-only`: universal arm64/x86_64 build,
+  Developer ID signing, notarization, stapling, Gatekeeper, exact ZIP extraction
+  and bundled plugin contract verification passed. Pillow was installed only in
+  that project-local environment for the existing icon generation script.
+- App notarization: `ec541652-397d-4885-87f3-0da13b656059`.
+- Evidence: `dist/verification/settings-implementation/validation.json`,
+  `tests-final.log`, `tests-focused-final.log`, `package-final.log`,
+  `native-results.json`, and `native/`. The finished gallery is
+  `design/settings-redesign/native-review/settings-native-review.html`.
+
+No hosted CI was created, enabled or dispatched. This is an isolated review
+build, not a public update or replacement of the normal app.
+
+
+## Quick controls v9 semantic item roles, 17 November 2026
+
+`CODE-REVIEW-7.md`'s P2 is fixed on `feature/radial-quick-controls-v9`.
+Changes remain uncommitted. This section supersedes the round 6 package below.
+
+Every item now requires a semantic role. The catalog assigns root-command kind,
+pointer favorite identity, ink, tool, More-command kind, Back or All pointers.
+Artwork, tinting, hub artwork, ON/OFF badges, selected checks, submenu cues,
+optical offsets, list row state and accessibility labels/state use those roles.
+Current-state refresh and history availability also use roles; history still
+validates the fixed level/slot and request operation. Press and AX identities
+include role alongside level/slot/ID, with AX generation/epoch validation retained.
+Practice's Pen lookup now uses its tool role. The whole-change audit found no
+remaining production item-ID literal comparisons or ID switches. Data lookup and
+slot-identity validation remain ID-based.
+
+Two new regression methods cover 26 wheel/list collision cases. Both cover
+`pointer`, `color`, `draw`, `interact`, `clear`, `undo`, `redo`, `screenshot`,
+`more`, `all` and `back`; the wheel also covers `match`, `sound`, `mute` and
+`toolbar`. Tests exercise the real catalog/session, measured geometry, artwork,
+native list cells and AX elements, including selected/unselected missing entries
+and rejected activation. Reserved `all`/`back` storage/archive rejection remains
+unchanged; those IDs are also injected at the session boundary. The pre-fix run
+failed with **21 issues**. Before sources, the exact red test source, `red.log`,
+focused green output and the repair diff are retained under
+`dist/verification/radial-v9/review7/`.
+
+Two complete `scripts/run-tests.sh` runs pass **393 tests in 52 suites**, the
+Python package contract and all **20 grid checks** each. Swift test times are
+**93.153** and **84.193 seconds**. No compiler warnings. `test-results.json`
+records both runs. `git diff --check` passes.
+
+The snapshot harness now settles initial accessory-app activation and drains
+asynchronous focus restoration after fixture closure. Its stale recovery
+assertion now checks that the relinquished wheel closes when recovery returns
+the original restoration token, matching the existing focus tests. The retained
+initial snapshot failures are separate from the collision red evidence. No
+measured snapshot state is retried.
+
+The complete pre-fix and final-package `scripts/snapshot-radial.py` matrices
+both pass **206 snapshots**. All 206 normalized layout/state reports match;
+all **144** wheel/list measured item and panel frames match exactly. **179**
+images are pixel-identical. The remaining 27 differ by at most 13/255 in any
+channel and less than 0.034/255 mean channel intensity. Visual inspection of
+`normal-states-contact-sheet.png` confirms unchanged artwork, badges, child
+positions, hub labels and Back arrows in light/dark. Normal and short scrolling
+lists retain their labels, checks and keyboard outlines. Material, opaque,
+contrast and Reduce Motion states pass. See `snapshot-comparison.json`,
+`snapshots-before-final.log`, `snapshots-after.log` and `snapshot-before/`.
+
+`scripts/build-review.sh --package-only` produced universal arm64/x86_64 Review
+**1.2.0 (20261117022832)**, bundle ID
+`com.austinpresley.pleaselookhere.review`. App notarization is Accepted,
+receipt `886b0fe5-795b-492a-aa3c-356e93f2d251`; plugin 1.1.0.0 is Accepted,
+receipt `ba8a3b7e-5722-43f1-b6ae-7b3ff91ad7dd`. Deep/strict signing,
+secure timestamps, stapling, Gatekeeper, ZIP integrity, extracted-app checks
+and the bundled installer contract passed. No compiler warnings. See `package.log`
+and `package-result.json`. Archive: `dist/Look Here Please Review-review.zip`.
+SHA-256: `94bef7f4e9e9969f98eeffce4a1877fa931af9865ff10bbe65201023075553ce`.
+
+All **177** packaged source/test/script hashes match `build-source-manifest.json`.
+Root PNGs, research files and assets retain their pre-fix bytes; the regenerated
+`assets/Assets.car` was restored from its exact pre-build copy. A concurrent
+change to unrelated `design/s024/BRAND.md` is recorded in
+`concurrent-protected-changes.json` and was left untouched. No hosted CI,
+live-smoke, posted native input, normal-app/prefs/grant changes, installation,
+commits, pushes, PRs, delegation or external delivery. The package remains in
+`dist` for local handoff.
+
+## Quick controls v9 round 6 fixes and deterministic tests, 17 November 2026
+
+All requests in `design/radial-redesign/grades/CODE-REVIEW-6.md` are addressed
+on `feature/radial-quick-controls-v9`. Changes remain uncommitted. This section
+supersedes the round 5 package below.
+
+Held release and click now validate native focus before moving selection or
+executing a command. The check covers both key-window loss and app deactivation
+before notification delivery. Command-Tab revokes keyboard-owned Hold input and
+its queued generation synchronously, while claimed pairs still drain. App resign
+and external-activation observers require prior keyboard ownership. Pointer-only
+Hold remains usable with another app frontmost, including external activation.
+Explicit recovery transfers retain their separate focus owner.
+
+History availability updates only root Clear at slot 3, root Undo at slot 6,
+and More Redo at stored slot 0, validating each ID and request operation.
+Missing favorites named `clear`, `undo` and `redo` retain their disabled state.
+The identity audit also changed pointer press matching to level, slot and ID,
+and command preparation to the validated request operation. AX already validates
+generation, level, slot and ID; catalog refresh and pointer lookup already use
+specific levels. Reserved Back/browser IDs remain rejected in favorites.
+The older annotation test now uses the real catalog and its actual history slots.
+
+Settings takes the wheel's original restoration token through AppDelegate,
+without restoring or recapturing focus during opening. Settings owns the token
+until closure, clears ownership before restoring, retains the first obligation
+across repeated shows, and consumes it once. The delayed-activation regression
+uses the production AppDelegate callback and an injected Settings focus driver.
+
+Nine new regression methods cover 18 cases. Retained red evidence under
+`dist/verification/radial-v9/review6/` includes `red.log` with 19 issues,
+`flake-replay-red.log` with five, `active-red.log` with four, and
+`identity-red.log` with three. Each behavior fix has a failing pre-fix assertion.
+The focused green run and before/red/after source copies are retained there.
+All constructed input is unposted; focus operations are recorded in memory.
+
+The reviewer's two issues were both in
+`LifecycleTests.nativePressReleasedOverOurOwnUIStopsBlockingGestures`, at its
+initial and final gesture-availability assertions. The original failure dump
+contains a desktop menu rectangle `(938, 30, 352, 149)` in `menuRects`.
+`activate`/`tick` sampled global popup windows through
+`CGWindowListCopyWindowInfo`, so another app's menu changed this test's
+preconditions. It was ambient desktop state, rather than pair-drain timing.
+Replaying that exact rectangle through an injected menu source reproduced both
+assertions. The fixture now supplies an empty menu source; production retains
+the native sampler. A separate positive regression verifies that a sampled
+external menu still blocks gestures. `reviewer-flake.json` records the original
+review thread/item, failed lines and relevant dump values.
+
+Three consecutive complete `scripts/run-tests.sh` runs pass **391 tests in
+51 suites**, the Python package contract and all **20 grid checks** each.
+Swift test times are **81.243**, **81.715** and **80.867 seconds**. No compiler
+warnings. Logs are `tests-run1.log`, `tests-run2.log` and `tests-run3.log`;
+`test-results.json` records zero exit status for all three. The earlier broader
+pre-audit run also passed 389 tests. `git diff --check` passes.
+
+`scripts/build-review.sh --package-only` produced universal arm64/x86_64 Review
+**1.2.0 (20261117020207)**, bundle ID
+`com.austinpresley.pleaselookhere.review`. App notarization is Accepted,
+receipt `4e9f3958-049b-4ffe-a499-81b36a5dbe39`. Bundled plugin 1.1.0.0
+is also Accepted, receipt `b5416756-5d25-4a76-826e-826c236316fd`.
+Deep/strict signing, secure timestamps, stapling, Gatekeeper, ZIP integrity,
+extracted-app verification and the bundled installer contract passed. No compiler
+warnings. Packaging used the existing local Pillow environment at
+`~/Library/Caches/look-here-please-build-python`. Log: `package.log`.
+Archive: `dist/Look Here Please Review-review.zip`, SHA-256
+`3e8aaeffd9493f54e924ce8bc49116e5457c9b2b36ae289021efd993ddab5132`.
+
+All **177** files in `build-source-manifest.json` match the tested and packaged
+source/test/script tree. All **441** protected root PNG, research and design
+files match their pre-fix hashes. Packaging's regenerated `assets/Assets.car`
+was restored from its exact pre-build copy; all asset hashes match.
+`package-result.json` and `validation.json` record these checks and receipts.
+No layout changed. No hosted CI, live-smoke, posted native input, normal-app,
+prefs or grant changes, installation, commits, pushes, PRs, delegation or
+external delivery. The Review app and archive remain in `dist` for local handoff.
+
+## Quick controls v9 focus, recovery and AX fixes, 17 November 2026
+
+All three findings in `design/radial-redesign/grades/CODE-REVIEW-5.md` are fixed
+on `feature/radial-quick-controls-v9`. Changes remain uncommitted. This section
+supersedes round 4's ordinary-deactivation recovery behavior below.
+
+Unexpected key-window loss, app deactivation or activation of another app now
+cancels Quick controls without restoring the saved app/window/responder.
+Command-Tab revokes input ownership synchronously and stays a native pair.
+Workspace Space/session changes, sleep and the existing distributed lock and
+screensaver notifications use the same cancellation path. Mission Control is
+covered through observable key/activation/Space changes; no live Mission Control
+or screen-lock test was performed. System stop/recovery cancels the wheel before
+ordinary overlay cleanup. Claimed key repeats/releases and mouse releases still
+drain. An ownership generation rejects queued input after closure or revocation,
+including when another session has opened. Activation also checks the injected
+native focus owner before executing a key, pointer-up or AX item activation.
+
+Recovery's expected key handoff retains its token and remains usable. If focus
+later leaves recovery, the old wheel closes without restoring or taking that
+token back. Browser handoff and delayed cancellation retain their round-4
+behavior. Ordinary deactivation and Pointer Off preserve Clear recovery and its
+Undo. Only `AppDelegate.applicationWillTerminate` explicitly dismisses recovery
+before teardown, including when the pointer is already inactive.
+
+AX identities now contain the frozen slot, ID, session generation and level.
+Press and focus validate that exact live slot; a disabled missing `all` cannot
+activate the All pointers browser item. Favorites storage, assignment and archive
+validation reject reserved IDs `all` and `back`, including named preset imports.
+Missing nonreserved pointer IDs remain valid frozen favorites.
+
+Five regressions, with 14 cases, ran before the behavior fixes and failed with
+**89 issues**. They cover eight focus-loss routes with queued Clear and owned
+key/mouse pairs, recovery Undo after active/inactive Off, duplicate AX IDs,
+reserved IDs in storage/assignment/setup/preset imports, and queued activation
+against a replacement input session. A further recovery-handoff regression
+caught **two issues** in the first fix and now passes. Another check proves a
+queued activation samples native focus before the resign notification arrives.
+All seven new regressions have 16 cases. Two older drainage tests now deliver
+navigation while ownership is live, then verify repeats/releases after closure;
+the new generation regression requires undelivered activation to be rejected.
+Focus drivers record operations in memory; constructed input is never posted.
+
+Final `scripts/run-tests.sh` passes **382 tests in 51 suites** in **79.486
+seconds**, the Python package contract and all **20 grid checks**. No compiler
+warnings; `git diff --check` passes. The initial full run exposed the two older
+queue-order expectations described above. Logs and before/red/after source copies
+are under `dist/verification/radial-v9/review5/`: `red.log`, `handoff-red.log`,
+`green.log`, `tests-attempt1.log` and `tests-final.log`.
+
+`scripts/build-review.sh --package-only` produced universal arm64/x86_64 Review
+**1.2.0 (20261117012841)**, bundle ID
+`com.austinpresley.pleaselookhere.review`. App notarization is Accepted,
+receipt `f05ae9d4-afb0-4f9f-9ae9-7d7ecc560c94`. Bundled plugin 1.1.0.0 is
+also Accepted, receipt `d361b6fb-8d0b-4a6d-b598-c99a17de3ab6`. Deep/strict
+signing, secure timestamps, stapling, Gatekeeper, ZIP integrity, extracted-app
+verification and the bundled installer contract passed. No compiler warnings.
+The first packaging attempt stopped at icon generation because default Python
+lacked Pillow. The successful retry used the existing local environment at
+`~/Library/Caches/look-here-please-build-python`; no dependency or system Python
+change was needed. Logs: `package-initial.log` and `package.log`. Archive:
+`dist/Look Here Please Review-review.zip`, SHA-256
+`a147bdda0c671c9d5f3a2c554f298c76336c93510e6a46991071943db8b5e366`.
+
+All **177** files in `build-source-manifest.json` match the tested and
+packaged source/test/script tree. `validation.json` records the results and
+receipts. Root PNGs and `docs/research/*` match their pre-fix hashes. Concurrent
+changes under unrelated `design/brand-refresh/` belong to other work and were
+left alone. No design file was written by this task. Packaging's regenerated
+CAR, ICNS and menu icon PNGs were restored from exact pre-build copies.
+
+No layout changed. No hosted CI, live-smoke, posted native input, normal app,
+prefs or grant changes, installation, commits, pushes, PRs, delegation or external
+delivery. The Review app and archive remain in `dist` for this local handoff.
+
+## Quick controls v9 browser handoff and quit fixes, 17 November 2026
+
+Both P2 findings in `design/radial-redesign/grades/CODE-REVIEW-4.md` are fixed
+on `feature/radial-quick-controls-v9`. Work remains uncommitted. This package
+supersedes the repeated recovery handoff package below.
+
+All pointers now takes the wheel's original restoration token before closing
+the wheel. The pending browser handoff owns that token through input drainage,
+then transfers it into PointerBrowser without restoring or capturing another
+context. Pending replacements retain the first obligation, as recovery does.
+Cancellation clears the task and owner before restoring; browser closure clears
+its owner before consuming the token. Repeated cancellation/closure is inert.
+Direct browser opening still captures a context when it has no inherited token.
+
+Termination explicitly dismisses Clear recovery before stopping the control
+server, unregistering hotkeys or deactivating the overlay. Deactivation also
+dismisses recovery before its already-inactive guard. The transferred token is
+consumed once before teardown; later dismissal, revision/capture updates and
+repeated termination cannot reactivate the saved app or responder.
+
+Three new regressions, with five cases, failed before these fixes with **30
+failed expectations**. Only injectable browser focus and AppDelegate construction
+were added for the red run; wheel handoff and termination behavior were unchanged.
+The delayed-activation browser test caught early restoration, recapture and
+restoration to the wheel instead of the original app/window/responder. Cancellation
+tests cover pending-task cancellation by capture and inactive deactivation. Quit
+tests cover active and already-inactive overlays after the wheel transfers focus
+to recovery and closes. They require one original-context restoration before
+teardown, and no further activation during repeated cleanup. Focus operations
+use an injected driver; constructed input is never posted natively.
+
+Evidence is under `dist/verification/radial-v9/review4/`. `red.log` records the
+failures; `green.log` passes **10 focus tests with 22 cases** in 9.253 seconds.
+Final `scripts/run-tests.sh` passes **375 tests in 51 suites** in 76.246 seconds,
+the Python package contract and all 20 grid checks. `tests-final.log` records
+the final run. No compiler warnings; `git diff --check` passes. Before/red/after
+source copies and `validation.json` retain the regression and build evidence.
+
+`scripts/build-review.sh --package-only` produced universal arm64/x86_64 Review
+**1.2.0 (20261117010052)**, bundle ID
+`com.austinpresley.pleaselookhere.review`. App notarization is Accepted,
+receipt `cc07ac92-4b9f-47c4-bf0e-9518b0ec4941`. Bundled plugin 1.1.0.0 is also
+Accepted, receipt `3373e265-16c5-42c9-9b2f-02bbdf5b6ba5`. Deep/strict signing,
+secure timestamps, stapling, Gatekeeper, ZIP integrity, extracted-app verification
+and the bundled installer contract passed. No compiler warnings. Build log:
+`package.log`. Archive: `dist/Look Here Please Review-review.zip`, SHA-256
+`51774df0b81f9929ecd65d95db81857bc8a941adb56fb9d320b64d88681afac0`.
+
+All 178 source/test/script files match the final validation manifest. All 246
+protected root PNG, research and design files match their pre-fix hashes.
+Packaging's regenerated icon assets were restored from exact pre-build copies.
+No layout changed; no new live native-input or external-app activation evidence
+is claimed. No hosted CI, live-smoke, posted native input, normal app/prefs/grant
+changes, installation, commits, pushes, PRs, delegation or external delivery.
+The Review app and archive remain in `dist` for this local implementation handoff.
+
+## Quick controls v9 repeated recovery handoff fix, 17 November 2026
+
+`CODE-REVIEW-3.md`'s remaining P1 is fixed on
+`feature/radial-quick-controls-v9`. Changes remain uncommitted. This package
+supersedes the earlier focus-ownership package below.
+
+Clear recovery now calls `takingRestoration` on every valid focus handoff,
+before checking `tookFocus`. Each wheel relinquishes its token and keyboard
+ownership. Recovery adopts the returned token only when it has no existing
+restoration obligation. Otherwise it retains the original token and drops the
+later token without restoring it. The wheel has already cleared its reference,
+so closing that session cannot restore the external app or steal Undo focus.
+
+The handoff audit covered the panel shortcut and Edit-menu recovery routes,
+wheel/list focus and close paths, pointer-browser opening, capture exclusion,
+focus failure, invalidation and recovery completion. Both recovery routes share
+`RadialMenu.focusRecovery`; no other transfer callback is gated on prior focus.
+Browser opening closes the wheel before showing the browser. Existing recovery
+completion paths clear ownership before consuming the original token.
+
+Two regressions cover held and persistent controls, each with Undo and Dismiss
+variants. They focus recovery in session 1, close the wheel, simulate focus
+leaving, and reopen the wheel from a second context with a different window
+and responder.
+After refocusing recovery, refresh and trigger release or persistent close must
+leave recovery focused with zero restoration calls. Undo/Dismiss must restore
+the first context exactly once, including after repeated cleanup. The injected
+driver records focus operations; constructed input is never posted natively.
+All four cases failed before the fix with **36 failed expectations**, including
+early restoration, wrong window/responder and two restores after completion.
+The red log and before/after source copies are under
+`dist/verification/radial-v9/refocus-*`.
+
+The focused run passed **7 tests with 17 cases** in 7.680 seconds.
+The complete `scripts/run-tests.sh` passed **372 tests in 51 suites** in
+74.394 seconds, the Python package contract and all 20 grid checks. No compiler
+warnings. Logs: `refocus-red.log`, `refocus-green.log` and
+`refocus-tests-final.log` in the verification directory. `git diff --check` passes.
+
+`scripts/build-review.sh --package-only` produced universal arm64/x86_64 Review
+**1.2.0 (20261117004143)**, bundle ID
+`com.austinpresley.pleaselookhere.review`. App notarization is Accepted,
+receipt `56eae8ce-2906-4b50-9cb3-c3e139b718d1`. Bundled plugin 1.1.0.0 is
+also Accepted, receipt `353683d3-1af7-4e22-9d65-6ad7779aa7f6`. Deep/strict
+signing, secure timestamps, stapling, Gatekeeper, ZIP integrity, extraction and
+the bundled installer contract passed. No compiler warnings. The initial attempt
+stopped because system Python lacked Pillow; the successful retry used a
+disposable local virtual environment. Logs: `refocus-package-initial.log` and
+`refocus-package-final.log`. Archive: `dist/Look Here Please Review-review.zip`,
+SHA-256 `d2ad0614368bfbcafef7dd7ab7efc5029f6760c9bad376e19f24bb555adee9af`.
+
+All 178 source/test/script hashes match the tested and packaged tree. All
+245 protected root PNG, research and design files match their pre-fix hashes.
+Packaging's regenerated `assets/Assets.car` was restored from its exact pre-build
+copy. `refocus-source.json`, `refocus-protected-files.json` and
+`refocus-validation.json` retain these checks. No layout changed and no new
+native-input or external-app activation test is claimed. No hosted CI,
+live-smoke, posted native input, normal app/prefs/grant changes, installation,
+commits, pushes, PRs, delegation or external delivery. This remains a local
+implementation handoff; the Review app is packaged in `dist`.
+
+## Quick controls v9 focus ownership fix, 17 November 2026
+
+`CODE-REVIEW-2.md`'s remaining P1 is fixed on
+`feature/radial-quick-controls-v9`. Changes remain uncommitted. This package
+supersedes the earlier polish package below.
+
+Quick controls saves the original app, window and first responder in one
+consumable restoration obligation. The scoped Command-Shift-U route and the
+Edit menu transfer that obligation to Clear recovery before focusing its panel.
+The wheel relinquishes keyboard ownership and its restoration reference. Later
+history refreshes cannot reclaim focus, and a queued wheel close cannot restore
+the external app. Recovery consumes the transferred obligation when Undo,
+Dismiss, revision invalidation, stale Undo rejection or capture hiding finishes.
+Capture completion can reveal still-valid recovery without restoring twice or
+reopening the wheel. Restoration clears ownership before invoking native focus
+operations. A failed attempt to focus recovery also returns the original context.
+
+`QuickControlsFocusTests.swift` adds five regressions with 13 parameter cases.
+They construct real wheel/recovery panels and a fixture window/responder. An
+injected focus driver records app activation/restoration without activating an
+external app. The cases route constructed, unposted input through RadialInput's
+main-queue callbacks, Tab into the wheel, and invoke the real panel equivalent
+and OverlayController-installed recovery handler. Held release queues cancellation;
+recovery retains focus through that close until its actual Undo button or Dismiss
+finishes. Persistent controls, edits before queued cancellation, stale revision
+rejection, and capture with/without intervening edits verify exactly one restore
+to the original app/window/responder. The production responder test starts at the
+actual panel's first responder and verifies Ink Undo/Redo plus Command-Z, rather
+than assigning a standalone handler. It exposed NSWindow intercepting standard
+selectors; AnnotationResponderPanel now forwards them to scoped annotation history.
+
+All five tests failed against the pre-transfer behavior with only the injectable
+focus seam present: **97 failed expectations**, including early external restore,
+wrong recovery context, double restore and disconnected selector routing. Exact
+pre-transfer/fixed source copies and logs are retained under
+`dist/verification/radial-v9/`: `focus-red-final.log` and
+`focus-green-final.log`. Restoring the fix passed all five tests in 7.280 seconds.
+The complete `scripts/run-tests.sh` passed **370 tests in 51 suites** in 76.413
+seconds, the Python package contract, and all 20 grid checks. No compiler warnings.
+Full log: `focus-tests-final.log`. `git diff --check` passes.
+
+`scripts/build-review.sh --package-only` produced universal arm64/x86_64 Review
+**1.2.0 (20261117002652)**, bundle ID
+`com.austinpresley.pleaselookhere.review`. App notarization is Accepted,
+receipt `f6391802-f39f-4510-9303-c3d40722162e`. Bundled plugin 1.1.0.0 is
+also Accepted, receipt `981a2749-cbb2-4277-a00f-10361f81d223`. Deep/strict
+signing, secure timestamps, stapling, Gatekeeper, ZIP integrity, extraction and
+the bundled installer contract passed. No compiler warnings. Build log:
+`dist/verification/radial-v9/focus-package-final.log`.
+Archive: `dist/Look Here Please Review-review.zip`, SHA-256
+`4331423b005f5025bfcd7574accb25e1fbc799448c4c6555242fe197788fc3f7`.
+
+All 178 source/test/script hashes match the tested and packaged tree. All
+244 protected root PNG, research and design files match their pre-fix hashes.
+Packaging's regenerated `assets/Assets.car` was restored from its exact pre-build
+copy. `focus-source.json`, `focus-protected-files.json` and `focus-validation.json`
+retain these checks. No visual layout changed; the prior native grade remains
+historical evidence, and no new native-input or external-app activation test is
+claimed. No hosted CI, live-smoke, posted native input, normal app/prefs/grant
+changes, installation, commits, pushes, PRs, delegation or external delivery.
+
+## Quick controls v9 release candidate polish, 17 November 2026
+
+Claude accepted review-fix round 1. This follow-up implements the three P2
+snapshot findings on `feature/radial-quick-controls-v9`, still uncommitted.
+The package and snapshot identity recorded here replace the previous round's RC.
+
+- Browser names use the actual 64-point label width, with no horizontal inset.
+  Visible glyph bounds and direct per-line drawing avoid both excess side-bearing
+  measurement and a second wrapping pass. Gingerbread's ink is 63.45 points wide
+  at 11 pt, so it stays on one line. Presentation uses the English hyphenation
+  dictionary and reads `Presenta-` / `tion pointer`. Explicit soft hyphens take
+  precedence and disappear when no break is needed. Unknown words break only at
+  composed characters, with a visible hyphen. The two-line limit, 11/14 pt type,
+  ellipsis policy and full footer, tooltip and AX name are preserved.
+- Clear and the command-error HUD share `QuickRecoverySurface` and
+  `QuickRecoveryButton`. The error card has 12-point corners, matching material,
+  transparency/contrast fallback and palette, a 13-point semibold title and
+  12-point secondary reason. Primary actions are 28 points high, using
+  `#FF9589` / `#302736` in dark and `#B6423B` / white in light. Dismiss is a
+  28-by-28-point cross with AX name "Dismiss". Error persistence, announcement
+  deduplication and nonactivating appearance are unchanged.
+- Undo, Clear Dismiss and both error buttons share a 2-point system-blue keyboard
+  ring over a contrasting 4-point halo, or 5 points with Increase Contrast. The
+  ring sits 3 points outside the fill. It appears only for the key window's actual
+  first responder. Existing Clear recovery focus/return behavior is preserved.
+  New appearance fixtures select Dismiss directly, without depending on Full
+  Keyboard Access preferences or posting native input.
+
+`scripts/run-tests.sh` passed **365 tests in 50 suites** in 72.592 seconds,
+plus the Python package contract and all 20 layout lints. No compiler warnings
+were emitted. The new name regression first failed all seven assertions against
+the old implementation. Logs are `dist/verification/radial-v9/polish-red.log` and
+`polish-tests-final.log` in that directory.
+
+`scripts/build-review.sh --package-only` built universal arm64/x86_64 Review
+**1.2.0 (20261117000204)**, bundle ID
+`com.austinpresley.pleaselookhere.review`. App notarization is Accepted,
+receipt `4f6c5ff1-57ea-4e4b-a397-f8c416a35840`. Bundled plugin 1.1.0.0 is also
+notarized, receipt `302f234b-0424-4652-9629-e086cf3316a8`. Deep/strict signing,
+secure timestamps, stapling, Gatekeeper, ZIP integrity, extraction and the bundled
+installer contract passed locally. The build emitted no compiler warnings.
+Log: `dist/verification/radial-v9/polish-package-final.log`.
+Archive: `dist/Look Here Please Review-review.zip`, SHA-256
+`7ed137cf8918aa081c434f91801a18404b5b5b67cab0e1687bca99cac023a4ac`.
+Packaging's regenerated `assets/Assets.car` was restored from its exact clean
+pre-build copy. No installed app was replaced or launched by packaging.
+
+The exact notarized app passed the full **206-state** snapshot matrix, comprising
+144 wheel/list states, 42 browser/editor states, eight error HUD states, ten Clear
+recovery states and two exclusion witnesses. Each PNG has adjacent state/layout
+JSON. Log: `dist/verification/radial-v9/polish-snapshots-final.log`; all paths are in
+that directory's `manifest.json`.
+
+Forty-two affected browser/HUD/recovery images were visually inspected in native
+size light/dark pairs. The final package's 62 quick-surface images were also
+compared against the preview: 51 are pixel-identical; all 11 changed browser images
+were reinspected. Browser long names fit at wide, narrow/tall, narrow, short/wide
+and minimum short sizes. HUD title/reason/action/cross are readable in both themes.
+Every recovery/error button shows a blue ring with a contrasting halo on explicit
+focus, separated from the fill. Nonfocused appearance has no ring. Fixture checks
+confirm nonactivating error appearance and Clear focus return after Undo/Dismiss.
+Final comparison sheets are in `dist/verification/radial-v9/polish-rc-contact-sheets/`;
+`polish-inspection.json` records observations, pixel comparisons and artifact identity.
+
+All 176 source/test/script hashes still match the final tested and packaged tree.
+All 242 protected root PNG, research and design files match their pre-polish hashes.
+The records are `polish-source.json` and `polish-protected-files.json` in the same
+verification directory. `git diff --check` passes. No hosted CI, live-smoke,
+posted native input, normal app/prefs/grant changes, commits, pushes, PRs,
+delegation or external delivery occurred. The user requested a local sub-agent
+handoff; the Review app remains packaged in `dist` and is not installed.
+
+## Quick controls v9 review fixes, 16 November 2026
+
+Branch `feature/radial-quick-controls-v9`. The implementation remains uncommitted,
+pending Claude's acceptance of S-054. Both `CODE-REVIEW-1.md` and
+`NATIVE-GRADE-1.md` were read in full. All six requested fixes were accepted.
+
+### Findings and implementation
+
+- Persistent opening goes through `InputTap.openQuickControls`. It installs and
+  enables the shared connection before RadialInput can enqueue an opening event,
+  including when Hold is unassigned. Failed installation/enable never opens a
+  session. OverlayController uses the existing permission-recovery path.
+- RadialSession has a unique generation. Each AX element captures that generation,
+  level and item ID, validates against the live session and resolves the ID again
+  before activation or focus. Level changes and reset invalidate retained elements
+  and clear both children arrays. List AX frames use actual table-to-view geometry
+  after clip-view movement and layout, including keyboard autoscroll. Off-viewport
+  elements are hidden and omitted from AXVisibleChildren.
+- AnnotationUndoResponder handles Undo/Redo selectors and Command-Z/Shift-Command-Z
+  within the wheel, list and recovery responder chains. Search field editors keep
+  their text undo; external Interact input remains native. Draw's existing scoped
+  shortcuts are unchanged. Command-Shift-U, also in Edit > Focus Clear Recovery,
+  explicitly focuses valid recovery. Appearance keeps prior focus; Undo/Dismiss
+  restore the prior visible key window and responder. Recovery does not retain a
+  visible focus ring when reopened without keyboard focus. Input routing gives the
+  focused recovery native keys and its own mouse region while retaining outside
+  dismissal-pair ownership.
+- Screenshot closes the wheel, list and browser, cancels pending browser handoff,
+  retains exclusion IDs and drains owned input pairs. It restores only a still-valid
+  Clear revision. Capture completion cannot reopen a browser or controls session.
+- QuickCommandResult preserves bridge rejection reasons. A persistent,
+  nonactivating error HUD presents the reason, a recovery action and Dismiss.
+  A distinct visible failure announces once. Accessibility and Screen Recording
+  actions open their named Settings pages. File-write errors offer Choose Folder;
+  capture timeouts/encoding/display errors offer Retry Screenshot. Successful
+  command feedback remains transient. Quick-controls capture errors use this same
+  HUD; the ordinary Screenshot result behavior is preserved.
+- Browser cells wrap oversized words at measured character boundaries within two
+  lines at 11/14 pt. Type never shrinks. Presentation pointer fits, with the full
+  name retained in the footer, tooltip and AX label.
+
+### Local tests and packaging
+
+`QuickControlsReviewTests.swift` adds 13 regression tests across three suites.
+Coverage includes fresh InputTap installation/enable ordering and failure, outside
+press/release drainage, stale AX generation/level/reset and focus, actual list
+clip geometry and visible children through keyboard/programmatic scrolling,
+responder-chain Undo and standard equivalents, search-field preservation,
+external Interact Command-Z, held-focus/recovery routing, capture shutdown with
+both key and mouse pairs, error persistence/announcement/recovery mapping and
+measured long names. The existing capture test now requires session closure.
+
+The retained red run reproduces stale AX press actions and children surviving
+reset: `dist/verification/radial-v9/review-fixes-red.log`.
+The final `scripts/run-tests.sh` passed **364 tests in 50 suites** in 72.446 s,
+plus the Python Stream Deck package test and 20 grid checks. No compiler warnings
+were emitted. The exact final-tree log is
+`dist/verification/radial-v9/review-fixes-tests-final.log`. `git diff --check` passes.
+
+The final `scripts/build-review.sh --package-only` built universal arm64/x86_64
+Review **1.2.0 (20261116234426)**, bundle ID
+`com.austinpresley.pleaselookhere.review`. App notarization is Accepted,
+receipt `459fad8f-3218-44bd-8339-9d24d8306fd5`. The bundled plugin 1.1.0.0 is also
+notarized, receipt `3f2779b6-d265-4aa1-8fe0-8702ce267d6d`. Deep/strict signing,
+stapling, Gatekeeper, ZIP integrity, extraction and the exact bundled installer
+contract passed locally. Log:
+`dist/verification/radial-v9/review-fixes-package-final.log`.
+The archive is `dist/Look Here Please Review-review.zip`, SHA-256
+`b8dbebe429c6ec2e479a686cb614cfaf34fd84510ad59e725ea4483dc8872739`.
+
+The earlier package receipt in `review-fixes-package.log` predates the last AX
+visible-children update and is superseded by this final package. The final binary
+contains that setter. `review-fixes-source.json` records 149 source/test/script
+hashes, all rechecked unchanged after packaging and snapshots. Packaging regenerated
+`assets/Assets.car`; its initially clean tracked copy was restored to avoid a
+compiled-asset-only source diff. No installed app was replaced.
+
+### Snapshots and visual inspection
+
+The matrix uses only the isolated Review bundle, a disposable defaults suite,
+temporary hand/cache paths and process-local Accessibility denial. It does not
+post native input or request capture permission. The command-error rejection
+fixture activates a real wheel command and receives the actual ControlBridge
+Accessibility rejection. Recovery fixtures invoke the real scoped equivalent
+handler directly and check actual focus return after Undo/Dismiss. Exclusion
+fixtures require both browser and controls to remain closed after restoration.
+
+Early snapshot runs exposed compositor timing in the fixtures and the diagnostic
+witness hiding on deactivation. They were corrected with settling intervals and a
+witness that remains visible when focus returns. They are not counted as passing
+matrix runs. Visual inspection also caught the stale recovery focus ring, which
+was fixed before final snapshots.
+
+The final run captured the **exact notarized Review app** and passed **198
+states**: 144 wheel/list images, 42 browser/editor images, four error HUD images,
+six recovery images and two exclusion witnesses, with adjacent state/layout JSON.
+All 7,712 measured wheel corners pass sector and outer-clearance checks. The log
+is `dist/verification/radial-v9/review-fixes-snapshots-final.log`; `manifest.json`
+indexes the final matrix.
+
+All 54 affected images were inspected in light/dark pairs. Forty-two final images
+are pixel-identical to the already inspected previews; the 12 changed images were
+inspected again. The final 27 comparison sheets are in
+`dist/verification/radial-v9/review-fixes-rc-contact-sheets/`.
+`review-fixes-inspection.json` records the observations and artifact identity;
+`review-fixes-visual-checks.json` records corner checks and pixel comparisons.
+Browser names and footer copy are legible at every tested width/height. Error
+reasons/actions are readable in both themes and do not take focus. Recovery has
+no ring on appearance, a visible Undo ring on explicit focus and verified return
+to the prior wheel/list key window. The short list's bottom selection remains
+inside its scroll viewport. Diagnostic witnesses report closed controls/browser
+and retained recovery, without claiming real screen-capture output.
+
+### Limits and preservation
+
+No hosted CI, live-smoke, posted native input, normal installed-app access,
+normal preference/grant changes, commits, pushes, PRs or delegation. Root artwork,
+`docs/research/*` and unrelated design files were left alone. Package-only mode
+keeps the installed app unchanged. This is a local implementation handoff for
+Claude's release acceptance.
+
+The snapshots prove app-owned visibility, layout and focus state. Exclusion
+images are labelled diagnostic witnesses, not desktop captures. Real saved/copied
+captures, actual event-tap/TCC behavior, external-app focus restoration, spoken
+VoiceOver, Full Keyboard Access/Voice Control, physical mouse/trackpad input,
+multiple displays/mixed scales, native 2×, Intel/older macOS runtime and material
+contrast over busy content remain manual acceptance gates. Automated unit events
+are constructed and routed directly, never posted into the native input stream.
+
 ## Coordinator final review and delivery, 10 November 2026
 
 All eleven requested areas have implementation and local evidence. The coordinator
@@ -2893,3 +3537,698 @@ values and ordinary keyboard paths were inspected, but spoken output could not
 be reliably captured through the automation interface. It was restored Off and
 the verification-only system utilities were closed. This is not a full spoken
 VoiceOver or Accessibility Inspector certification.
+
+
+## C11 identity and GitHub presentation, 17 November 2026
+
+Austin selected C11 Cream using the S1 diagonal composition and authorized it as
+our current logo and palette, with a reworked GitHub page. The canonical native
+source now uses the original lavender PNG embedded in the selected SVG layer;
+the icon document and hand layer match the approved C11 bytes exactly.
+
+Local `make-icons.py`, the updated `make-branding.py` and `review-icons.py`
+completed. CAR/ICNS, all six native appearances, repository banner/logo,
+outlined wordmarks, favicons, social art, pointer lineup and local plugin
+identity PNGs were regenerated. No Swift app logic, preferences, runtime
+installation or app release packaging was changed by this task. The plugin
+art remains part of its source hash contract and will be repackaged by the
+next normal local plugin/app build.
+
+README, page source and shared branding were visually checked locally. The page
+loaded all ten images in the T3 browser with no horizontal overflow. The native
+snapshot API twice returned `Preview automation snapshot timed out after 15000ms.`
+T3 HTML rendering then checked a 1120 px page, a 390 px narrow page and the Dark
+CSS treatment. Dark CSS was forced in the preview copy because the renderer's
+appearance option alone did not change its system media query. The local README
+render was also inspected. PNGs are saved in
+`design/brand-refresh/c11-github-2026-11-17/`.
+
+Relative image/link paths, local anchors, SVG parsing, PNG integrity, source
+layer identity and text contrast passed. Normal light text/link/button contrast
+is at least 5.5:1; checked dark text/link pairs exceed 7:1. The native source
+retains the existing reduced-contrast system TintedDark treatment.
+
+Published main commit: `aee296bae19502452fde0cc466f31f0ae2407296`.
+Its parent is `7017192888053ec37bcc96fc4b4cdeb92c4213b9`. A clean detached
+publication worktree staged only 38 explicit branding/presentation paths.
+No Sources, Tests, functional changes or workflow definitions were included.
+All 36 written files were checked against the remote Git tree by blob hash,
+and obsolete native vector layers were absent. The live GitHub README showed
+the new text and both new images loaded successfully. Repository description
+now matches the shared product descriptor.
+
+GitHub Actions remains disabled; both inherited workflows remain
+`disabled_manually`, with zero hosted runs. GitHub Pages is not configured.
+The dirty app checkout stayed on its original feature branch. Publication
+manifest and verification are in the C11 handoff directory.
+
+## Usability icons Phase A, 18 November 2026
+
+Implemented on `feature/usability-rethink-icons` over the intentional uncommitted
+Quick controls v9 and Settings work. No commit, push, hosted workflow, live-smoke,
+or native input posting was performed. Gesture artwork, `assets/gesture_*`, and
+`HandGestures.swift` were not edited. Settings page changes are visible wording
+only. The approved HTML sections were rendered with the supplied Playwright Core
+and Google Chrome at 1100 px in both themes, with no page/console errors.
+
+Local checks use `scripts/run-tests.sh`. The final suite has 409 passing Swift
+Tests in 54 suites, plus one passing Python Stream Deck package test. All 30
+source layout lints pass. New tests cover Cursor idempotence, each tool entering
+Draw, the mode toggle returning to the last tool, hidden-pointer state mapping,
+permission-denied UI retention versus unchanged protocol rejection, checked wheel
+Cursor/Draw, native toolbar frame stability, sound identities and symbol loading,
+local lesson completion, and empty practice canvas mounting/resizing/replay.
+
+Builds use only `scripts/build-review.sh --package-only`. A temporary Python venv
+at `/private/tmp/lhp-phaseA-build-venv` supplies Pillow, which the shell's Python
+lacked. The review app and bundled Stream Deck plugin pass local universal build,
+Developer ID signature checks, notarization, stapling, Gatekeeper assessment,
+archive integrity, and installer-contract checks. The installed review app was
+not replaced. Build and test logs are in the verification directory below.
+
+Snapshots use `scripts/snapshot-usability.py`, fresh disposable S-023/radial-v9
+suites, test-mode view fixtures, Accessibility denial, temporary hand/thumbnail
+directories, and `APP_SNAPSHOT`. The script refuses an existing Review endpoint,
+terminates only its own processes, and deletes only its generated defaults domains.
+Every capture is an app-owned native window, including the real tool popover.
+The pointer is never activated for the snapshot fixtures, and no native event is
+posted. The wheel captures use its opaque test accommodation for repeatable
+contrast. Physical permission grants are not changed.
+
+The snapshot pass is run after unit tests finish. An early concurrent pass lost
+wheel focus while unit tests created AppKit windows. Native inspection also found
+and fixed premature practice success from the Settings sample canvas, plus dark
+custom-symbol tinting. Final snapshots were checked individually in both themes
+for selection, disabled history, contrast, clipping and alignment. The practice
+canvas starts empty, has no success message, and disables Next until a local
+completed action. Toolbar frames stay 632 × 48 pt with a 284-pt context and the
+same measured positions for every shared button. All eight popover optical layout
+probe files pass `scripts/check-layout.swift`.
+
+Snapshots live under `dist/verification/usability-icons-phaseA/`:
+
+- `popover-cursor-light.png`, `popover-cursor-dark.png`
+- `popover-pen-light.png`, `popover-pen-dark.png`
+- `popover-hidden-light.png`, `popover-hidden-dark.png`
+- `popover-permission-light.png`, `popover-permission-dark.png`
+- `toolbar-cursor-light.png`, `toolbar-cursor-dark.png`
+- `toolbar-pen-light.png`, `toolbar-pen-dark.png`
+- `toolbar-picker-light.png`, `toolbar-picker-dark.png`
+- `wheel-cursor-light.png`, `wheel-cursor-dark.png`
+- `wheel-draw-light.png`, `wheel-draw-dark.png`
+- `welcome-light.png`, `welcome-dark.png`
+- `practice-light.png`, `practice-dark.png`
+
+`manifest.json` records acknowledged native state for all 22 captures. Popover and
+wheel captures have optical/item layout JSON; toolbar captures record exact shared
+button frames. `mock/` contains the supplied HTML's eight section renders in both
+themes. `tests.log`, `build.log`, and `snapshots.log` retain the actual check output.
+
+Native decisions and departures from the web mock:
+
+- AppKit popovers, switches, buttons and material retain native metrics and the
+  system switch accent. Selected tool/favorite rings and practice accents use
+  brand purple/lavender. SF Symbols replace the web's line icon drawings.
+- The popover is at least 320 pt wide to fit all nine 28-pt ink targets. The legacy
+  280-pt test-width request remains accepted but normalizes to this minimum. A
+  short status row stays inside the popover to explain hidden and not-ready states.
+- The toolbar is 632 pt wide. Its 284-pt context reserves space for the supported
+  eight favorites plus All pointers, so fewer favorites leave intentional space.
+  The permission action is in the picker rather than an extra toolbar row.
+- Tap sound uses three speaker symbols with explicit help/AX values, distinguishing
+  audible, pointer-muted, and app-muted output. The mock's tap-hand glyph did not
+  supply these three states.
+- The neutral wheel hub shows pointer artwork and esc. Inspected/disabled commands
+  retain v9 explanatory hub feedback, list routing, focus and VoiceOver semantics.
+  Existing labels such as Clear drawing and the v9 wheel palette stay intact.
+- Welcome uses native drawn picture tiles and a held-key glyph with the full key
+  name in help/AX text. Practice keeps its desktop-readiness and shortcut links,
+  and starts with a blank canvas. The mock's illustrative sample cannot count as
+  a completed action. Local steps are Click, Draw, back to Cursor, then Quick
+  controls; replay, back, skip, next and cancellation remain available.
+
+Not physically verified: global shortcuts, real click-through or drawing over
+another app, pointer tracking, toolbar dragging/right-click reset, real permission
+repair, screenshots/magnification, audio playback, capture exclusion during a real
+capture, or a full VoiceOver session. The local model/responder tests and guarded
+fixtures cover their state and routing, not these physical acceptance checks.
+The macOS 13 material path and SF Symbol fallback are retained in source, but this
+run did not execute on macOS 13. Known functional issues from Phase A: none found
+in the completed local checks; these physical/runtime items remain for lead review.
+
+Final artifact: Look Here Please Review 1.2.0, build `20261118184220`.
+Review archive SHA-256:
+`c523f19e13d689963af18438c7e45a2d26a3d7ecb8c446753edd3ca57dd6ac79`.
+`phaseA-files.json` lists all 34 Phase A source/test/script/doc paths and check
+counts. The native picker is captured as its own app-owned window rather than a
+composited desktop image. Final snapshot matrix: 22 PNGs, all visible/nonempty,
+with identical 632 × 48 pt toolbar frames in light/dark and Cursor/Draw.
+
+Delivered through Austin Deliveries, verified `delivered`:
+https://drive.google.com/drive/folders/1w9uhsG7IVoBgoFM38I45dddsIaRsHeYK
+The delivery includes the review ZIP, all 22 native PNGs, snapshot state manifest,
+and Phase A file/check manifest. Local originals remain in `dist/`.
+
+## Usability icons Phase B1, 18 November 2026
+
+Implemented over the intentional uncommitted Phase A, Settings and Quick controls
+v9 work on `feature/usability-rethink-icons`. No commit, stash, revert, push,
+hosted CI, live-smoke, native input posting or real-preferences edit was used.
+Gesture artwork, `assets/gesture_*`, and `HandGestures.swift` are outside this work.
+
+UX: Pointers is one library plus an inline selection inspector. The star means a
+toolbar pin. Library selection explicitly returns to This, even for an entry that
+cannot be activated. Defaults edits shared values and previews a lavender Sample.
+Empty filters offer Show All; save errors stay inline; missing artwork and hidden
+entries keep visible status. Each value has an accessible name and independent
+reset help naming its inherited value. Menus expose secondary and recovery actions.
+New Hand remains the existing short modal task. General contains app-wide setup,
+Getting Started, About and the existing confirmed Reset flow.
+
+### Capability checklist, old control to new location
+
+| Previous control | B1 location and retained behavior | Evidence |
+| --- | --- | --- |
+| Seven sidebar pages | Pointers, Tools, Shortcuts, Presets, General, each with an SF Symbol | UsabilityB1Tests legacy routes; General/Pointers snapshots |
+| Appearance / Pointer defaults / effects route | Pointers, Defaults scope | Route tests for all aliases |
+| Sound route | Pointers, Defaults scope, sound row anchor | SettingsRedesignTests and B1 route cases |
+| About route and menu | General, About content at the bottom | Canonical direct-enum and parsed-route tests; General snapshots |
+| Tools pane routes | Existing Drawing, Magnification, Screenshots bodies | B1 route tests; no body redesign |
+| Practice shortcut links | Existing Shortcuts group reveal and native control focus | Existing SettingsRedesignTests and ShortcutNavigationTests |
+| Toolbar pin / unpin | Separate 28-point star in grid and inspector, one to eight | B1 stars/capacity/ordering and existing control pin tests |
+| Toolbar favorite ordering | Favorite context menu Move Left / Move Right | B1 ordering; SettingsAccessibilityTests |
+| Quick controls assignment | Favorite context menu Wheel direction; selected slot and swap outcome named | B1 swap and migration; existing RadialModelTests |
+| Disabled / unavailable wheel slots | Fixed map positions N, NE, E, SE, SW, W, Back S, All pointers NW | RadialFavorites tests; map snapshot; raw IDs retained |
+| Search and library filters | Top search/count and All / Favorites / Hidden icon segments | B1 derived-filter tests, PointerLibraryFilterTests |
+| Enable / disable pointer | Inspector More > Hide from Lists / Show in Lists | PointerCatalogTests and existing enable-pointer protocol tests |
+| Current-pointer Customize sheet | This inspector beside the full library | This with overrides snapshots; sheet implementation removed |
+| Per-pointer size | Inspector size row with small/large type artwork, percentage and reset | Five-field reset test; non-hand rules |
+| Per-pointer shadow on | Hand inspector shadow switch, override dot/reset | Five-field inheritance test; This snapshots |
+| Per-pointer shadow style | Hand inspector style picker, independent override/reset; kept while off | Five-field inheritance test; existing PointerConfigurationTests |
+| Per-pointer sound on | Hand inspector tap switch and its own reset | Five-field inheritance test; existing AudioTests |
+| Per-pointer sound choice / audition | Hand inspector choice, play and reset | Existing SoundOutputTests; This snapshots |
+| Non-hand sound / Presentation shadow | More > Sound and effects; sound preview and reset to defaults | Existing configuration/protocol tests; primary hand rows remain hidden |
+| Reset Appearance & Sound with Undo | Inspector More; existing confirmation, guarded Undo Reset in place | Existing configuration tests; scope/field-reset tests |
+| Global size / shadow / style | Defaults inspector, all shared rows always present | Defaults scope test and snapshots |
+| Global tap sound / sound choice | Defaults inspector, including play | Defaults/override isolation tests and snapshots |
+| Light / dark / patterned preview | Inspector preview background icons | Native preview snapshots; PointerPreviewTests |
+| Preview Tap / Preview Motion | Play button; Preview Motion in its context menu | Local playback tests; no desktop input |
+| App sound volume / mute | Every pointer card, separate real mute button and volume slider | Existing SoundOutputTests; inspector snapshots |
+| Motion follow | Every pointer card Follow picker | Existing pointer motion tests; inspector snapshots |
+| Tap swing / hand stays on click | Every pointer card motion More popover | Existing TapSwingTests and InteractionTests |
+| Gesture import / restore / shortcut | Two gesture tiles with edit badges and menus | Existing GestureTests; native tile snapshots; unchanged lookup |
+| Custom creation and image validation | + New Hand, existing prompt/import/name sheet | Existing HandRecoveryTests and SettingsRedesignTests |
+| Custom rename | Inspector More > Rename, same ID and atomic manifest save | B1 custom rename test |
+| Restore pointer artwork | Inspector More > Restore Artwork, file picker, durable prior-byte copy and guarded Undo | B1 artwork recovery conflict, lookup-name and renderer invalidation tests |
+| Custom remove / recovery | Inspector More > Remove, existing confirmation and library Undo Remove | Existing HandRecoveryTests and removal-configuration tests |
+| Permissions | General, status icons and existing repair links | General snapshots; permission routing tests |
+| Login / updates / theme | General, original controls and updater behavior | General snapshots; no startup mutation in verification |
+| Getting Started | General practice link | Existing practice routing tests |
+| About / attribution / license / notices / build | Bottom of General | General light/dark snapshots |
+| Reset All Settings | Bottom of General, destructive text, existing confirmation and Export Backup First | Same resetAll implementation; removed only the old Presets button |
+| Practice progress and desktop readiness | Step icons, one-line instruction, info help; keyboard shortcut icon | Existing practice completion/routing tests; light/dark practice snapshots |
+| Practice Undo / Clear | Icon buttons with help and accessibility labels | Existing practice history tests; native snapshots |
+| Welcome / practice Quick controls icon | Native circle/hub/six-spoke template glyph | B1 glyph test; welcome/practice snapshots |
+| Popover / toolbar All pointers icon | Native hand-in-grid template glyph, original action/help | B1 glyph test; native popover/toolbar snapshots |
+
+### Saved data and migration
+
+No saved-data schema or key changes. FavoriteLibraryConfiguration.migrated is a
+read-only semantic migration: the star adopts `pinnedStyles`; the wheel continues
+using `quickControlFavorites`. The regression seeds different orders, an absent
+custom wheel pointer, and a disabled toolbar pointer. Reading migration writes
+nothing. Starring, unstarring, moving and enabling do not alter wheel slots.
+Explicit direction reassignment alone uses RadialFavorites' existing swap rule.
+PointerOverride's five independent optional values and legacy laser-sound migration
+are unchanged, including protocol null resets and archive compatibility.
+
+### Local verification
+
+`scripts/run-tests.sh` passes with **422 Swift tests in 55 suites**, including 13
+new B1 cases, plus one Python Stream Deck package test and 33 source layout lints.
+The changed PointerPreview view also passes its direct layout lint. The final
+log is `dist/verification/usability-icons-phaseB1/tests-final.log`.
+The B1 regressions cover legacy routing, pins versus wheel migration, capacity
+and ordering, independent override resets, Defaults isolation, non-hand policy,
+derived filters, artwork recovery conflicts and asset lookup names, renderer
+invalidation after same-style artwork restoration, custom rename, glyph identity,
+and maximum-size compact preview bounds.
+
+The approved mock was rendered with the supplied Playwright Core and Google
+Chrome through `/tmp/lhp-tools/parts.cjs`, at 1100 CSS pixels in both themes.
+There were no page/console errors. Section 03 and the General frame in section 06
+were inspected against `review-sol-r4.md`. Mock images are in this pass's `mock/`.
+
+Builds use only `scripts/build-review.sh --package-only`, with the existing
+`/private/tmp/lhp-phaseA-build-venv` providing Pillow. The installed app is not
+replaced. No hosted test/build/packaging workflow was enabled or dispatched.
+
+### Native decisions and limits
+
+- Native controls retain macOS metrics and system accent. The five-page sidebar
+  stays 200 points wide. Pointers opens at least 1040 points wide to keep the
+  296-point inspector beside the library. Long libraries scroll normally.
+- The top row retains a short Pointers heading, a visible derived count, and a
+  labeled New Hand button. These make the native destinations and empty results
+  clear. The mock compresses them further.
+- Compact preview scale is transient and has an inside-sample grip. Desktop and
+  practice sizing keep their existing behavior. Preview Motion is in the play
+  button's context menu, retaining the previous capability with less visible copy.
+- Non-hand This keeps size as its only primary value row. Its existing sound
+  overrides and Presentation shadow are available under More > Sound and effects.
+  These were absent from the mock and remain for compatibility.
+- Wheel direction items name the selected direction and whether assignment swaps
+  or replaces the saved occupant. Disabled and unavailable identities remain
+  visible. Assignments remain independent from stars and toolbar order.
+- Restore Artwork asks for a validated transparent source image. Prior local bytes
+  are kept before replacement; Undo refuses to overwrite later changes. Same-style
+  preview and live renderer caches are invalidated. No gesture lookup or bundling
+  changes are included.
+- More, favorite, gesture and motion popup presentation was not opened by the
+  existing safe test bridge. Opening those native SwiftUI menus would require a
+  further UI-driving fixture or native input, which was excluded from this task.
+  Their state and underlying actions have model/unit coverage; no menu screenshot
+  or manual menu interaction claim is made.
+- Physical global shortcuts, desktop pointer tracking/click-through, real drawing
+  over other apps, live audio, permission repair, hardware, full VoiceOver and
+  macOS 13 runtime behavior were not verified. Existing tests cover routing and
+  state; they do not replace those physical checks.
+
+### Final capture and build record
+
+Final review app: **1.2.0, build 20261118192415**. The universal review app and
+bundled Stream Deck plugin pass the local build, Developer ID signature checks,
+notarization, stapling, Gatekeeper assessment, ZIP integrity and exact-archive
+installer checks. `build-final.log` records the completed checks. After the final
+placeholder color adjustment, `scripts/run-tests.sh --filter
+'UsabilityB1Tests|PointerPreviewTests'` also passes all 20 focused tests, the Python
+package test and all lints. There are no compiler warnings in these final logs.
+
+All **42 native PNGs** are in `dist/verification/usability-icons-phaseB1/` and were
+opened and inspected individually for alignment, clipping and contrast. The final
+pass fixed native Menu image sizing, segmented scope composition, compact preview
+cropping, destructive button styling, and missing-artwork contrast. Missing artwork
+uses a clear placeholder, including inside a light sample in the dark app.
+The 28 exported GridProbes files pass `scripts/check-layout.swift`; toolbar frame
+readback stays 632 × 48 points in Cursor and Pen in both themes.
+
+Each name below has `-light.png` and `-dark.png`:
+
+- `settings-general`, `settings-pointers`
+- `pointers-this-overrides`, `pointers-defaults`
+- `pointers-laser`, `pointers-spotlight`, `pointers-presentation`
+- `pointers-hidden`, `pointers-missing-artwork`, `pointers-favorites8`
+- `welcome`, `practice`
+- `popover-cursor`, `popover-pen`, `popover-hidden`, `popover-permission`
+- `toolbar-cursor`, `toolbar-pen`, `toolbar-picker`
+- `wheel-cursor`, `wheel-draw`
+
+Pointers shows the complete library and separate star controls; normal scrolling
+continues below the visible final row. This with overrides shows five independent
+dots/resets. Defaults has its Sample, two shared shadow rows and no pointer actions
+or gestures. Each non-hand state has matching type artwork, correct size label
+and no primary hand rows. Hidden includes a disabled hand and a missing-image
+custom hand without activating either. Eight favorites retain the direction map
+and show "8 is the most". General includes all its setup, attribution and Reset
+content with no clipped controls. Practice starts with a blank canvas and disabled
+history; its progress wheel and shortcut/info icons are visible. Welcome and both
+quick entry points show the new product glyphs. The wheel's original focus and
+Cursor/Draw selection remain intact.
+
+`snapshot-pointers-b1.py` produces 20 Settings images and the B1 state manifest.
+`snapshot-usability.py` produces 22 own-window entry-point images and native state
+readback. Both scripts refuse an existing Review endpoint, use generated isolated
+suites and temporary hand/thumbnail folders, terminate only their own process and
+delete only their own defaults domain. No user preferences or permission grants
+are changed. The final fixtures are stopped.
+
+The source/test/script/doc file list is `phaseB1-files.json` in the verification
+directory. Existing generated icon outputs are refreshed only by the mandated
+review build script. The protected gesture source/assets were not edited.
+Known functional issues in the completed local checks: none found. Native menu
+presentation and the physical/runtime checks listed above remain for lead review.
+
+## Usability icons Phase B2/C, 18 November 2026
+
+Implemented on feature/usability-rethink-icons over the intentional uncommitted
+Quick controls v9, Settings, Phase A and B1 work. No stash, revert, commit, push,
+delegation, hosted CI, live-smoke or native input posting occurred. All UI fixtures
+use generated disposable defaults suites and temporary Hands/Thumbnails. Only this
+app's windows and attached sheets were captured.
+
+Tools has labeled icon tabs for Ink, Magnifier and Capture, a shared local Ink
+practice canvas with Pen/Arrow, Undo, Replay, dark paper and Clear, the current
+hand swatch plus all eight inks including white, width chips and the full range,
+opacity, Keep/Fade/Trail stroke pictures, mode-specific fade wording, and an
+always reachable advanced disclosure. The pen practice uses the production
+InkVisibility/InkTrail clock during the drag. Arrow practice uses the real arrow
+shape and whole-mark fading. Magnifier and Capture settings remain available.
+
+Shortcuts adds the optional Suggested transaction and exact assignment Undo.
+Statuses, Add count, search count and group assigned counts are derived. The
+26-command catalog, native recorders, Clear and Escape cancellation remain.
+Preset cards have separate selection/Apply, artwork, ink/sound/favorite metadata,
+a current-setup Now badge, More actions and Save current. The durable Undo row is
+always present. Backup inclusion and local-only boundaries are explicit. Import
+review keeps its safety-copy message above the scrolling details. Recovery copies
+has a real list and replacement review, then journals current state before restore.
+Rename preserves the saved setup. Reset remains in General.
+
+Phase C bundles all 72 approved per-hand canvases directly, retaining base hand
+anchors. Lookup is custom, bundled per-hand, then generic composition. Custom and
+non-hand behavior is retained. Both inspector tiles and its local renderer show
+the actual lavender, pixel and robot OK/Shaka poses. Source design files were not
+changed. One-pixel plush/robot rod trims remain as approved. The resource audit
+proves lossless pixel-stream and color-metadata preservation. Original PNG bytes
+sum to 26,331,005; bundled files sum to 25,851,248, saving 479,757 bytes.
+
+B1 polish removes the duplicate pointer-search count and drawing-step instruction.
+Back and Replay Step are icon buttons with help and accessibility labels.
+
+### Local test evidence
+
+scripts/run-tests.sh passed all **439 Swift tests in 57 suites**, the one Python
+Stream Deck package test and **36 grid lints**. The final full run took 94.635
+seconds. The focused B2/C run passes **17 tests in two suites**, including:
+
+- Empty-only suggestions, app/system/runtime conflicts, enabled symbolic hotkeys,
+  supported single-modifier hold, avoidance of VoiceOver modifiers, late failures,
+  per-outcome counts and exact Undo including absent/malformed/legacy values.
+- Trail practice erasing from its start while drawing, with real delay/speed;
+  arrows staying whole while held and then fading; Arrow replay geometry.
+- Preset Now matching across values, pointer identity, ordered favorites and
+  semantic overrides; backup inclusion/local-only boundary wording; name-only
+  rename; restore safety copy, failure-before-write, stale review and exact Undo.
+- Direct resource presence and lookup for every one of 72 canvases, retained base
+  anchors, custom precedence and cache invalidation, bundled-to-generic fallback,
+  custom-hand fallback and non-hand exclusion. Existing archive tests also cover
+  export/import of gesture artwork and machine-local preference exclusions.
+
+Logs are in dist/verification/usability-icons-phaseB2C/tests-final.log and
+tests-focused-final.log. Compiler warnings: none in the final test logs.
+One earlier full run aborted in the existing InputTap teardown path. Two later
+full runs passed with no InputTap source change. Its exact diagnostic is retained
+in input-tap-teardown.ips and test-teardown-intermittency.txt. No fix or root-cause
+claim is made for this intermittent test failure.
+
+### Native visual verification
+
+The required Settings matrix contains **46 B2/C snapshots plus six standard
+Settings snapshots** in dist/verification/usability-icons-phaseB2C/. Every name
+below has -light.png and -dark.png:
+
+- tools-ink-fade, tools-ink-trail, tools-ink-advanced, tools-magnifier, tools-capture
+- shortcuts-default, shortcuts-added, shortcuts-expanded, shortcuts-recording
+- presets-cards, presets-included, presets-recovery, presets-import-review,
+  presets-restore-review
+- pointers-lavender-gestures, pointers-pixel-gestures, pointers-robot-gestures
+- gesture-preview-lavender-first/second, gesture-preview-pixel-first/second,
+  gesture-preview-robot-first/second
+- settings-drawing, settings-shortcuts, settings-presets
+
+settings-manifest.json records actual route, expanded groups, current-preset count,
+result line and mounted control state. Added shows "2 added · 1 already set ·
+1 skipped". Recorder shows Press keys in the focused Cursor ↔ last tool row.
+Tools includes both fade labels, all three advanced controls, the nine swatches,
+and visible icon tab labels. Magnifier/Capture preserve their native content.
+Preset cards show Now and separate Apply, inclusion names both kinds of custom
+artwork, and both review sheets say a recovery copy is saved first. Restore names
+Saved presets for the tested journal and states which settings stay on this Mac.
+The Pointers search count appears once, and each hand has material-specific pose
+thumbnails. Local ArmView previews show both poses, the retained rod and cursor
+anchor, without activating the desktop overlay.
+
+### Native decisions and remaining limits
+
+The implementation keeps native macOS controls, system accent, the five-page
+sidebar and normal scrolling. Labeled Tool tabs use a shared strip of native
+buttons because SwiftUI's segmented Picker omits Label images on macOS. Pen/Arrow
+uses labeled native segments. Fade seconds keeps the native picker and supports
+existing arbitrary stored durations. Advanced timing is a disclosure rather than
+always expanded. Suggested result stays in its card so Undo remains available
+throughout the session. Presets uses an adaptive grid. The recovery and import
+sheets retain detailed native reviews rather than the abbreviated mock popovers.
+
+Physical global shortcuts, live drawing over other apps, screenshot/magnifier
+capture, permissions repair, audio, full VoiceOver navigation, and macOS 13 runtime
+behavior were not verified. Native SwiftUI More/gesture menu popups were not opened
+by the safe bridge. Their underlying actions and restore lookup have model tests.
+The existing InputTap test intermittency above is the only observed functional
+verification issue retained for lead review. No other functional issues were found
+in the completed B2/C checks. Lead review remains pending.
+
+### Final B2/C build and capture record
+
+Final Review app: **1.2.0, build 20261118195702**. The source-matched universal
+arm64/x86_64 build used only `PATH=/private/tmp/lhp-phaseA-build-venv/bin:$PATH
+scripts/build-review.sh --package-only`. It passed Developer ID signature checks,
+notarization, stapling, Gatekeeper, ZIP integrity and exact-archive Stream Deck
+installer verification. The installed app was not replaced. See build-final.log.
+The temporary Python environment supplies Pillow to the existing icon build step.
+No compiler warnings appear in the final build log.
+
+Summed bundle file bytes increased from **87,552,082 to 114,654,088**, a delta of
+**27,102,006 bytes, 25.846 MiB**. The 72 new gesture PNGs account for 25,851,248
+bytes. app-size.json and gesture-resource-audit.json retain the measurements.
+The stapled local archive is dist/Look Here Please Review-review.zip.
+
+All **74 native PNGs** were opened and inspected individually. The final required
+52 Settings snapshots and their layout exports pass scripts/check-layout.swift;
+new Presets and Shortcuts root probes are included in this build. The additional
+22 snapshots from snapshot-usability.py cover practice, welcome, menu popover,
+toolbar/picker and wheel in both themes. Practice has one drawing-step instruction
+and icon Back/Replay controls. Popover hand swatches, stable toolbar composition,
+and wheel Cursor/Draw remain readable in both themes. The blank practice canvas
+and disabled initial history are expected. Existing library and expanded shortcut
+content continue through normal scrolling below the visible window edge.
+
+Additional paired names are practice, welcome, popover-cursor, popover-pen,
+popover-hidden, popover-permission, toolbar-cursor, toolbar-pen, toolbar-picker,
+wheel-cursor and wheel-draw. manifest.json contains their native readback, and
+visual-review.json enumerates all 74 inspected PNGs with hashes. Final own-window
+fixture processes are stopped. phaseB2C-files.json lists 102 authored source,
+test, script, doc and resource paths, distinct from prior uncommitted work and
+build-generated icon/plugin outputs. All source changes remain uncommitted for
+Claude's lead review.
+
+
+## Usability icons round 1 fixes, 18 November 2026
+
+All 12 findings in `design/usability-icons-2026-11-18/review-native-r1.md`
+and all seven numbered findings in `code-review-r1.md` are addressed on
+`feature/usability-rethink-icons`. The InputTap lifetime defect and the dead UI
+note are addressed too. The intentional Quick controls v9, Settings and Phase
+A/B1/B2C work remains uncommitted. No stash, revert, commit, push, delegation,
+hosted CI, live-smoke or native input posting occurred.
+
+### Changes and regression coverage
+
+Suggested shows Hold with the Option keycap and announces the full held-key
+action. Welcome, practice and wheel help share the trigger wording. Practice
+separates desktop instructions from its local center-hold exercise. Shadow uses
+the review's visible-label alternative with a layer symbol. Now uses primary
+text with an accent checkmark. Browsing has a neutral outline, current Apply is
+disabled, and all preset cards have the same outer height.
+
+Shortcut groups and command rows are compact. Only assigned commands have Clear;
+the recorder teaches Esc cancellation while recording. OK and Shaka use the
+current hand's real thumbnails, with generic pose artwork for non-hands. The
+wheel glyph is shared. Practice has a larger empty canvas, history in its header,
+help beside the title, completed checks and a current-step announcement. General
+keeps About in a disclosure. Tools prose is shorter. Pointer names use two lines
+at 11 points, capacity reads 8 of 8, and the preview exposes a Tap/Motion menu.
+The access banner precedes the popover tools; its footer explains the retained Pen.
+
+The picker and palette keep the toolbar revealed after the reveal deadline.
+Pointer-off, toolbar-off and capture still dismiss it. Backup export and import
+now allow only the canonical built-in replacement PNG names, include their exact
+bytes, reject conflicting local bytes, and support recovery. The inclusion list
+names restored built-in artwork. Suggested Undo stores only changed keys and
+checks their exact after-values before reverting. It preserves later edits and
+reports their command names. Current eligibility rechecks live conflicts.
+Non-hand sound enabled, sound choice and Presentation shadow reset independently.
+Recovery listing runs off-main, retains small metadata entries and unreadable
+copies, and loads full journal payloads for review or Undo. Import names the file,
+shows changes first and folds inventory into Details. Restore names changed presets.
+The permission button's native accessible name follows all three visible titles.
+Unused toolbar picker/drag, Sound and gesture view trees and unused drag/swap hooks
+were removed; shared artwork, sound and About helpers remain.
+
+`Tests/TinyHandTests/UsabilityFix1Tests.swift` adds 14 regression methods, including
+both real picker rows with an expired deadline in allowed/denied states, actual
+non-hand edit/reset actions, byte-for-byte replacement artwork round-trip and
+conflict/recovery, intervening shortcut edits, retry after conflict clearance,
+broken historical recovery, catalogue payload-read counting, all three native
+permission button names, practice progress and the two real gesture poses.
+The full finding-to-fix-to-evidence map is `findings.json` in the evidence root.
+
+### InputTap lifetime
+
+The pre-fix full-suite abort reported in `code-review-r1.md`, and the earlier
+Phase B2/C abort evidence, remain part of this record. A passing focused run did
+not supersede those failures. The callback previously received an unretained
+InputTap, startup loaded weak self, and deinit invalidated/stopped without waiting.
+
+Native code now retains a separate callback context for the entire callback
+lifetime. That context holds a weak owner. Startup captures only the native
+connection, never InputTap. The owner's explicit stop disables input, invalidates
+the source/port on the event loop and waits for thread exit before releasing the
+context. Stop is synchronous and idempotent. The event-thread final-owner path
+invalidates inline and releases the context after the callback returns, avoiding
+a self-join. OverlayController stops its connection before releasing it and accepts
+an injected tap. The parameterized mode/tool test uses injected installation
+operations rather than a real system tap.
+
+Each final full run installed, stopped twice and released 24 real native taps.
+All 72 final lifecycle cycles passed. Injected restart/stop also passes. No claim
+is made that one stack trace alone proved the old abort's precise cause.
+
+### Three consecutive full local runs
+
+Only `scripts/run-tests.sh` was used for tests. Each run used its generated
+disposable defaults suite and temporary Hands/Thumbnails folders.
+
+| Run | Swift result | Swift seconds | Python package test | Grid lints | Exit |
+| --- | --- | ---: | --- | ---: | ---: |
+| 1 | 453 tests in 58 suites passed | 94.360 | 1 passed | 35 passed | 0 |
+| 2 | 453 tests in 58 suites passed | 94.599 | 1 passed | 35 passed | 0 |
+| 3 | 453 tests in 58 suites passed | 95.053 | 1 passed | 35 passed | 0 |
+
+There are no compiler warnings or InputTap teardown aborts in these three logs.
+The final logs are `tests-run1.log`, `tests-run2.log`, `tests-run3.log` and
+`test-results.json`. Earlier passing runs and initial test-fixture compile errors
+are retained separately. The final two copy/layout adjustments were followed by
+these three full runs, then a new source-matched build.
+
+### Final build and native verification
+
+Review **1.2.0 (20261118205305)** was built only with
+`PATH=/private/tmp/lhp-phaseA-build-venv/bin:$PATH scripts/build-review.sh --package-only`.
+Universal arm64/x86_64 compilation, Developer ID signing, app and bundled plugin
+notarization, stapling, Gatekeeper, ZIP integrity and exact-archive installer
+verification passed. The installed app was not replaced. `build-final.log` and
+`build-result.json` retain the receipts and archive hash. All 200 recorded
+source/test/script hashes match `source-manifest.json` after packaging.
+
+All evidence is under `dist/verification/usability-icons-fix1/`.
+
+- `snapshot-pointers-b1.py`: 22 native captures, including This/Defaults, all
+  non-hands, hidden/missing artwork, eight favorites and closed/open About.
+- `snapshot-usability-b2c.py`: 56 captures covering every Tools pane, shortcut
+  default/result/expanded/recording states, preset/inclusion/recovery/import/restore
+  views, three hand inspectors and both poses for each hand.
+- `snapshot-usability.py`: 32 captures for the menu popover, toolbar/picker,
+  wheel, Welcome's permission states, and empty/current/completed practice steps.
+- Eight extra Presets captures use process-only `-AppleAccentColor` arguments for
+  red, yellow, green and purple, each in light and dark. These use fresh disposable
+  suites and `snapshot-settings.py`; no system preference is written.
+
+All 118 captures were inspected. The final recapture has 98 of 110 main images
+pixel-identical to the inspected first pass. All 12 changed images were reopened:
+build/date text, the clearer practice wording, the fitted recording hint and tiny
+native grayscale differences. Gesture inspectors were also reviewed in native-size
+crops. All eight accent captures were opened. `visual-review.json` lists every
+final image and hash; `snapshot-comparison.json` retains the pixel comparison.
+The gallery is `visual-review.html`. All 94 GridProbes reports pass. Toolbar/wheel
+frame readbacks use their own schemas and are retained separately from that count.
+
+One recapture check initially included stale toolbar/wheel frame JSON in the
+GridProbes input glob. This was a harness schema mismatch, not a failed Settings
+probe. The stale readbacks were moved aside and the required capture/check scripts
+were rerun successfully. `snapshot-usability-b2c-mixed-schema.log` retains that
+attempt; final script logs and `layouts-final.log` show the passing checks.
+
+Dark Now text is sRGB **(223, 225, 227)** over **(45, 57, 70)**,
+measured at pixels (858, 302) and (890, 306):
+**8.97:1**, above 4.5:1. Light measures **11.93:1**.
+The lowest measured ratio in the eight real accent captures is **7.89:1**
+for dark yellow. Measurements convert the embedded display profile to sRGB;
+`contrast.json` records pixel positions, colors and each measured ratio.
+
+### Remaining scope
+
+No reported finding remains open in the completed checks. Claude's independent
+re-review is still pending. Physical global shortcuts, live drawing/capture/audio,
+full VoiceOver navigation and macOS 13 runtime behavior were not exercised.
+All fixture processes are stopped. Normal preferences and permission grants were
+not changed. The build and evidence are a local implementation handoff, not a release.
+
+## Usability icons round 2 fixes, 18 November 2026
+
+Closed R2-01, R2-02 and R2-03 in
+`design/usability-icons-2026-11-18/code-review-r2.md`. The Suggested finding in
+`review-native-r2.md` is the same R2-02 issue. Existing uncommitted work was
+preserved. No commits, delegation, hosted CI, live-smoke or native input posting.
+
+| Finding | Fix | Regression evidence |
+| --- | --- | --- |
+| R2-01: recovery metadata hides valid journals or selects damaged journals | Sidecars are optional hints with bounded journal-header fallback. Settings resolves the latest readable Undo off-main, reads candidates sequentially and retains only summaries. Actual journal failures are recorded, and an Undo read failure refreshes the candidate. Historical listing remains lightweight. | `UsabilityFix2Tests.settingsRecoversHealthyJournalWithBrokenMetadata` reviews and undoes a valid journal with truncated metadata. `settingsSkipsBrokenJournalDespiteHealthyMetadata` selects an older readable journal, records the damaged newest copy and covers damage after Settings has selected that newest copy. |
+| R2-02: Suggested teaches proposed keys for occupied commands | Occupied rows render the saved chord or modifier hold and the visible state Already set. Malformed occupied values remain protected and show Existing assignment kept without proposed keycaps. The existing Preferences observer refreshes the mounted view when another control changes a binding. | `suggestedShowsCurrentBindingsAndUpdatesWithExternalEdits` covers Shift hold, a custom Shift-Command-B chord, Control hold after an external edit, clearing a chord, change notifications and malformed occupied values. Visible and accessible instructions use the tested row presentation. |
+| R2-03: favorite buttons retain old names/artwork | Both controls update each existing button when its artwork signature or title changes. Images, tooltips and accessible labels refresh in place; frames and actions are retained. The toolbar also observes custom-hand changes for immediate rename refresh. | `existingFavoritesRefreshArtworkNamesAndArtworkUndoInBothControls` checks the actual toolbar and popover buttons across a custom-hand rename, in-place artwork replacement and production artwork Undo, with unchanged favorite IDs and button identities. |
+
+All four new tests first reproduced the reported failures. The initial targeted
+run failed with 21 assertions. The focused run then passed. Both logs are retained
+as `tests-regression-red.log` and `tests-regression-green.log`; the full final runs
+also cover the later additions for separate rename refresh and damage after Undo
+candidate selection. Tests live in `Tests/TinyHandTests/UsabilityFix2Tests.swift`.
+
+### Two full local runs
+
+Only `scripts/run-tests.sh` was used. Each invocation generated its own disposable
+defaults suite and temporary Hands/Thumbnails directories.
+
+| Run | Swift result | Swift seconds | Native InputTap lifecycle | Python package test | Grid lints | Exit |
+| --- | --- | ---: | --- | --- | ---: | ---: |
+| 1 | 457 tests in 59 suites passed | 101.627 | 24/24 installed, stopped twice and released | 1 passed | 35 passed | 0 |
+| 2 | 457 tests in 59 suites passed | 101.318 | 24/24 installed, stopped twice and released | 1 passed | 35 passed | 0 |
+
+No compiler warnings, failures or teardown aborts occurred. Evidence is in
+`dist/verification/usability-icons-fix2/tests-run1.log`, `tests-run2.log` and
+`test-results.json`.
+
+### Review build
+
+Review **1.2.0 (20261118212230)** was built using
+`PATH=/private/tmp/lhp-phaseA-build-venv/bin:$PATH scripts/build-review.sh --package-only`.
+Universal arm64/x86_64 compilation, Developer ID signing, app and bundled plugin
+notarization, stapling, Gatekeeper, ZIP integrity and exact-archive installer
+checks passed. The installed app was not replaced. No v1 operation, storage key,
+archive schema or deployment target changed.
+
+App notarization ID: `ff8a4858-ee51-4d76-9f81-f049962bda95`.
+Archive: `dist/Look Here Please Review-review.zip`.
+Archive SHA-256: `0f81a26d10da1dd98797ca9702bc3f3d82ac27d3f249a74f5de4eaa2b78c7aa0`.
+`build.log` and `build-result.json` retain the receipts. All 201 source, test and
+script hashes in `source-manifest.json` still match after building and capturing.
+
+### Focused native snapshots
+
+All files below are in `dist/verification/usability-icons-fix2/`.
+Each stem has `-light.png` and `-dark.png` versions.
+
+| Stems | State and visual inspection |
+| --- | --- |
+| `settings-shortcuts`, `shortcuts-custom` | Pre-existing Shift-Command-B Pointer binding and Shift Quick controls hold. Suggested visibly shows those saved keys with Already set. Rows fit, keycaps remain readable and the active Settings window has no unwanted focus ring or clipping. Captured through the required `scripts/snapshot-settings.py` and the same focused-window endpoint. |
+| `shortcuts-live-change` | The same mounted Shortcuts page changes to Hold Control after configure edits the hold elsewhere. Already set remains visible and the custom Pointer chord remains correct. |
+| `popover-before`, `toolbar-before` | Custom favorite uses Lavender artwork and the name Demo pointer. |
+| `popover-renamed-artwork`, `toolbar-renamed-artwork` | The same favorite ID now uses visibly different Robot artwork. Native readbacks report Renamed pointer. Buttons stay aligned and legible in both appearances. |
+| `popover-artwork-undone`, `toolbar-artwork-undone` | Prior Lavender bytes are restored to the same file. The favorite returns to the original artwork while retaining the new name. Shared toolbar-button frame maps match before/replacement/restoration in both appearances. |
+
+All **18 PNGs were opened and inspected**. All **12 GridProbes reports pass**;
+the six toolbar reports use their existing frame/readback schema. Four toolbar
+frame comparisons pass. `snapshot-manifest.json` retains the control readbacks;
+`visual-review.json` lists every inspected PNG and SHA-256. `snapshots.log` and
+`capture-fix2.py` retain the capture procedure.
+
+Snapshots used fresh `settings-ui` and `s023` suites, temporary Hands/Thumbnails
+folders and test-denied Accessibility. The favorites capture changes the fixture's
+manifest and artwork atomically, then uses the existing local catalog refresh.
+Its artwork-restoration capture restores the earlier fixture bytes; the regression
+test above separately exercises the production `PointerArtworkRecovery.undo()`.
+All fixture processes were terminated and their defaults domains deleted.
+Physical shortcuts, live desktop drawing/capture, VoiceOver traversal and macOS 13
+runtime behavior were not exercised.
+
+## Usability redesign: code review r3 P3 follow-up (2026-11-18)
+
+Code review round 3 approved with notes (`design/usability-icons-2026-11-18/code-review-r3.md`). Its one P3 is fixed: `Toolbar` now stores its `Preferences.changed` and `CustomHands.changed` observer tokens and removes them in `deinit`, so released toolbars no longer leave registrations behind. A full `scripts/run-tests.sh` run passed: 457 tests in 59 suites. The review build was not rebuilt for this change, so build 1.2.0 (20261118212230) still lacks it.

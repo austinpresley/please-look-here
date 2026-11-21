@@ -1,0 +1,3464 @@
+{
+  "outputs": 72,
+  "passed": 72,
+  "pairs_passed": 36,
+  "failures": [],
+  "images": {
+    "astro-ok": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1369109,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 600",
+      "cuff_stick_bbox": [
+        398,
+        0,
+        661,
+        864
+      ],
+      "base_cuff_stick_bbox": [
+        398,
+        0,
+        661,
+        864
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        285,
+        137,
+        696,
+        1464
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 137,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "6f0f883da1e64d51f797ae72f060c3922ac2d9fa43006d791221e0604cdb08aa",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "astro-shaka": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1387853,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 600",
+      "cuff_stick_bbox": [
+        398,
+        0,
+        661,
+        864
+      ],
+      "base_cuff_stick_bbox": [
+        398,
+        0,
+        661,
+        864
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        226,
+        178,
+        797,
+        1464
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 137,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "a37d2e1e16ec8b586bf11a57d549e8003bf63c34685eacdf1016970a46f63cc1",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "black-ok": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1365451,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 565",
+      "cuff_stick_bbox": [
+        377,
+        0,
+        687,
+        904
+      ],
+      "base_cuff_stick_bbox": [
+        377,
+        0,
+        687,
+        904
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        275,
+        172,
+        725,
+        1469
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 172,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "84ed946b1280b66e149d5353c025ed3f963bb94f4f0d1567180908ce1dde5617",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "black-shaka": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1393166,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 565",
+      "cuff_stick_bbox": [
+        377,
+        0,
+        687,
+        904
+      ],
+      "base_cuff_stick_bbox": [
+        377,
+        0,
+        687,
+        904
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        232,
+        205,
+        797,
+        1469
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 172,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "f1f9bd93f5d22884e29defb6669a776a4cdbd4b9c15bddf42341b4ac3234f60b",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "blue-ok": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1380944,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 615",
+      "cuff_stick_bbox": [
+        402,
+        0,
+        658,
+        850
+      ],
+      "base_cuff_stick_bbox": [
+        402,
+        0,
+        658,
+        850
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        292,
+        178,
+        688,
+        1465
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 178,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "69c93594c052982f5696a007dfa834e481c46787c24bd00b794d38e42d58e045",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "blue-shaka": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1396028,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 615",
+      "cuff_stick_bbox": [
+        402,
+        0,
+        658,
+        850
+      ],
+      "base_cuff_stick_bbox": [
+        402,
+        0,
+        658,
+        850
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        224,
+        231,
+        792,
+        1465
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 178,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "d7c5a74ab458332bf1ef316828a2610d750550e07bcc03f08165363b35ca6866",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "cactus-ok": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1389139,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 630",
+      "cuff_stick_bbox": [
+        407,
+        0,
+        641,
+        876
+      ],
+      "base_cuff_stick_bbox": [
+        407,
+        0,
+        641,
+        876
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        293,
+        177,
+        671,
+        1506
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 177,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "48b9db648c495e40c33a8db1596fd572470447464c74420d37a28acd6b98ce09",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "cactus-shaka": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1398803,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 630",
+      "cuff_stick_bbox": [
+        407,
+        0,
+        641,
+        876
+      ],
+      "base_cuff_stick_bbox": [
+        407,
+        0,
+        641,
+        876
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        236,
+        211,
+        786,
+        1506
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 177,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "d20e1c10810a2321da4f7571edf3ad16efc6203834183214843164f261670210",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "choco-ok": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1387120,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 634",
+      "cuff_stick_bbox": [
+        415,
+        0,
+        656,
+        872
+      ],
+      "base_cuff_stick_bbox": [
+        415,
+        0,
+        656,
+        872
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        289,
+        177,
+        687,
+        1506
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 177,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "7d7249979b116e7742c112c1b3e7d4ad80666a2ac25aa9b0fc0149de6f22fb4f",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "choco-shaka": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1411695,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 634",
+      "cuff_stick_bbox": [
+        415,
+        0,
+        656,
+        872
+      ],
+      "base_cuff_stick_bbox": [
+        415,
+        0,
+        656,
+        872
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        259,
+        241,
+        782,
+        1506
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 177,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "07128bb323ad37e3daba24aefc92320e0acfde26fed298fe1251c3b43ae112f5",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "chrome-ok": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1374091,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 612",
+      "cuff_stick_bbox": [
+        407,
+        0,
+        650,
+        883
+      ],
+      "base_cuff_stick_bbox": [
+        407,
+        0,
+        650,
+        883
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        294,
+        145,
+        688,
+        1495
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 145,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "614c7ad3064e9baf3ead406424ffede98285a857f390e24cd53eb769b5122a8d",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "chrome-shaka": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1384156,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 612",
+      "cuff_stick_bbox": [
+        407,
+        0,
+        650,
+        883
+      ],
+      "base_cuff_stick_bbox": [
+        407,
+        0,
+        650,
+        883
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        225,
+        184,
+        802,
+        1495
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 145,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "a0668fcb6889b242b5b9c5f9b58378c1e643ada3790a4ed3571d91e25a7e7fe6",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "cloud-ok": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1353167,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 560",
+      "cuff_stick_bbox": [
+        351,
+        0,
+        701,
+        937
+      ],
+      "base_cuff_stick_bbox": [
+        351,
+        0,
+        701,
+        937
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        242,
+        200,
+        719,
+        1497
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 200,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "8ad8bae962424c45ed04971c19c1a7384dac815a096fff49faf30a488cefe67b",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "cloud-shaka": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1365484,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 560",
+      "cuff_stick_bbox": [
+        351,
+        0,
+        701,
+        937
+      ],
+      "base_cuff_stick_bbox": [
+        351,
+        0,
+        701,
+        937
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        192,
+        200,
+        826,
+        1497
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 200,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "92869df3613eb70eea0087af510c331dac7451543831215884a3ecbb34eaf27d",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "cookie-ok": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1360977,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 610",
+      "cuff_stick_bbox": [
+        351,
+        0,
+        673,
+        852
+      ],
+      "base_cuff_stick_bbox": [
+        351,
+        0,
+        673,
+        852
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        286,
+        150,
+        687,
+        1462
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 150,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "6c2d3f5373aca6b8252674e525fecb0e96a145dd8b8d54110674ca57f3bbb3f5",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "cookie-shaka": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1369649,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 610",
+      "cuff_stick_bbox": [
+        351,
+        0,
+        673,
+        852
+      ],
+      "base_cuff_stick_bbox": [
+        351,
+        0,
+        673,
+        852
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        223,
+        181,
+        803,
+        1462
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 150,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "dc6955e7c88c71d9921b8f032be5bb485e740f977338100447fedc25047f8113",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "coral-ok": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1324719,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 500",
+      "cuff_stick_bbox": [
+        278,
+        0,
+        766,
+        883
+      ],
+      "base_cuff_stick_bbox": [
+        278,
+        0,
+        766,
+        883
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        270,
+        172,
+        766,
+        1383
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 172,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "8573d8e01dfd6b5fb399f71456e69f8f877aa743f8347062bbc7ac66a6ffb6c7",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "coral-shaka": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1320358,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 500",
+      "cuff_stick_bbox": [
+        278,
+        0,
+        766,
+        883
+      ],
+      "base_cuff_stick_bbox": [
+        278,
+        0,
+        766,
+        883
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        139,
+        172,
+        870,
+        1383
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 172,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "3936e47cd8c097effa82409fcf6843ba4d1f91d6b152939475aa232486e909f5",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "fuzzy-ok": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1368853,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 615",
+      "cuff_stick_bbox": [
+        404,
+        0,
+        659,
+        872
+      ],
+      "base_cuff_stick_bbox": [
+        404,
+        0,
+        659,
+        872
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        294,
+        144,
+        685,
+        1487
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 144,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "dd2c15c3776352f14ec340e2b26892729ae5283a5d1b15bc6d84993e6cce8e53",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "fuzzy-shaka": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1381764,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 615",
+      "cuff_stick_bbox": [
+        404,
+        0,
+        659,
+        872
+      ],
+      "base_cuff_stick_bbox": [
+        404,
+        0,
+        659,
+        872
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        215,
+        204,
+        797,
+        1487
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 144,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "0911a7b576de783ec2e9eb4f38bae9694de2b67473d6586855516b0400eafc08",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "glass-ok": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1397123,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 649",
+      "cuff_stick_bbox": [
+        414,
+        0,
+        658,
+        786
+      ],
+      "base_cuff_stick_bbox": [
+        414,
+        0,
+        658,
+        786
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        327,
+        196,
+        668,
+        1435
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 196,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "1e41f9ac65edce5bc61374fd14ca0b481bae450647481ef802d4f301bbb95234",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "glass-shaka": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1406631,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 649",
+      "cuff_stick_bbox": [
+        414,
+        0,
+        658,
+        786
+      ],
+      "base_cuff_stick_bbox": [
+        414,
+        0,
+        658,
+        786
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        265,
+        236,
+        770,
+        1435
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 196,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "c8ec2b99843c192cfd363ecd4dcb7f8746f39c23a33b73c48151a1edac2f08af",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "glove-ok": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1377985,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 611",
+      "cuff_stick_bbox": [
+        405,
+        0,
+        648,
+        853
+      ],
+      "base_cuff_stick_bbox": [
+        405,
+        0,
+        648,
+        853
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        291,
+        145,
+        682,
+        1464
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 145,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "04b66352eb10c00346af93ca2ffcd2817ec714bd5e2e3e288c05456343f07008",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "glove-shaka": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1391954,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 611",
+      "cuff_stick_bbox": [
+        405,
+        0,
+        648,
+        853
+      ],
+      "base_cuff_stick_bbox": [
+        405,
+        0,
+        648,
+        853
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        225,
+        203,
+        798,
+        1464
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 145,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "d419dddc34190def83e117df1fe5a5cb726cd88522b07ba51bc44984d548b868",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "grass-ok": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1371658,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 635",
+      "cuff_stick_bbox": [
+        399,
+        0,
+        661,
+        830
+      ],
+      "base_cuff_stick_bbox": [
+        399,
+        0,
+        661,
+        830
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        289,
+        159,
+        678,
+        1465
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 159,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "2c22d7de087bd9f625bd6ba349b25ebfd157cbc4d292d784b5e028072a005774",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "grass-shaka": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1380355,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 635",
+      "cuff_stick_bbox": [
+        399,
+        0,
+        661,
+        830
+      ],
+      "base_cuff_stick_bbox": [
+        399,
+        0,
+        661,
+        830
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        223,
+        204,
+        799,
+        1465
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 159,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "0be4886f43c06ec1f52221190a605326e1f390d8e7bf0819c6c1a4d51874a999",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "holo-ok": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1383963,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 604",
+      "cuff_stick_bbox": [
+        415,
+        0,
+        653,
+        861
+      ],
+      "base_cuff_stick_bbox": [
+        415,
+        0,
+        653,
+        861
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        305,
+        151,
+        689,
+        1465
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 151,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "72517b44c0e04ec1f3a8d23c3e44f7b8b8b47b24cc58bcf6f5a7192328cf16e4",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "holo-shaka": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1398651,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 604",
+      "cuff_stick_bbox": [
+        415,
+        0,
+        653,
+        861
+      ],
+      "base_cuff_stick_bbox": [
+        415,
+        0,
+        653,
+        861
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        233,
+        210,
+        791,
+        1465
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 151,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "576fbd1db807153cd85136df44d41071b72b7f1ec40aa2f927d63ebbbc3bb3d5",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "jelly-ok": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1386632,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 638",
+      "cuff_stick_bbox": [
+        415,
+        0,
+        648,
+        836
+      ],
+      "base_cuff_stick_bbox": [
+        415,
+        0,
+        648,
+        836
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        306,
+        184,
+        672,
+        1474
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 184,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "18fa4cfd38e3d0906bbd765fc23c69d51ec7135df9fc6eb4b6e115454de3bbc6",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "jelly-shaka": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1405414,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 638",
+      "cuff_stick_bbox": [
+        415,
+        0,
+        648,
+        836
+      ],
+      "base_cuff_stick_bbox": [
+        415,
+        0,
+        648,
+        836
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        240,
+        251,
+        780,
+        1474
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 184,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "4841440c3bb0ce42e0b0d43a529650829bda0772a0f9028fb9467ccf146ff251",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "knit-ok": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1383875,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 618",
+      "cuff_stick_bbox": [
+        413,
+        0,
+        664,
+        836
+      ],
+      "base_cuff_stick_bbox": [
+        413,
+        0,
+        664,
+        836
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        296,
+        175,
+        686,
+        1454
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 175,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "d912e1a704e8aa3f6e06b2252d2df94aebe6ff8963d24a6c8b645859d19e9433",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "knit-shaka": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1399245,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 618",
+      "cuff_stick_bbox": [
+        413,
+        0,
+        664,
+        836
+      ],
+      "base_cuff_stick_bbox": [
+        413,
+        0,
+        664,
+        836
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        232,
+        226,
+        785,
+        1454
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 175,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "c8b3bcff2e79eb070cc3cffc51555c2eae0045d53c45ef990b495cbd2ba95d69",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "lava-ok": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1383269,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 611",
+      "cuff_stick_bbox": [
+        409,
+        0,
+        647,
+        856
+      ],
+      "base_cuff_stick_bbox": [
+        409,
+        0,
+        647,
+        856
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": false,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        291,
+        161,
+        687,
+        1467
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 161,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 2,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "c5a2b22d1c26b587ac2db4d8841983d8cfcf920a0025991b4e3c9d552ca63f7a",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "lava-shaka": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1397301,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 611",
+      "cuff_stick_bbox": [
+        409,
+        0,
+        647,
+        856
+      ],
+      "base_cuff_stick_bbox": [
+        409,
+        0,
+        647,
+        856
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": false,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        227,
+        215,
+        795,
+        1467
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 161,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 2,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "904a6969b9ce3159ffb0c41621eb60ab8cc14212df59ddff3cbb3cb2913cd9cd",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "lavender-ok": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1366632,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 594",
+      "cuff_stick_bbox": [
+        402,
+        0,
+        656,
+        864
+      ],
+      "base_cuff_stick_bbox": [
+        402,
+        0,
+        656,
+        864
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        292,
+        119,
+        682,
+        1458
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 119,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "fc2496eb85e9fce4e67464ea94797435cf843e9702617e962455addad067b604",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "lavender-shaka": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1389199,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 594",
+      "cuff_stick_bbox": [
+        402,
+        0,
+        656,
+        864
+      ],
+      "base_cuff_stick_bbox": [
+        402,
+        0,
+        656,
+        864
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        226,
+        198,
+        794,
+        1458
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 119,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "5a38d55ba76a179959b9affa1f2c6ac380740673aac35f24ed681f56f5a6aaf0",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "leaf-ok": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1380710,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 620",
+      "cuff_stick_bbox": [
+        374,
+        0,
+        646,
+        842
+      ],
+      "base_cuff_stick_bbox": [
+        374,
+        0,
+        646,
+        842
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        303,
+        150,
+        672,
+        1462
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 150,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "6ffd8bc8fb79d8d109973a206b409b4b17217505f9998d5edc3ebba09d196be5",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "leaf-shaka": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1395286,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 620",
+      "cuff_stick_bbox": [
+        374,
+        0,
+        646,
+        842
+      ],
+      "base_cuff_stick_bbox": [
+        374,
+        0,
+        646,
+        842
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        223,
+        191,
+        782,
+        1462
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 150,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "855c18d14332ad80037d81e0eae5eba71996f356368893d147433359e5867575",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "lemon-ok": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1375264,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 605",
+      "cuff_stick_bbox": [
+        405,
+        0,
+        648,
+        861
+      ],
+      "base_cuff_stick_bbox": [
+        405,
+        0,
+        648,
+        861
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        292,
+        140,
+        678,
+        1466
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 140,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "6d37462bb18e97901a250a1de8d9f763cf1fc4ec8adeecbbe156b14b1502235a",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "lemon-shaka": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1394635,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 605",
+      "cuff_stick_bbox": [
+        405,
+        0,
+        648,
+        861
+      ],
+      "base_cuff_stick_bbox": [
+        405,
+        0,
+        648,
+        861
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        232,
+        199,
+        791,
+        1466
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 140,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "a8f18dd879e4e4f4f506e709156058bf75d1719d990c6c55aeb7797b4ec63673",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "lowpoly-ok": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1382818,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 614",
+      "cuff_stick_bbox": [
+        405,
+        0,
+        648,
+        850
+      ],
+      "base_cuff_stick_bbox": [
+        405,
+        0,
+        648,
+        850
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        298,
+        143,
+        686,
+        1464
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 143,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "ee305188edd2b81ea5564abe33528b01d5853bd52af4b6a9bbe584c2d99e43e3",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "lowpoly-shaka": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1395859,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 614",
+      "cuff_stick_bbox": [
+        405,
+        0,
+        648,
+        850
+      ],
+      "base_cuff_stick_bbox": [
+        405,
+        0,
+        648,
+        850
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        237,
+        205,
+        786,
+        1464
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 143,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "d800f2a74ae56b6223606e593df94f11f4941194629ed4882104e9d6517f8b35",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "marble-ok": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1381344,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 607",
+      "cuff_stick_bbox": [
+        408,
+        0,
+        648,
+        875
+      ],
+      "base_cuff_stick_bbox": [
+        408,
+        0,
+        648,
+        875
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        297,
+        143,
+        677,
+        1482
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 143,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "04d2513236af351c6b29810be7797db956c77e2c97bf4003e1757d30cdacbef2",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "marble-shaka": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1395953,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 607",
+      "cuff_stick_bbox": [
+        408,
+        0,
+        648,
+        875
+      ],
+      "base_cuff_stick_bbox": [
+        408,
+        0,
+        648,
+        875
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        230,
+        203,
+        788,
+        1482
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 143,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "81869344860badf118bc172904d64c3a343586d58f9ce9053c997f91afba79eb",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "mech-ok": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1367065,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 620",
+      "cuff_stick_bbox": [
+        363,
+        0,
+        661,
+        842
+      ],
+      "base_cuff_stick_bbox": [
+        363,
+        0,
+        661,
+        842
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        291,
+        150,
+        678,
+        1462
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 150,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "fd9b513a585e26913c87240e4c72dc8005e51cdb60c38d58ebf8cc25035d2108",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "mech-shaka": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1375043,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 620",
+      "cuff_stick_bbox": [
+        363,
+        0,
+        661,
+        842
+      ],
+      "base_cuff_stick_bbox": [
+        363,
+        0,
+        661,
+        842
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        199,
+        188,
+        801,
+        1462
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 150,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "c394898b5df4977db5dd3c1f95a41af1f8570f68dc9cd0fa0c687ad9a98cc776",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "mint-ok": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1375749,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 610",
+      "cuff_stick_bbox": [
+        403,
+        0,
+        649,
+        853
+      ],
+      "base_cuff_stick_bbox": [
+        403,
+        0,
+        649,
+        853
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        298,
+        144,
+        683,
+        1463
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 144,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "066b54dce94ab571e549b316180abfc1445a6126a7d27c20e973dd6450a07b0a",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "mint-shaka": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1384222,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 610",
+      "cuff_stick_bbox": [
+        403,
+        0,
+        649,
+        853
+      ],
+      "base_cuff_stick_bbox": [
+        403,
+        0,
+        649,
+        853
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        223,
+        189,
+        786,
+        1463
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 144,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "96138b6da8ddc75106b306e1d9c448da9c74e233008bab77fe6e473cfd7de027",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "monster-ok": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1345173,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 620",
+      "cuff_stick_bbox": [
+        367,
+        0,
+        701,
+        877
+      ],
+      "base_cuff_stick_bbox": [
+        367,
+        0,
+        701,
+        877
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        252,
+        177,
+        712,
+        1497
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 177,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "61ad618d02fa486371d2e610855fdd098294f498f60bd98212c3c27ad6cf68df",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "monster-shaka": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1376312,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 620",
+      "cuff_stick_bbox": [
+        367,
+        0,
+        701,
+        877
+      ],
+      "base_cuff_stick_bbox": [
+        367,
+        0,
+        701,
+        877
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        214,
+        257,
+        800,
+        1497
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 177,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "0b9904295bc83117a7e091888c2981ab0a65a4dbb08cee5df5f5717e2c591da9",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "neon-ok": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1362042,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 612",
+      "cuff_stick_bbox": [
+        370,
+        0,
+        649,
+        850
+      ],
+      "base_cuff_stick_bbox": [
+        370,
+        0,
+        649,
+        850
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        272,
+        150,
+        688,
+        1462
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 150,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "97744143e89c284887f25197702a00d98b73162d2284e1ee06aa30ea88bcc78b",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "neon-shaka": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1385355,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 612",
+      "cuff_stick_bbox": [
+        370,
+        0,
+        649,
+        850
+      ],
+      "base_cuff_stick_bbox": [
+        370,
+        0,
+        649,
+        850
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": false,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        231,
+        211,
+        788,
+        1462
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 150,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 1,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "ce188bfe1a3a6151f8a38beb89b0a0938e66d6228e222d9d2068791229bb76e1",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "pastel-ok": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1376004,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 613",
+      "cuff_stick_bbox": [
+        405,
+        0,
+        653,
+        850
+      ],
+      "base_cuff_stick_bbox": [
+        405,
+        0,
+        653,
+        850
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        286,
+        143,
+        689,
+        1463
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 143,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "fcf11c363b336063d50cc480ff742e0c6275e1e074f51e33ceb1958d34d02506",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "pastel-shaka": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1391093,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 613",
+      "cuff_stick_bbox": [
+        405,
+        0,
+        653,
+        850
+      ],
+      "base_cuff_stick_bbox": [
+        405,
+        0,
+        653,
+        850
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        228,
+        200,
+        796,
+        1463
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 143,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "c71f13b78981ec1d7d791bf723f031026708df6c24d490328ce971285b959bc9",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "pink-ok": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1379757,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 638",
+      "cuff_stick_bbox": [
+        412,
+        0,
+        646,
+        835
+      ],
+      "base_cuff_stick_bbox": [
+        412,
+        0,
+        646,
+        835
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        294,
+        173,
+        682,
+        1473
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 173,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "90481db8f6c590a5bb22c1b3e0ee32a961729cb6d92c8035f7d6a59b9d0b42a4",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "pink-shaka": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1398986,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 638",
+      "cuff_stick_bbox": [
+        412,
+        0,
+        646,
+        835
+      ],
+      "base_cuff_stick_bbox": [
+        412,
+        0,
+        646,
+        835
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        241,
+        238,
+        787,
+        1473
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 173,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "d1c5da6b2930ac9c2258ac7a94e5893ec5f174a28587ee1e0a9f5960c77a2d35",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "pixel-ok": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1350628,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 712",
+      "cuff_stick_bbox": [
+        416,
+        0,
+        700,
+        758
+      ],
+      "base_cuff_stick_bbox": [
+        416,
+        0,
+        700,
+        758
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        280,
+        195,
+        732,
+        1470
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 195,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "4d5bf62be466b9fb617b01cd92279bc117407c768d0c7ceeff66d4e0563d165f",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "pixel-shaka": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1362467,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 712",
+      "cuff_stick_bbox": [
+        416,
+        0,
+        700,
+        758
+      ],
+      "base_cuff_stick_bbox": [
+        416,
+        0,
+        700,
+        758
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        225,
+        221,
+        800,
+        1470
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 195,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "82d39241c96d93a2a8520cf8c797bc245a8ec541c7e9f6ff134427d64c2f4b5d",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "plush-ok": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1332215,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 669",
+      "cuff_stick_bbox": [
+        357,
+        0,
+        739,
+        866
+      ],
+      "base_cuff_stick_bbox": [
+        357,
+        0,
+        739,
+        867
+      ],
+      "cuff_stick_bbox_delta_px": 1,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        286,
+        143,
+        739,
+        1535
+      ],
+      "source_bottom_edge_trim_px": 1,
+      "base_hand_top_px": 143,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "30e17971ff29ca1fcd31a9b8ba5d80d5d8ff54b3eed23cb1dc47a7137890be70",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "plush-shaka": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1329533,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 669",
+      "cuff_stick_bbox": [
+        357,
+        0,
+        739,
+        866
+      ],
+      "base_cuff_stick_bbox": [
+        357,
+        0,
+        739,
+        867
+      ],
+      "cuff_stick_bbox_delta_px": 1,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        194,
+        163,
+        822,
+        1535
+      ],
+      "source_bottom_edge_trim_px": 1,
+      "base_hand_top_px": 143,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "ebd6a09a9e9e08c3a8e7c490f103b6708f9b2f3b0eb73c4fa718b27a9ca419ef",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "robot-ok": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1329943,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 744",
+      "cuff_stick_bbox": [
+        358,
+        0,
+        675,
+        791
+      ],
+      "base_cuff_stick_bbox": [
+        358,
+        0,
+        675,
+        792
+      ],
+      "cuff_stick_bbox_delta_px": 1,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        252,
+        202,
+        713,
+        1535
+      ],
+      "source_bottom_edge_trim_px": 1,
+      "base_hand_top_px": 202,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "e86df64dd9a4e1e414a999183ff098f5498e3f2f1bd774bb422c6986d45b4250",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "robot-shaka": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1332779,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 744",
+      "cuff_stick_bbox": [
+        358,
+        0,
+        675,
+        791
+      ],
+      "base_cuff_stick_bbox": [
+        358,
+        0,
+        675,
+        792
+      ],
+      "cuff_stick_bbox_delta_px": 1,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        195,
+        215,
+        800,
+        1535
+      ],
+      "source_bottom_edge_trim_px": 1,
+      "base_hand_top_px": 202,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "0b1947f6b86677c0ca825a5d0b89678340e86be62feb778ad7e0ff273b39dcc4",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "skeleton-ok": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1415976,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 588",
+      "cuff_stick_bbox": [
+        415,
+        0,
+        629,
+        862
+      ],
+      "base_cuff_stick_bbox": [
+        415,
+        0,
+        629,
+        862
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        305,
+        169,
+        669,
+        1450
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 169,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "ee1907ae326c8a68e46b98eb1d1fcb25af7707d71badc905376f2292ec5b074f",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "skeleton-shaka": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1422795,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 588",
+      "cuff_stick_bbox": [
+        415,
+        0,
+        629,
+        862
+      ],
+      "base_cuff_stick_bbox": [
+        415,
+        0,
+        629,
+        862
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        233,
+        199,
+        791,
+        1450
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 169,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "8207cc27ed361f37f871dcd230db4e8fe9f41042ba917b4610794ea9a06b2330",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "space-ok": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1369379,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 615",
+      "cuff_stick_bbox": [
+        413,
+        0,
+        673,
+        851
+      ],
+      "base_cuff_stick_bbox": [
+        413,
+        0,
+        673,
+        851
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        300,
+        139,
+        699,
+        1466
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 139,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "a82506891334ef625be557962323c41bdc6f3dfbf46505f5a9d280a9b6067f1f",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "space-shaka": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1394645,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 615",
+      "cuff_stick_bbox": [
+        413,
+        0,
+        673,
+        851
+      ],
+      "base_cuff_stick_bbox": [
+        413,
+        0,
+        673,
+        851
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        230,
+        229,
+        792,
+        1466
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 139,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "57d427a7269ae72878a89eb45ae0ef37a324f02b6fb03576a7054d10d2e8e833",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "terrazzo-ok": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1376878,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 610",
+      "cuff_stick_bbox": [
+        396,
+        0,
+        671,
+        889
+      ],
+      "base_cuff_stick_bbox": [
+        396,
+        0,
+        671,
+        889
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        293,
+        194,
+        684,
+        1499
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 194,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "ba6d864c1fd57a9a52527be09a4a9ff015da458b82feb422fad04474017f9281",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "terrazzo-shaka": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1391785,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 610",
+      "cuff_stick_bbox": [
+        396,
+        0,
+        671,
+        889
+      ],
+      "base_cuff_stick_bbox": [
+        396,
+        0,
+        671,
+        889
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        227,
+        230,
+        798,
+        1499
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 194,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "09ef56528e2ae6f052d3a3a4b7f3236178fc547d7024a1ef1f4ca566f08d26dd",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "water-ok": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1383665,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 615",
+      "cuff_stick_bbox": [
+        404,
+        0,
+        650,
+        850
+      ],
+      "base_cuff_stick_bbox": [
+        404,
+        0,
+        650,
+        850
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        290,
+        166,
+        682,
+        1465
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 166,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "c7b8ca77685e38be81f173b9fe50e115d56a4d2fad6b952fcefef5e75d6605d8",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "water-shaka": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1400624,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 615",
+      "cuff_stick_bbox": [
+        404,
+        0,
+        650,
+        850
+      ],
+      "base_cuff_stick_bbox": [
+        404,
+        0,
+        650,
+        850
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        226,
+        211,
+        789,
+        1465
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 166,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "ee6e0a4a7daf93379700586cd83652709971f8cb7cdbc93c18907c692fe6a050",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "wood-ok": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1378195,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 611",
+      "cuff_stick_bbox": [
+        404,
+        0,
+        650,
+        862
+      ],
+      "base_cuff_stick_bbox": [
+        404,
+        0,
+        650,
+        862
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        292,
+        140,
+        676,
+        1473
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 140,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "ae38d9b0b7d1a5a88fb1b9f267d3f611a6ce6569f3b91c5e0b653b76177a9a30",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    },
+    "wood-shaka": {
+      "canvas": [
+        1024,
+        1536
+      ],
+      "canvas_pass": true,
+      "alpha_present": true,
+      "transparent_pixels": 1395318,
+      "nonzero_edge_pixels": 0,
+      "edge_pass": true,
+      "cuff_stick_bbox_coordinate_note": "y values relative to cuff top 611",
+      "cuff_stick_bbox": [
+        404,
+        0,
+        650,
+        862
+      ],
+      "base_cuff_stick_bbox": [
+        404,
+        0,
+        650,
+        862
+      ],
+      "cuff_stick_bbox_delta_px": 0,
+      "cuff_stick_bbox_pass": true,
+      "cuff_stick_pixel_exact": true,
+      "pixel_exact_reference": "cleaned base RGBA, transparent RGB zeroed",
+      "all_transparent_rgb_zero": true,
+      "alpha_residue_pixels_beyond_2px_core": 0,
+      "opaque_bbox": [
+        230,
+        197,
+        790,
+        1473
+      ],
+      "source_bottom_edge_trim_px": 0,
+      "base_hand_top_px": 140,
+      "within_base_hand_top_crop": true,
+      "cuff_stick_solid_pixels_exact": true,
+      "cuff_stick_pixel_difference_count": 0,
+      "alpha_clean_pass": true,
+      "pass": true,
+      "sha256": "4f279fc5c85d6532cecf5cd04942d1d8fb4e26045541d79a0778ecdbc9220410",
+      "hash_matches_manifest": true,
+      "reference_hash_matches_manifest": true,
+      "raw_input_not_cropped": true,
+      "manual_pass": true
+    }
+  }
+}

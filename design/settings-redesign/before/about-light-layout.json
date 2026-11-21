@@ -1,0 +1,60 @@
+{
+  "probes" : [
+    {
+      "area" : "page",
+      "edge" : "lead",
+      "height" : 32,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "page.title",
+      "width" : 63,
+      "x" : 228,
+      "y" : 48
+    },
+    {
+      "area" : "card.content",
+      "height" : 248,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "card.content.body",
+      "width" : 536,
+      "x" : 228,
+      "y" : 200
+    },
+    {
+      "area" : "page",
+      "height" : 506,
+      "inset" : 20,
+      "kind" : "area",
+      "name" : "page",
+      "width" : 576,
+      "x" : 208,
+      "y" : 0
+    },
+    {
+      "area" : "card.content",
+      "height" : 248,
+      "inset" : 0,
+      "kind" : "area",
+      "name" : "card.content",
+      "width" : 536,
+      "x" : 228,
+      "y" : 200
+    },
+    {
+      "area" : "page",
+      "edge" : "lead",
+      "height" : 382,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "page.content",
+      "width" : 536,
+      "x" : 228,
+      "y" : 104
+    }
+  ],
+  "window" : {
+    "height" : 508,
+    "width" : 784
+  }
+}

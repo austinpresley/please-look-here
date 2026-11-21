@@ -44,7 +44,7 @@ if let idx = CommandLine.arguments.firstIndex(of: "--toolbar-test") {
         print("rendered \(out)")
     }
     if CommandLine.arguments.contains("--hint") {
-        bar.showHint([("Click", "to tap"), ("Drag", "to draw"), ("Interact", "to use apps"), ("Toolbar ×", "to exit")])
+        bar.showHint([("Click", "to tap"), ("Drag", "to draw"), ("Cursor", "to use apps"), ("Toolbar ×", "to exit")])
         if let data = bar.snapshotHint()?.representation(using: .png, properties: [:]) {
             let hintOut = out.replacingOccurrences(of: ".png", with: "-hint.png")
             try? data.write(to: URL(fileURLWithPath: hintOut))

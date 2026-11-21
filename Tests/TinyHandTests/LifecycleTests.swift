@@ -71,10 +71,26 @@ import Testing
         #expect(!MotionPacing.shouldSleep(stillFor: 30, settling: false, held: false, drawing: true))
     }
 
+
+    @Test func sampledExternalMenuStillBlocksPresentationGestures() {
+        _ = NSApplication.shared
+        Preferences.pointerMode = .point
+        var samples = 0
+        let overlay = OverlayController(menuWindows: {
+            samples += 1
+            return [CGRect(x: 938, y: 30, width: 352, height: 149)]
+        })
+        defer { overlay.deactivate() }
+        #expect(overlay.activate())
+        #expect(samples > 0 && !overlay.canUseHandGestures)
+    }
+
     @Test func nativePressReleasedOverOurOwnUIStopsBlockingGestures() throws {
         _ = NSApplication.shared
         Preferences.pointerMode = .point; Preferences.handSound = false
-        let overlay = OverlayController()
+        // This test owns only the constructed down/up pair. Real desktop menus
+        // must not change its preconditions while the test process runs.
+        let overlay = OverlayController(menuWindows: { [] })
         defer { overlay.deactivate() }
         #expect(overlay.activate())
         #expect(overlay.canUseHandGestures)

@@ -1,0 +1,160 @@
+{
+  "probes" : [
+    {
+      "area" : "card.Quick controls at the cursor",
+      "height" : 242,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "card.Quick controls at the cursor.body",
+      "width" : 536,
+      "x" : 228,
+      "y" : 182
+    },
+    {
+      "area" : "page",
+      "edge" : "lead",
+      "height" : 32,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "page.title",
+      "width" : 102,
+      "x" : 228,
+      "y" : 48
+    },
+    {
+      "area" : "card.Drawing with Interact off",
+      "height" : 543,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "card.Drawing with Interact off.body",
+      "width" : 536,
+      "x" : 228,
+      "y" : 1512
+    },
+    {
+      "area" : "card.Quick controls at the cursor",
+      "height" : 266,
+      "inset" : 0,
+      "kind" : "area",
+      "name" : "card.Quick controls at the cursor",
+      "width" : 536,
+      "x" : 228,
+      "y" : 158
+    },
+    {
+      "area" : "card.Drawing with Interact off",
+      "height" : 16,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "card.Drawing with Interact off.title",
+      "width" : 151,
+      "x" : 228,
+      "y" : 1488
+    },
+    {
+      "area" : "card.Hand gestures",
+      "height" : 16,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "card.Hand gestures.title",
+      "width" : 91,
+      "x" : 228,
+      "y" : 448
+    },
+    {
+      "area" : "card.Drawing with Interact off",
+      "height" : 567,
+      "inset" : 0,
+      "kind" : "area",
+      "name" : "card.Drawing with Interact off",
+      "width" : 536,
+      "x" : 228,
+      "y" : 1488
+    },
+    {
+      "area" : "page",
+      "height" : 2075,
+      "inset" : 20,
+      "kind" : "area",
+      "name" : "page",
+      "width" : 576,
+      "x" : 208,
+      "y" : 0
+    },
+    {
+      "area" : "card.Pointer and drawing",
+      "height" : 764,
+      "inset" : 0,
+      "kind" : "area",
+      "name" : "card.Pointer and drawing",
+      "width" : 536,
+      "x" : 228,
+      "y" : 700
+    },
+    {
+      "area" : "card.Quick controls at the cursor",
+      "height" : 16,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "card.Quick controls at the cursor.title",
+      "width" : 168,
+      "x" : 228,
+      "y" : 158
+    },
+    {
+      "area" : "card.Hand gestures",
+      "height" : 204,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "card.Hand gestures.body",
+      "width" : 536,
+      "x" : 228,
+      "y" : 472
+    },
+    {
+      "area" : "page",
+      "edge" : "lead",
+      "height" : 1951,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "page.content",
+      "width" : 536,
+      "x" : 228,
+      "y" : 104
+    },
+    {
+      "area" : "card.Pointer and drawing",
+      "height" : 16,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "card.Pointer and drawing.title",
+      "width" : 122,
+      "x" : 228,
+      "y" : 700
+    },
+    {
+      "area" : "card.Hand gestures",
+      "height" : 228,
+      "inset" : 0,
+      "kind" : "area",
+      "name" : "card.Hand gestures",
+      "width" : 536,
+      "x" : 228,
+      "y" : 448
+    },
+    {
+      "area" : "card.Pointer and drawing",
+      "height" : 740,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "card.Pointer and drawing.body",
+      "width" : 536,
+      "x" : 228,
+      "y" : 724
+    }
+  ],
+  "window" : {
+    "height" : 1054,
+    "width" : 784
+  }
+}

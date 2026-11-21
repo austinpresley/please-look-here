@@ -14,6 +14,8 @@ import Testing
         session.pointerOn = true
         #expect(session.interactOn)
         session.select(.interact)
+        #expect(!session.interactOn)
+        session.interactOn = true
         session.clickPracticeButton()
         #expect(session.clicks == 1)
         session.interactOn = false
@@ -113,7 +115,7 @@ import Testing
     }
 
     @Test func shortcutTargetsMatchRealCommandsAndRepeatedLinksProduceNewRequests() {
-        #expect(PracticeLesson.allCases.map(\.shortcutTarget) == [.pointer, .interact, .drawing, .radial])
+        #expect(PracticeLesson.allCases.map(\.shortcutTarget) == [.pointer, .drawing, .interact, .radial])
         #expect(PracticeShortcutTarget.allCases.map(\.rawValue) == ["toggle", "mode", "pen", "radial"])
         #expect(PresentationAction(rawValue: PracticeShortcutTarget.interact.rawValue) == .mode)
         #expect(PresentationAction(rawValue: PracticeShortcutTarget.drawing.rawValue)?.tool == .pen)

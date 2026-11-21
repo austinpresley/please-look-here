@@ -6,6 +6,7 @@ final class GettingStartedPracticeWindow: NSObject, NSWindowDelegate {
     var openShortcut: ((PracticeShortcutTarget) -> Void)?
     var readiness: (() -> PracticeReadiness)?
     var onVisibilityChanged: (() -> Void)?
+    var nativeWindow: NSWindow? { window }
     private var window: NSWindow?
     private var session: GettingStartedPracticeSession?
 
@@ -13,7 +14,7 @@ final class GettingStartedPracticeWindow: NSObject, NSWindowDelegate {
         if window == nil {
             let session = GettingStartedPracticeSession(pointerConfiguration: .current)
             self.session = session
-            let window = NSWindow(contentRect: CGRect(x: 0, y: 0, width: 560, height: 600),
+            let window = NSWindow(contentRect: CGRect(x: 0, y: 0, width: 560, height: 560),
                                   styleMask: [.titled, .closable, .miniaturizable, .resizable], backing: .buffered, defer: false)
             window.title = "Getting Started Practice"
             window.minSize = CGSize(width: 560, height: 520)
@@ -30,6 +31,22 @@ final class GettingStartedPracticeWindow: NSObject, NSWindowDelegate {
         window?.makeKeyAndOrderFront(nil)
         window?.makeFirstResponder(nil)
         onVisibilityChanged?()
+    }
+    /// Local exercise actions, called only by the disposable test-mode bridge.
+    func verify(_ request: [String: Any]) -> [String: Any] {
+        if request["completePrevious"] as? Bool == true, let session {
+            session.select(.pointer); session.pointerOn = true; session.clickPracticeButton()
+            session.select(.drawing)
+        }
+        if request["completeCurrent"] as? Bool == true, let session {
+            if session.lesson == .drawing {
+                session.drawing.begin(at: CGPoint(x: 40, y: 60)); session.drawing.extend(to: CGPoint(x: 220, y: 140)); session.drawing.end()
+            } else if session.lesson == .radial {
+                session.beginRadial(); session.moveRadialToTools(); session.moveRadialToPen(); session.releaseRadial()
+            } else { session.pointerOn = true; session.interactOn = true; session.clickPracticeButton() }
+        }
+        return ["progress": session?.progressAnnouncement ?? "", "succeeded": session?.succeeded ?? false,
+                "completed": session?.completedSteps.map(\.rawValue).sorted() ?? []]
     }
     func windowWillClose(_ notification: Notification) {
         session?.stop()
@@ -50,22 +67,47 @@ private struct GettingStartedPracticeView: View {
     let close: () -> Void
     @State private var desktopReadiness = PracticeReadiness(drawingAllowed: false, radialAssigned: false, capturing: false)
     private let readinessTimer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+    private var accent: Color { Color(nsColor: ControlPalette.accent(NSApp.effectiveAppearance)) }
     var body: some View {
         VStack(alignment: .leading, spacing: Space.lg) {
             ScrollView {
                 VStack(alignment: .leading, spacing: Space.lg) {
-                    Text("Step \(session.lesson.rawValue + 1) of \(PracticeLesson.allCases.count)").font(.callout).foregroundStyle(.secondary)
-                    Text(session.lesson.title).font(.title2).bold()
-                    Text(session.lesson.instruction).fixedSize(horizontal: false, vertical: true)
-                    Text("Practice stays in this window. No permission or shortcut is needed.").font(.callout).foregroundStyle(.secondary)
+                    HStack(spacing: Space.md) {
+                        ForEach(PracticeLesson.allCases, id: \.rawValue) { lesson in
+                            ZStack(alignment: .bottomTrailing) {
+                                PracticeStepGlyph(lesson: lesson)
+                                    .frame(width: 32, height: 32)
+                                    .background(Circle().fill(lesson == session.lesson ? accent.opacity(0.2) : Color.primary.opacity(0.06)))
+                                    .overlay(Circle().strokeBorder(lesson == session.lesson ? accent : .clear, lineWidth: 2))
+                                    .foregroundStyle(lesson == session.lesson ? accent : Color.secondary)
+                                if session.completedSteps.contains(lesson) {
+                                    Image(systemName: "checkmark.circle.fill").font(.system(size: 12)).foregroundStyle(accent)
+                                        .background(Circle().fill(Color(nsColor: .windowBackgroundColor)))
+                                }
+                            }.accessibilityElement(children: .ignore)
+                                .accessibilityLabel(lesson.progressName)
+                                .accessibilityValue(lesson == session.lesson ? "Current step" : session.completedSteps.contains(lesson) ? "Completed" : "Upcoming")
+                                .accessibilityAddTraits(lesson == session.lesson ? .isSelected : [])
+                        }
+                        Spacer()
+                        Text("\(session.lesson.rawValue + 1) of 4").font(.system(size: 12)).monospacedDigit()
+                    }.accessibilityElement(children: .contain).accessibilityLabel(session.progressAnnouncement)
+                    HStack(spacing: Space.sm) {
+                        Text(session.lesson.title).font(.title3).bold()
+                        Spacer()
+                        Image(systemName: "info.circle").foregroundStyle(.secondary)
+                            .help(desktopReadiness.message(for: session.lesson))
+                            .accessibilityLabel(desktopReadiness.message(for: session.lesson))
+                        Button { openShortcut(session.lesson.shortcutTarget) } label: { Image(systemName: "keyboard") }
+                            .help("Open \(session.lesson.shortcutTarget.title) in Shortcuts")
+                            .accessibilityLabel("Open \(session.lesson.shortcutTarget.title) in Shortcuts")
+                    }
+                    if session.lesson != .drawing { Text(session.lesson.instruction).fixedSize(horizontal: false, vertical: true) }
                     lessonContent
                         .gridProbe("practice.lesson", area: "practice")
-                    Text(desktopReadiness.message(for: session.lesson)).font(.callout).foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .gridProbe("practice.readiness", area: "practice")
-                    Button("Open \(session.lesson.shortcutTarget.title) in Shortcuts…") { openShortcut(session.lesson.shortcutTarget) }
-                        .help("Focus this command in Shortcuts. Recording starts only when you click its shortcut control.")
-                    Text("Shortcuts stay unassigned until you choose them.").font(.callout).foregroundStyle(.secondary)
+                    if session.succeeded { Label("You did it", systemImage: "checkmark.circle.fill").foregroundStyle(accent) }
+
+
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(Space.margin)
@@ -73,62 +115,72 @@ private struct GettingStartedPracticeView: View {
             }
             Divider()
             HStack(spacing: Space.sm) {
-                Button("Back") { if let lesson = PracticeLesson(rawValue: session.lesson.rawValue - 1) { session.select(lesson) } }
-                    .disabled(session.lesson == .pointer)
-                Button("Replay Step") { session.replayStep() }
+                Button { if let lesson = PracticeLesson(rawValue: session.lesson.rawValue - 1) { session.select(lesson) } } label: { Image(systemName: "chevron.left") }
+                    .disabled(session.lesson == .pointer).help("Back to the previous step").accessibilityLabel("Back")
+                Button { session.replayStep() } label: { Image(systemName: "arrow.clockwise") }
+                    .help("Replay this practice step").accessibilityLabel("Replay Step")
                 if session.lesson == .radial { Button("Start Again") { session.replayAll() } }
                 Spacer(minLength: Space.sm)
+                Button("Skip") { advance() }
                 Button(session.lesson == .radial ? "Done" : "Next") {
-                    if let lesson = PracticeLesson(rawValue: session.lesson.rawValue + 1) { session.select(lesson) }
-                    else { close() }
-                }.keyboardShortcut(.defaultAction)
+                    advance()
+                }.keyboardShortcut(.defaultAction).disabled(!session.succeeded)
             }.padding([.horizontal, .bottom], Space.margin)
         }
+        .tint(Color(nsColor: ControlPalette.accent(NSApp.effectiveAppearance)))
         .onAppear { desktopReadiness = readiness() }
         .onReceive(readinessTimer) { _ in desktopReadiness = readiness() }
         .onExitCommand { session.cancel() }
     }
+    private func advance() {
+        if let lesson = PracticeLesson(rawValue: session.lesson.rawValue + 1) { session.select(lesson) }
+        else { close() }
+    }
     @ViewBuilder private var lessonContent: some View {
         switch session.lesson {
-        case .pointer:
+        case .pointer, .interact, .drawing:
             VStack(alignment: .leading, spacing: Space.md) {
-                Button(session.pointerOn ? "Turn Practice Pointer Off" : "Turn Practice Pointer On") { session.pointerOn.toggle() }
-                if session.pointerOn {
-                    PracticePointerCanvas(configuration: session.pointerConfiguration).frame(height: 220)
-                } else {
-                    Text("Practice Pointer Off. Turn it on to see the sample.")
-                        .frame(maxWidth: .infinity, minHeight: 220)
+                HStack(spacing: Space.sm) {
+                    Button { session.pointerOn = true; session.interactOn = true } label: { Image(systemName: "cursorarrow") }
+                        .help("Cursor: use the sample app").accessibilityLabel("Cursor")
+                    Button { session.pointerOn = true; session.interactOn = false } label: { Image(systemName: "pencil.tip") }
+                        .help("Pen: draw locally").accessibilityLabel("Pen")
+                    Text(session.interactOn ? "Cursor" : "Pen").font(.callout).foregroundStyle(.secondary)
+                    Spacer()
+                    if !session.pointerOn { Button("Show sample pointer") { session.pointerOn = true } }
+                    Button { session.drawing.undo() } label: { Image(systemName: "arrow.uturn.backward") }.help("Undo practice drawing").accessibilityLabel("Undo").disabled(session.annotationCount == 0)
+                    Button { session.drawing.clear() } label: { Image(systemName: "trash") }.help("Clear practice drawing").accessibilityLabel("Clear").disabled(session.annotationCount == 0)
                 }
-                Text(session.pointerOn ? "Practice Pointer On. Your desktop pointer stays as it is." : "Pointer On and Interact are separate controls.").font(.callout)
-            }
-        case .interact, .drawing:
-            VStack(alignment: .leading, spacing: Space.md) {
-                Toggle("Interact in Practice", isOn: $session.interactOn).toggleStyle(.switch)
-                if session.lesson == .interact {
-                    Button("Try This Button") { session.clickPracticeButton() }.disabled(!session.interactOn)
-                    Text(session.interactOn ? "Button clicks received: \(session.clicks)" : "Interact Off. The canvas captures practice drawing; app clicks wait until Interact is on.")
-                        .font(.callout).fixedSize(horizontal: false, vertical: true)
+                if session.lesson != .drawing {
+                    Button("Click me") { session.clickPracticeButton() }
+                        .disabled(!session.pointerOn || !session.interactOn)
+                        .frame(maxWidth: .infinity, minHeight: 48)
+                    Text("Clicks received: \(session.clicks)").font(.callout)
                 }
-                DrawingPracticeCanvas(session: session.drawing, configuration: session.drawingConfiguration, replay: session.replay)
-                    .frame(height: 180)
+                PracticeInkCanvas(session: session.drawing, configuration: session.drawingConfiguration)
+                    .frame(height: session.lesson == .drawing ? 300 : 200)
                     .background(Color(nsColor: .textBackgroundColor))
                     .overlay(RoundedRectangle(cornerRadius: Space.sm).strokeBorder(Color.primary.opacity(0.16)))
-                HStack(spacing: Space.sm) {
-                    Button("Undo") { session.drawing.undo() }.disabled(session.annotationCount == 0)
-                    Button("Clear") { session.drawing.clear() }.disabled(session.annotationCount == 0)
-                    Text("Practice annotations: \(session.annotationCount)").font(.callout)
-                }
-                Text(session.interactOn ? "Interact On. Dragging leaves practice ink unchanged." : "Interact Off. Drag to draw; Escape cancels the current line.")
-                    .font(.callout).foregroundStyle(.secondary)
+
             }
         case .radial:
             VStack(alignment: .leading, spacing: Space.md) {
-                LocalRadialPracticeCanvas(session: session).frame(height: 280)
+                Text(Preferences.radialTrigger.map { "On your desktop: \($0.holdHelp)" } ?? "On your desktop: set a held key in Shortcuts. Hold the center to practice here.")
+                    .font(.callout).foregroundStyle(.secondary)
+                HStack(spacing: Space.md) {
+                    Label("Hold center", systemImage: "hand.point.up.left")
+                    Image(systemName: "arrow.right")
+                    Label("Move", systemImage: "cursorarrow.motionlines")
+                    Image(systemName: "arrow.right")
+                    Label("Release", systemImage: "hand.raised")
+                }.font(.callout)
+                LocalRadialPracticeCanvas(session: session).frame(height: 240)
+                Text("Esc or center: cancel").font(.callout).foregroundStyle(.secondary)
                 Text(session.radialFeedback).font(.callout).fixedSize(horizontal: false, vertical: true)
                 // Native buttons provide the same hold/move/release path with a keyboard or VoiceOver.
                 HStack(spacing: Space.sm) {
-                    Button("Hold Menu") { session.beginRadial() }.disabled(session.radial != nil)
-                    Button("Move to Tools") { session.moveRadialToTools() }.disabled(session.radial == nil)
+                    Button("Hold Quick controls") { session.beginRadial() }.disabled(session.radial != nil)
+                    Button("Move to Draw") { session.moveRadialToTools() }.disabled(session.radial == nil)
                     Button("Move to Pen") { session.moveRadialToPen() }.disabled(session.radial?.group == nil)
                     Button("Release") { session.releaseRadial() }.disabled(session.radial == nil)
                     Button("Cancel") { session.cancelRadial() }.disabled(session.radial == nil)
@@ -138,27 +190,32 @@ private struct GettingStartedPracticeView: View {
     }
 }
 
-private struct PracticePointerCanvas: NSViewRepresentable {
-    let configuration: PointerPreviewConfiguration
-    final class Coordinator {
-        weak var view: PointerPreviewView?
-        private var observer: Any?
-        init() {
-            observer = NotificationCenter.default.addObserver(forName: NSWindow.didResignKeyNotification, object: nil, queue: .main) { [weak self] notification in
-                guard let view = self?.view, notification.object as? NSWindow === view.window else { return }
-                view.stop()
-            }
-        }
-        deinit { if let observer { NotificationCenter.default.removeObserver(observer) } }
+private struct PracticeInkCanvas: NSViewRepresentable {
+    let session: DrawingPracticeSession
+    let configuration: DrawingPracticeConfiguration
+    func makeNSView(context: Context) -> GettingStartedInkView { GettingStartedInkView(session: session) }
+    func updateNSView(_ view: GettingStartedInkView, context: Context) { session.configure(configuration) }
+    static func dismantleNSView(_ view: GettingStartedInkView, coordinator: ()) { view.session.cancel() }
+}
+
+/// Unlike the Settings preview, onboarding never inserts sample ink on mount,
+/// replay or resize. Only a completed local gesture can satisfy the lesson.
+final class GettingStartedInkView: NSView {
+    let session: DrawingPracticeSession
+    init(session: DrawingPracticeSession) {
+        self.session = session; super.init(frame: .zero)
+        wantsLayer = true; layer?.masksToBounds = true; layer?.addSublayer(session.ink.layer)
+        setAccessibilityElement(true); setAccessibilityRole(.image)
+        setAccessibilityLabel("Practice canvas")
+        setAccessibilityHelp("Choose Pen and drag a line here. Cursor leaves the ink unchanged.")
     }
-    func makeCoordinator() -> Coordinator { Coordinator() }
-    func makeNSView(context: Context) -> PointerPreviewView {
-        let view = PointerPreviewView(configuration: configuration)
-        context.coordinator.view = view
-        return view
-    }
-    func updateNSView(_ view: PointerPreviewView, context: Context) { view.configure(configuration, tap: 0, motion: 0) }
-    static func dismantleNSView(_ view: PointerPreviewView, coordinator: ()) { view.stop() }
+    required init?(coder: NSCoder) { fatalError("init(coder:) not used") }
+    override var acceptsFirstResponder: Bool { true }
+    override func layout() { super.layout(); session.ink.scale = window?.backingScaleFactor ?? 2 }
+    override func mouseDown(with event: NSEvent) { window?.makeFirstResponder(self); session.begin(at: convert(event.locationInWindow, from: nil)) }
+    override func mouseDragged(with event: NSEvent) { session.extend(to: convert(event.locationInWindow, from: nil)) }
+    override func mouseUp(with event: NSEvent) { session.end() }
+    override func cancelOperation(_ sender: Any?) { session.cancel() }
 }
 
 private struct LocalRadialPracticeCanvas: NSViewRepresentable {
@@ -177,7 +234,7 @@ private final class LocalRadialPracticeView: NSView {
         setAccessibilityElement(true)
         setAccessibilityRole(.image)
         setAccessibilityLabel("Local radial practice")
-        setAccessibilityHelp("Hold the center, drag right through Tools, then up to Pen and release. Keyboard users can use the Hold Menu, Move and Release buttons below.")
+        setAccessibilityHelp("Hold the center, drag right through Draw, then move to Pen and release. Keyboard users can use the Hold Quick controls, Move and Release buttons below.")
     }
     required init?(coder: NSCoder) { fatalError("init(coder:) not used") }
     override var acceptsFirstResponder: Bool { true }
@@ -194,10 +251,10 @@ private final class LocalRadialPracticeView: NSView {
         let radial = session.radial ?? GettingStartedPracticeSession.radialTemplate
         let center = displayPoint(radial.geometry.center)
         NSColor.separatorColor.setStroke()
-        let ring = NSBezierPath(ovalIn: CGRect(x: center.x - 216 * scale, y: center.y - 216 * scale, width: 432 * scale, height: 432 * scale))
+        let ring = NSBezierPath(ovalIn: CGRect(x: center.x - 164 * scale, y: center.y - 164 * scale, width: 328 * scale, height: 328 * scale))
         ring.stroke()
         for (slot, item) in radial.items.enumerated() where item.enabled {
-            let point = displayPoint(RadialGeometry.point(slot: slot, radius: radial.group == nil ? 128 : 216, center: radial.geometry.center))
+            let point = displayPoint(RadialGeometry.point(angle: radial.angle(for: slot), radius: RadialGeometry.rootRadius, center: radial.geometry.center))
             let width: CGFloat = radial.group == nil ? 56 : 72
             let rect = CGRect(x: point.x - width / 2, y: point.y - 16, width: width, height: 32)
             (radial.highlighted == slot ? NSColor.selectedControlColor : NSColor.controlBackgroundColor).setFill()

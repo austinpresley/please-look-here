@@ -10,7 +10,7 @@ final class ShortcutNavigation {
     func resolve(in root: NSView, model: SettingsModel, canFocus: Bool, revealFocused: Bool = false) -> Bool {
         guard canFocus, model.section == .shortcuts, let request = model.shortcutFocusRequest,
               let window = root.window,
-              let control = Self.control(for: request.target, in: root),
+              let control = Self.control(identifier: request.controlIdentifier, in: root),
               !control.isHiddenOrHasHiddenAncestor, control.isEnabled,
               control.bounds.width > 0, control.bounds.height > 0 else { return false }
         if completedRequestID == request.id {
@@ -31,11 +31,15 @@ final class ShortcutNavigation {
     }
 
     static func control(for target: PracticeShortcutTarget, in root: NSView) -> NSControl? {
-        if let control = root as? NSControl, control.identifier?.rawValue == target.controlIdentifier {
+        control(identifier: target.controlIdentifier, in: root)
+    }
+
+    static func control(identifier: String, in root: NSView) -> NSControl? {
+        if let control = root as? NSControl, control.identifier?.rawValue == identifier {
             return control
         }
         for child in root.subviews {
-            if let control = control(for: target, in: child) { return control }
+            if let control = control(identifier: identifier, in: child) { return control }
         }
         return nil
     }

@@ -1,0 +1,19 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>
+body{font-family:var(--font-sans),system-ui,sans-serif;color:var(--foreground);margin:0}
+nav{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
+button{font:inherit;padding:7px 14px;border:1px solid var(--border);border-radius:var(--radius);background:var(--secondary);color:var(--foreground);cursor:pointer}
+button[aria-pressed=true]{background:var(--primary);color:var(--primary-foreground)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+figure{margin:0}img{width:100%;height:auto;display:block;border-radius:var(--radius)}
+figcaption{font-size:13px;color:var(--muted-foreground);padding:7px 0}
+p{font-size:13px;line-height:1.5;color:var(--muted-foreground);margin:10px 0 0}
+@media(max-width:500px){.grid{grid-template-columns:1fr}}
+</style></head><body>
+<nav aria-label="Concept appearance"><button id="dark" aria-pressed="true">Dark</button><button id="light" aria-pressed="false">Light</button></nav>
+<div class="grid"><figure><img id="root" alt="Six equal root sectors with a cream glove, coral selection and glass material" src="/Volumes/Project-Vault/PROJECTS/Please Look Here/design/radial-redesign/sol/concept-root-dark.png"><figcaption>Root · six stable directions</figcaption></figure><figure><img id="pointer" alt="Eight-sector pointer child with hand artwork, current selection check, Back and All pointers" src="/Volumes/Project-Vault/PROJECTS/Please Look Here/design/radial-redesign/sol/concept-pointer-dark.png"><figcaption>Pointer · favorites, library and Back</figcaption></figure></div>
+<p>AI-generated concepts, not pixel specs. The written review controls geometry and behavior. Rendered cursor arrows, oversized hubs, bright glass, and the outside parent dot are illustrative departures.</p>
+<script>
+const images={dark:{root:"/Volumes/Project-Vault/PROJECTS/Please Look Here/design/radial-redesign/sol/concept-root-dark.png",pointer:"/Volumes/Project-Vault/PROJECTS/Please Look Here/design/radial-redesign/sol/concept-pointer-dark.png"},light:{root:"/Volumes/Project-Vault/PROJECTS/Please Look Here/design/radial-redesign/sol/concept-root-light.png",pointer:"/Volumes/Project-Vault/PROJECTS/Please Look Here/design/radial-redesign/sol/concept-pointer-light.png"}};
+for(const mode of ['dark','light'])document.getElementById(mode).onclick=()=>{for(const n of ['root','pointer'])document.getElementById(n).src=images[mode][n];for(const m of ['dark','light'])document.getElementById(m).setAttribute('aria-pressed',String(m===mode))};
+console.log('Concept gallery initialized; four local image paths, two appearance controls.');
+</script></body></html>

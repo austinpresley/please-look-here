@@ -1,0 +1,263 @@
+{
+  "probes" : [
+    {
+      "area" : "page",
+      "edge" : "lead",
+      "height" : 32,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "page.title",
+      "width" : 80,
+      "x" : 228,
+      "y" : 56
+    },
+    {
+      "area" : "card.Using the pointer",
+      "height" : 113,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "card.Using the pointer.body",
+      "width" : 536,
+      "x" : 228,
+      "y" : 240
+    },
+    {
+      "area" : "card.Permissions",
+      "height" : 113,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "card.Permissions.body",
+      "width" : 536,
+      "x" : 228,
+      "y" : 563
+    },
+    {
+      "area" : "streamdeck",
+      "edge" : "lead",
+      "height" : 30,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "streamdeck.requirements",
+      "width" : 503,
+      "x" : 244,
+      "y" : 441
+    },
+    {
+      "area" : "card.Startup",
+      "height" : 70,
+      "inset" : 0,
+      "kind" : "area",
+      "name" : "card.Startup",
+      "width" : 536,
+      "x" : 228,
+      "y" : 882
+    },
+    {
+      "area" : "card.Stream Deck",
+      "height" : 138,
+      "inset" : 0,
+      "kind" : "area",
+      "name" : "card.Stream Deck",
+      "width" : 536,
+      "x" : 228,
+      "y" : 377
+    },
+    {
+      "area" : "card.Startup",
+      "height" : 46,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "card.Startup.body",
+      "width" : 536,
+      "x" : 228,
+      "y" : 906
+    },
+    {
+      "area" : "card.Getting started",
+      "height" : 16,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "card.Getting started.title",
+      "width" : 94,
+      "x" : 228,
+      "y" : 112
+    },
+    {
+      "area" : "card.Screenshots",
+      "height" : 16,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "card.Screenshots.title",
+      "width" : 78,
+      "x" : 228,
+      "y" : 700
+    },
+    {
+      "area" : "card.Permissions",
+      "height" : 16,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "card.Permissions.title",
+      "width" : 76,
+      "x" : 228,
+      "y" : 539
+    },
+    {
+      "area" : "card.Getting started",
+      "height" : 56,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "card.Getting started.body",
+      "width" : 536,
+      "x" : 228,
+      "y" : 136
+    },
+    {
+      "area" : "card.Stream Deck",
+      "height" : 16,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "card.Stream Deck.title",
+      "width" : 80,
+      "x" : 228,
+      "y" : 377
+    },
+    {
+      "area" : "streamdeck",
+      "edge" : "lead",
+      "height" : 16,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "streamdeck.version",
+      "width" : 132,
+      "x" : 244,
+      "y" : 417
+    },
+    {
+      "area" : "card.Startup",
+      "height" : 16,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "card.Startup.title",
+      "width" : 49,
+      "x" : 228,
+      "y" : 882
+    },
+    {
+      "area" : "page",
+      "height" : 980,
+      "inset" : 20,
+      "kind" : "area",
+      "name" : "page",
+      "width" : 576,
+      "x" : 208,
+      "y" : 0
+    },
+    {
+      "area" : "streamdeck",
+      "edge" : "lead",
+      "height" : 20,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "streamdeck.actions",
+      "width" : 185,
+      "x" : 244,
+      "y" : 479
+    },
+    {
+      "area" : "streamdeck",
+      "height" : 114,
+      "inset" : 16,
+      "kind" : "area",
+      "name" : "streamdeck",
+      "width" : 536,
+      "x" : 228,
+      "y" : 401
+    },
+    {
+      "area" : "card.Permissions",
+      "height" : 137,
+      "inset" : 0,
+      "kind" : "area",
+      "name" : "card.Permissions",
+      "width" : 536,
+      "x" : 228,
+      "y" : 539
+    },
+    {
+      "area" : "card.Screenshots",
+      "height" : 134,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "card.Screenshots.body",
+      "width" : 536,
+      "x" : 228,
+      "y" : 724
+    },
+    {
+      "area" : "card.Stream Deck",
+      "height" : 114,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "card.Stream Deck.body",
+      "width" : 536,
+      "x" : 228,
+      "y" : 401
+    },
+    {
+      "area" : "card.Screenshots",
+      "height" : 158,
+      "inset" : 0,
+      "kind" : "area",
+      "name" : "card.Screenshots",
+      "width" : 536,
+      "x" : 228,
+      "y" : 700
+    },
+    {
+      "area" : "card.Using the pointer",
+      "height" : 16,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "card.Using the pointer.title",
+      "width" : 106,
+      "x" : 228,
+      "y" : 216
+    },
+    {
+      "area" : "page",
+      "edge" : "lead",
+      "height" : 840,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "page.content",
+      "width" : 536,
+      "x" : 228,
+      "y" : 112
+    },
+    {
+      "area" : "card.Using the pointer",
+      "height" : 137,
+      "inset" : 0,
+      "kind" : "area",
+      "name" : "card.Using the pointer",
+      "width" : 536,
+      "x" : 228,
+      "y" : 216
+    },
+    {
+      "area" : "card.Getting started",
+      "height" : 80,
+      "inset" : 0,
+      "kind" : "area",
+      "name" : "card.Getting started",
+      "width" : 536,
+      "x" : 228,
+      "y" : 112
+    }
+  ],
+  "window" : {
+    "height" : 980,
+    "width" : 784
+  }
+}

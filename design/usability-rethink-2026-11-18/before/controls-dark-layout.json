@@ -1,0 +1,124 @@
+{
+  "probes" : [
+    {
+      "area" : "controls",
+      "height" : 303,
+      "inset" : 16,
+      "kind" : "area",
+      "name" : "controls",
+      "width" : 320,
+      "x" : 0,
+      "y" : 0
+    },
+    {
+      "area" : "controls",
+      "edge" : "lead",
+      "height" : 22,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "row0",
+      "width" : 288,
+      "x" : 16,
+      "y" : 265
+    },
+    {
+      "area" : "controls",
+      "edge" : "lead",
+      "height" : 20,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "row1",
+      "width" : 288,
+      "x" : 16,
+      "y" : 233
+    },
+    {
+      "area" : "controls",
+      "edge" : "lead",
+      "height" : 22,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "row2",
+      "width" : 288,
+      "x" : 16,
+      "y" : 199
+    },
+    {
+      "area" : "controls",
+      "edge" : "lead",
+      "height" : 15,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "row3",
+      "width" : 288,
+      "x" : 16,
+      "y" : 172
+    },
+    {
+      "area" : "controls",
+      "edge" : "lead",
+      "height" : 1,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "row4",
+      "width" : 288,
+      "x" : 16,
+      "y" : 159
+    },
+    {
+      "area" : "controls",
+      "edge" : "lead",
+      "height" : 22,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "row5",
+      "width" : 288,
+      "x" : 16,
+      "y" : 125
+    },
+    {
+      "area" : "controls",
+      "edge" : "lead",
+      "height" : 20,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "row6",
+      "width" : 288,
+      "x" : 16,
+      "y" : 93
+    },
+    {
+      "area" : "controls",
+      "edge" : "lead",
+      "height" : 1,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "row7",
+      "width" : 288,
+      "x" : 16,
+      "y" : 80
+    },
+    {
+      "area" : "controls",
+      "edge" : "lead",
+      "height" : 20,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "row8",
+      "width" : 288,
+      "x" : 16,
+      "y" : 48
+    },
+    {
+      "area" : "controls",
+      "edge" : "lead",
+      "height" : 20,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "row9",
+      "width" : 288,
+      "x" : 16,
+      "y" : 16
+    }
+  ]
+}

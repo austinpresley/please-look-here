@@ -16,13 +16,12 @@ enum PinOrdering {
 
 extension SettingsModel {
     func canMovePin(_ style: PointerStyle, direction: PinOrdering.Direction) -> Bool {
-        dragging == nil && PinOrdering.moving(style, direction: direction, in: Preferences.pinnedStyles) != nil
+        PinOrdering.moving(style, direction: direction, in: Preferences.pinnedStyles) != nil
     }
 
     @discardableResult
     func movePin(_ style: PointerStyle, direction: PinOrdering.Direction) -> Bool {
-        guard dragging == nil,
-              let order = PinOrdering.moving(style, direction: direction, in: Preferences.pinnedStyles) else { return false }
+        guard let order = PinOrdering.moving(style, direction: direction, in: Preferences.pinnedStyles) else { return false }
         Preferences.pinnedStyles = order
         pinMessage = nil
         return true

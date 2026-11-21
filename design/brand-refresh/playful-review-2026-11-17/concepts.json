@@ -1,0 +1,202 @@
+[
+  {
+    "id": "S1",
+    "name": "Lemon pop",
+    "by": "Sol",
+    "note": "Purple, tilted and oversized.",
+    "description": "My pick for the app icon. The diagonal gives the hand energy, and yellow makes the original lavender stand out.",
+    "images": {
+      "Default": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-sol-2026-11-17/exports/S1-Default-512.png",
+      "Dark": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-sol-2026-11-17/exports/S1-Dark-512.png",
+      "TintedLight": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-sol-2026-11-17/exports/S1-TintedLight-512.png",
+      "TintedDark": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-sol-2026-11-17/exports/S1-TintedDark-512.png",
+      "ClearLight": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-sol-2026-11-17/exports/S1-ClearLight-512.png",
+      "ClearDark": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-sol-2026-11-17/exports/S1-ClearDark-512.png"
+    },
+    "small": {
+      "Default": {
+        "16": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-sol-2026-11-17/exports/S1-Default-16.png",
+        "32": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-sol-2026-11-17/exports/S1-Default-32.png"
+      },
+      "Dark": {
+        "16": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-sol-2026-11-17/exports/S1-Dark-16.png",
+        "32": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-sol-2026-11-17/exports/S1-Dark-32.png"
+      }
+    }
+  },
+  {
+    "id": "S2",
+    "name": "Double take",
+    "by": "Sol",
+    "note": "The white and purple hands meet.",
+    "description": "The white and purple fingertips meet. A friendly character direction, with both source hands visible.",
+    "images": {
+      "Default": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-sol-2026-11-17/exports/S2-Default-512.png",
+      "Dark": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-sol-2026-11-17/exports/S2-Dark-512.png",
+      "TintedLight": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-sol-2026-11-17/exports/S2-TintedLight-512.png",
+      "TintedDark": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-sol-2026-11-17/exports/S2-TintedDark-512.png",
+      "ClearLight": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-sol-2026-11-17/exports/S2-ClearLight-512.png",
+      "ClearDark": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-sol-2026-11-17/exports/S2-ClearDark-512.png"
+    },
+    "small": {
+      "Default": {
+        "16": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-sol-2026-11-17/exports/S2-Default-16.png",
+        "32": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-sol-2026-11-17/exports/S2-Default-32.png"
+      },
+      "Dark": {
+        "16": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-sol-2026-11-17/exports/S2-Dark-16.png",
+        "32": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-sol-2026-11-17/exports/S2-Dark-32.png"
+      }
+    }
+  },
+  {
+    "id": "S3",
+    "name": "Sticky situation",
+    "by": "Sol",
+    "note": "A purple pointer over a peeled note.",
+    "description": "A peeled sticky note connects the pointing hand to screen annotations. It can also suggest a notes app.",
+    "images": {
+      "Default": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-sol-2026-11-17/exports/S3-Default-512.png",
+      "Dark": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-sol-2026-11-17/exports/S3-Dark-512.png",
+      "TintedLight": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-sol-2026-11-17/exports/S3-TintedLight-512.png",
+      "TintedDark": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-sol-2026-11-17/exports/S3-TintedDark-512.png",
+      "ClearLight": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-sol-2026-11-17/exports/S3-ClearLight-512.png",
+      "ClearDark": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-sol-2026-11-17/exports/S3-ClearDark-512.png"
+    },
+    "small": {
+      "Default": {
+        "16": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-sol-2026-11-17/exports/S3-Default-16.png",
+        "32": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-sol-2026-11-17/exports/S3-Default-32.png"
+      },
+      "Dark": {
+        "16": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-sol-2026-11-17/exports/S3-Dark-16.png",
+        "32": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-sol-2026-11-17/exports/S3-Dark-32.png"
+      }
+    }
+  },
+  {
+    "id": "S4",
+    "name": "Ribbon dance",
+    "by": "Sol",
+    "note": "A white hand with loud marker stripes.",
+    "description": "A bolder white-hand direction with pink and yellow marker stripes. The background competes with the hand at tiny sizes.",
+    "images": {
+      "Default": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-sol-2026-11-17/exports/S4-Default-512.png",
+      "Dark": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-sol-2026-11-17/exports/S4-Dark-512.png",
+      "TintedLight": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-sol-2026-11-17/exports/S4-TintedLight-512.png",
+      "TintedDark": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-sol-2026-11-17/exports/S4-TintedDark-512.png",
+      "ClearLight": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-sol-2026-11-17/exports/S4-ClearLight-512.png",
+      "ClearDark": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-sol-2026-11-17/exports/S4-ClearDark-512.png"
+    },
+    "small": {
+      "Default": {
+        "16": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-sol-2026-11-17/exports/S4-Default-16.png",
+        "32": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-sol-2026-11-17/exports/S4-Default-32.png"
+      },
+      "Dark": {
+        "16": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-sol-2026-11-17/exports/S4-Dark-16.png",
+        "32": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-sol-2026-11-17/exports/S4-Dark-32.png"
+      }
+    }
+  },
+  {
+    "id": "O1",
+    "name": "Ta-da!",
+    "by": "Opus 5.5",
+    "note": "The glove makes a magical entrance.",
+    "description": "Opus's pick. A magician's hat hides the long stick, and the original white glove rises out of it. The sparkles fade away at small sizes.",
+    "images": {
+      "Default": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-opus-2026-11-17/exports/1-ta-da-Default-512.png",
+      "Dark": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-opus-2026-11-17/exports/1-ta-da-Dark-512.png",
+      "TintedLight": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-opus-2026-11-17/exports/1-ta-da-TintedLight-256.png",
+      "TintedDark": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-opus-2026-11-17/exports/1-ta-da-TintedDark-256.png",
+      "ClearLight": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-opus-2026-11-17/exports/1-ta-da-ClearLight-256.png",
+      "ClearDark": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-opus-2026-11-17/exports/1-ta-da-ClearDark-256.png"
+    },
+    "small": {
+      "Default": {
+        "16": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-opus-2026-11-17/exports/1-ta-da-Default-16.png",
+        "32": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-opus-2026-11-17/exports/1-ta-da-Default-32.png"
+      },
+      "Dark": {
+        "16": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-opus-2026-11-17/exports/1-ta-da-Dark-16.png",
+        "32": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-opus-2026-11-17/exports/1-ta-da-Dark-32.png"
+      }
+    }
+  },
+  {
+    "id": "O2",
+    "name": "Boop",
+    "by": "Opus 5.5",
+    "note": "A sideways purple hand pokes a burst.",
+    "description": "A sideways purple hand and a pop-art burst make the pointing action explicit. The hand is an exact quarter-turn of the original.",
+    "images": {
+      "Default": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-opus-2026-11-17/exports/2-boop-Default-512.png",
+      "Dark": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-opus-2026-11-17/exports/2-boop-Dark-512.png",
+      "TintedLight": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-opus-2026-11-17/exports/2-boop-TintedLight-256.png",
+      "TintedDark": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-opus-2026-11-17/exports/2-boop-TintedDark-256.png",
+      "ClearLight": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-opus-2026-11-17/exports/2-boop-ClearLight-256.png",
+      "ClearDark": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-opus-2026-11-17/exports/2-boop-ClearDark-256.png"
+    },
+    "small": {
+      "Default": {
+        "16": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-opus-2026-11-17/exports/2-boop-Default-16.png",
+        "32": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-opus-2026-11-17/exports/2-boop-Default-32.png"
+      },
+      "Dark": {
+        "16": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-opus-2026-11-17/exports/2-boop-Dark-16.png",
+        "32": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-opus-2026-11-17/exports/2-boop-Dark-32.png"
+      }
+    }
+  },
+  {
+    "id": "O3",
+    "name": "X marks the spot",
+    "by": "Opus 5.5",
+    "note": "A white hand points to buried treasure.",
+    "description": "An upside-down original white hand points to an X on a little island. A playful treasure-map joke, with weaker separation at 16 pixels.",
+    "images": {
+      "Default": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-opus-2026-11-17/exports/3-x-marks-Default-512.png",
+      "Dark": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-opus-2026-11-17/exports/3-x-marks-Dark-512.png",
+      "TintedLight": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-opus-2026-11-17/exports/3-x-marks-TintedLight-256.png",
+      "TintedDark": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-opus-2026-11-17/exports/3-x-marks-TintedDark-256.png",
+      "ClearLight": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-opus-2026-11-17/exports/3-x-marks-ClearLight-256.png",
+      "ClearDark": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-opus-2026-11-17/exports/3-x-marks-ClearDark-256.png"
+    },
+    "small": {
+      "Default": {
+        "16": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-opus-2026-11-17/exports/3-x-marks-Default-16.png",
+        "32": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-opus-2026-11-17/exports/3-x-marks-Default-32.png"
+      },
+      "Dark": {
+        "16": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-opus-2026-11-17/exports/3-x-marks-Dark-16.png",
+        "32": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-opus-2026-11-17/exports/3-x-marks-Dark-32.png"
+      }
+    }
+  },
+  {
+    "id": "O4",
+    "name": "Puppet show",
+    "by": "Opus 5.5",
+    "note": "The hand becomes a stage puppet.",
+    "description": "The actual lavender hand appears between stage curtains. A playful theatrical direction; the scene gets busy at 16 pixels.",
+    "images": {
+      "Default": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-opus-2026-11-17/exports/4-puppet-Default-512.png",
+      "Dark": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-opus-2026-11-17/exports/4-puppet-Dark-512.png",
+      "TintedLight": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-opus-2026-11-17/exports/4-puppet-TintedLight-256.png",
+      "TintedDark": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-opus-2026-11-17/exports/4-puppet-TintedDark-256.png",
+      "ClearLight": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-opus-2026-11-17/exports/4-puppet-ClearLight-256.png",
+      "ClearDark": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-opus-2026-11-17/exports/4-puppet-ClearDark-256.png"
+    },
+    "small": {
+      "Default": {
+        "16": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-opus-2026-11-17/exports/4-puppet-Default-16.png",
+        "32": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-opus-2026-11-17/exports/4-puppet-Default-32.png"
+      },
+      "Dark": {
+        "16": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-opus-2026-11-17/exports/4-puppet-Dark-16.png",
+        "32": "/Volumes/Project-Vault/PROJECTS/Please Look Here/design/brand-refresh/playful-opus-2026-11-17/exports/4-puppet-Dark-32.png"
+      }
+    }
+  }
+]

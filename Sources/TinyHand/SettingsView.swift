@@ -7,14 +7,19 @@ enum SettingsSection: String, CaseIterable, Identifiable {
     case general, shortcuts, drawing, pointers, appearance, sound, presets, about
 
     var id: String { rawValue }
+    static let sidebarCases: [Self] = [.pointers, .drawing, .shortcuts, .presets, .general]
+
+    var canonical: Self {
+        switch self { case .appearance, .sound: return .pointers; case .about: return .general; default: return self }
+    }
 
     var title: String {
         switch self {
         case .general: return "General"
         case .shortcuts: return "Shortcuts"
         case .pointers: return "Pointers"
-        case .appearance: return "Appearance"
-        case .drawing: return "Drawing"
+        case .appearance: return "Pointer defaults"
+        case .drawing: return "Tools"
         case .sound: return "Sound"
         case .presets: return "Presets"
         case .about: return "About"
@@ -58,7 +63,7 @@ struct SettingsView: View {
             page
         }
         .ignoresSafeArea()
-        .frame(minWidth: 784, minHeight: 440)
+        .frame(minWidth: model.section == .pointers ? 1040 : 784, minHeight: 440)
     }
 
     private var sidebar: some View {
@@ -70,12 +75,13 @@ struct SettingsView: View {
                     model.section = section
                 } }
             )) {
-                ForEach(SettingsSection.allCases) { section in
+                ForEach(SettingsSection.sidebarCases) { section in
                     HStack(spacing: Space.sm) {
-                        IconTile(symbol: section.symbol, tint: section.tint)
+                        Image(systemName: section.symbol).frame(width: 16, height: 16).foregroundStyle(.secondary)
                             .accessibilityHidden(true)
-                        Text(section.title)
+                        Text(section.title).font(.system(size: 12)).lineLimit(1).layoutPriority(1)
                     }
+                    .listRowInsets(EdgeInsets(top: Space.xs, leading: Space.xs, bottom: Space.xs, trailing: Space.xs))
                     .tag(section)
                     .accessibilityLabel(section.title)
                     .accessibilityValue(model.section == section ? "Selected" : "")
@@ -90,7 +96,7 @@ struct SettingsView: View {
                 if let icon = NSImage(named: "AppIcon") ?? NSApp.applicationIconImage {
                     Image(nsImage: icon).resizable().frame(width: 24, height: 24)
                 }
-                Text("Look Here Please").font(.system(size: 12, weight: .semibold))
+                Text("Look Here Please").font(.system(size: 11, weight: .semibold)).lineLimit(1)
                 Spacer()
             }
             .padding(.horizontal, 12)
@@ -98,34 +104,24 @@ struct SettingsView: View {
         }
         .padding(.top, 52)
         .padding(.horizontal, 12)
-        .frame(width: 208)
+        .frame(width: 200)
         .frame(maxHeight: .infinity)
         .background(VisualEffect(material: .sidebar))
     }
 
     private var page: some View {
+        ScrollViewReader { proxy in
         ScrollView {
             VStack(alignment: .leading, spacing: Space.xxl) {
-                if model.section == .pointers && model.makingHand {
-                    Button {
-                        model.makingHand = false
-                    } label: {
-                        HStack(spacing: 4) {
-                            Image(systemName: "chevron.left").font(.system(size: 11, weight: .semibold))
-                            Text("Pointers").font(.system(size: 12, weight: .medium))
-                        }
-                        .foregroundColor(.secondary)
-                    }
-                    .buttonStyle(.borderless)
-                    .padding(.bottom, -12)
-                }
-                Text(model.section == .pointers && model.makingHand ? "Make your own hand" : model.section.title)
+                Text(model.section.title)
                     .font(.system(size: 22, weight: .bold))
                     .frame(height: 28, alignment: .leading)
                     .padding(.top, 4)
                     .gridProbe("page.title", area: "page")
+                    .id("settings-top")
                 content
                     .gridProbe("page.content", area: "page")
+                    .id("settings-bottom")
             }
             .padding(.horizontal, Space.margin)
             .padding(.top, 48)
@@ -141,6 +137,18 @@ struct SettingsView: View {
         .onChange(of: model.shortcutFocusRequest) { _ in
             model.onShortcutNavigationLayout?()
         }
+        .onChange(of: model.scrollToBottom) { bottom in
+            proxy.scrollTo(bottom ? "settings-bottom" : "settings-top", anchor: bottom ? .bottom : .top)
+        }
+        .onChange(of: model.revealDefaultSound) { value in
+            if value { proxy.scrollTo("default-sound", anchor: .top); model.revealDefaultSound = false }
+        }
+        .sheet(isPresented: Binding(get: { model.makingHand }, set: { presented in
+            if !presented { model.makingHand = false }
+        })) {
+            NewHandSheet(model: model)
+        }
+        }
     }
 
     @ViewBuilder
@@ -148,17 +156,12 @@ struct SettingsView: View {
         switch model.section {
         case .general: GeneralPage(model: model)
         case .shortcuts: ShortcutsPage(model: model)
-        case .pointers:
-            if model.makingHand {
-                MakeHandPage(model: model)
-            } else {
-                PointersPage(model: model)
-            }
-        case .appearance: AppearancePage(model: model)
-        case .drawing: DrawingPage(model: model)
-        case .sound: SoundPage(model: model)
-        case .presets: PresetsPage()
-        case .about: AboutPage(model: model)
+        case .pointers: PointersPage(model: model)
+        case .appearance: PointersPage(model: model)
+        case .drawing: ToolsSettingsPage(model: model)
+        case .sound: PointersPage(model: model)
+        case .presets: PresetsPage(settings: model)
+        case .about: GeneralPage(model: model)
         }
     }
 }

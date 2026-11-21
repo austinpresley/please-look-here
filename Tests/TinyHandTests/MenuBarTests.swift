@@ -174,9 +174,14 @@ import Testing
         commands.perform = { request in response = (try? JSONSerialization.jsonObject(with: bridge.handle(JSONSerialization.data(withJSONObject: request))) as? [String: Any]) ?? [:] }
         let pointer = try #require(commands.menu.items.first { $0.title == "Pointer" }?.submenu)
         let drawing = try #require(commands.menu.items.first { $0.title == "Drawing" }?.submenu)
-        let interact = try #require(pointer.items.first { $0.title == "Interact" })
+        let interact = try #require(pointer.items.first { $0.title == "Cursor" })
         let arrow = try #require(drawing.items.first { $0.title == "Arrow" })
-        #expect(interact.state == .on)
+        #expect(interact.state == .on && interact.isEnabled)
+        for _ in 0..<2 {
+            NSApp.sendAction(try #require(interact.action), to: interact.target, from: interact)
+            #expect(response["ok"] as? Bool == true && overlay.mode == .point)
+        }
+        #expect(pointer.items.contains { $0.title == "Cursor ↔ last tool" })
         #expect(!arrow.isEnabled)
         #expect(!drawing.items.first(where: { $0.title == "Undo Annotation" })!.isEnabled)
         // Invoke the real menu target despite disabled UI to prove validation is

@@ -10,10 +10,11 @@ final class ControlBridge {
     private let thumbnails = PointerThumbnailCache()
     var verifyMenuBar: (([String: Any]) -> [String: Any])?
     var verifyShortcuts: (([String: Any]) -> [String: Any])?
+    var verifySettings: (([String: Any]) throws -> [String: Any])?
     private let snapshotSettings: ((String) -> Bool)?
     static var operations: [String] {
-        let normal = ["status", "styles", "cycle-pointer", "cycle-tool", "enable-pointer", "on", "off", "toggle", "clear", "undo", "redo", "interact", "mode", "tool", "capture", "capture-region", "magnifier", "gesture", "style", "laser", "configure", "toggle-sound", "toggle-current-sound", "pin", "settings", "custom-hands"]
-        return ProcessInfo.processInfo.environment["TINYHAND_TEST_MODE"] == "1" ? normal + ["snapshot-settings", "run-applescript", "test-shortcuts", "test-radial", "test-menu-bar", "test-presentation"] : normal
+        let normal = ["status", "styles", "cycle-pointer", "cycle-tool", "enable-pointer", "on", "off", "toggle", "clear", "undo", "redo", "interact", "mode", "tool", "capture", "capture-region", "magnifier", "gesture", "style", "laser", "configure", "toggle-sound", "toggle-current-sound", "pin", "settings", "custom-hands", "radial-open"]
+        return ProcessInfo.processInfo.environment["TINYHAND_TEST_MODE"] == "1" ? normal + ["snapshot-settings", "run-applescript", "test-shortcuts", "test-radial", "test-menu-bar", "test-presentation", "test-quick-controls", "test-settings"] : normal
     }
 
     init(overlay: OverlayController, accessibility: @escaping () -> Bool = { AXIsProcessTrusted() }, openSettings: @escaping (String?) -> Void, openHandCreator: @escaping () -> Void, snapshotSettings: ((String) -> Bool)? = nil) {
@@ -55,10 +56,12 @@ final class ControlBridge {
             if op == "settings" { allowed.insert("section") }
             if op == "snapshot-settings" { allowed.insert("path") }
             if op == "run-applescript" { allowed.insert("source") }
-            if op == "test-shortcuts" || op == "test-radial" || op == "test-menu-bar" { allowed.insert("request") }
+            if op == "test-shortcuts" || op == "test-radial" || op == "test-menu-bar" || op == "test-quick-controls" || op == "test-settings" { allowed.insert("request") }
             if op == "test-presentation" { allowed.insert("request") }
             guard Set(request.keys).isSubset(of: allowed) else { throw reject("Unexpected request fields") }
             switch op {
+            case "radial-open":
+                guard overlay.openQuickControls() else { throw reject("Turn Pointer on and close other controls before opening Quick controls.", code: "unavailable") }
             case "on": try activate()
             case "off": overlay.deactivate()
             case "toggle":
@@ -74,7 +77,7 @@ final class ControlBridge {
                     guard let value = request["mode"] as? String, let storedMode = PointerMode(rawValue: value) else { throw reject("Legacy mode must be point or draw; use interact with an enabled boolean") }
                     mode = storedMode
                 }
-                if mode == .draw && !accessibility() { throw reject("Allow Accessibility to draw. Interact is available without it.", code: "accessibility") }
+                if mode == .draw && !accessibility() { throw reject("Allow Accessibility to draw. Cursor is available without it.", code: "accessibility") }
                 guard overlay.setMode(mode) else { throw reject("Drawing is unavailable while capture is pending or permission is missing", code: "unavailable") }
             case "tool":
                 guard let value = request["tool"] as? String, let tool = DrawingTool(rawValue: value) else { throw reject("Unknown drawing tool") }
@@ -131,11 +134,18 @@ final class ControlBridge {
             case "configure":
                 guard let patch = request["settings"] as? [String: Any], !patch.isEmpty else { throw reject("Settings are required") }
                 try configure(patch)
+            case "test-quick-controls":
+                let suite = ProcessInfo.processInfo.environment["TINYHAND_DEFAULTS_SUITE"] ?? ""
+                guard suite.hasPrefix("com.austinpresley.tinyhand.radial-v9."), let request = request["request"] as? [String: Any] else { throw reject("Use an isolated radial verification suite") }
+                do { response["quickControls"] = try overlay.verifyQuickControls(request) }
+                catch { throw reject("Invalid Quick controls verification request") }
             case "test-radial":
-                guard ProcessInfo.processInfo.environment["TINYHAND_DEFAULTS_SUITE"]?.hasPrefix("com.austinpresley.tinyhand.s013.") == true,
-                      let request = request["request"] as? [String: Any] else { throw reject("Use an isolated S-013 suite") }
+                let suite = ProcessInfo.processInfo.environment["TINYHAND_DEFAULTS_SUITE"] ?? ""
+                guard suite.hasPrefix("com.austinpresley.tinyhand.s013.") || suite.hasPrefix("com.austinpresley.tinyhand.radial-v9."),
+                      let request = request["request"] as? [String: Any] else { throw reject("Use an isolated radial verification suite") }
+                do { try overlay.radial.verify(request, style: overlay.style, mode: overlay.mode, canUndo: overlay.canUndo, canRedo: overlay.canRedo, hasInk: overlay.inkStrokes > 0) }
+                catch { throw reject("Invalid radial verification request") }
                 if let policy = request["releaseSelects"] as? Bool { overlay.radial.releaseSelects = policy }
-                if let path = request["snapshot"] as? String, !overlay.radial.snapshot(to: path) { throw reject("Radial snapshot failed") }
                 response["radial"] = overlay.radial.diagnostics
             case "toggle-current-sound":
                 let enabled = !overlay.soundOn
@@ -156,7 +166,7 @@ final class ControlBridge {
                 Preferences.pinnedStyles = styles
             case "settings":
                 let section = request["section"] as? String
-                if request["section"] != nil && (section == nil || SettingsSection(rawValue: section!) == nil) { throw reject("Unknown Settings section") }
+                if request["section"] != nil && (section == nil || SettingsRoute.parse(section!) == nil) { throw reject("Unknown Settings section") }
                 openSettings(section)
             case "custom-hands": openHandCreator()
             case "snapshot-settings":
@@ -170,6 +180,10 @@ final class ControlBridge {
             case "test-shortcuts":
                 guard let request = request["request"] as? [String: Any], let verifyShortcuts else { throw reject("Shortcut test request is required") }
                 response["shortcuts"] = verifyShortcuts(request)
+            case "test-settings":
+                guard let request = request["request"] as? [String: Any], let verifySettings,
+                      ProcessInfo.processInfo.environment["TINYHAND_DEFAULTS_SUITE"]?.hasPrefix("com.austinpresley.tinyhand.settings-ui.") == true else { throw reject("Use an isolated Settings test instance") }
+                response["settings"] = try verifySettings(request)
             case "test-presentation":
                 guard ProcessInfo.processInfo.environment["TINYHAND_DEFAULTS_SUITE"]?.hasPrefix("com.austinpresley.tinyhand.fork-upgrades.") == true,
                       let request = request["request"] as? [String: Any], let event = request["event"] as? String else { throw reject("Use an isolated fork-upgrades suite") }
@@ -216,7 +230,7 @@ final class ControlBridge {
     }
 
     private func activate() throws {
-        guard Preferences.pointerMode == .point || accessibility() else { throw reject("Allow Accessibility to draw. Interact is available without it.", code: "accessibility") }
+        guard Preferences.pointerMode == .point || accessibility() else { throw reject("Allow Accessibility to draw. Cursor is available without it.", code: "accessibility") }
         let wasActive = overlay.isActive
         guard overlay.activate() else {
             if !wasActive { overlay.deactivate() }
@@ -376,6 +390,7 @@ final class ControlBridge {
          "windows": NSApp.windows.filter { $0.isVisible && $0.windowNumber > 0 && $0.windowNumber <= Int(UInt32.max) }.prefix(20).map { ["id": $0.windowNumber, "title": $0.title, "width": $0.frame.width, "height": $0.frame.height] as [String: Any] },
          "capabilities": Self.operations,
          "radial": overlay.radial.diagnostics,
+         "browser": overlay.pointerBrowser.diagnostics, "clearRecovery": overlay.clearRecovery.diagnostics, "captureExclusion": overlay.captureDiagnostics,
          "settings": ["radialTrigger": Preferences.radialTrigger?.rawValue ?? "", "ink": Preferences.inkChoice.rawValue, "fade": Preferences.fadeSeconds,
                       "inkFadeStyle": Preferences.inkFadeStyle.rawValue, "trailDelay": Preferences.trailDelay, "trailSpeed": Preferences.trailSpeed,
                       "magnifierZoom": Preferences.magnifierZoom, "magnifierDiameter": Preferences.magnifierDiameter,

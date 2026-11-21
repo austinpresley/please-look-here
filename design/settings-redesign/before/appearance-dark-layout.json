@@ -1,0 +1,263 @@
+{
+  "probes" : [
+    {
+      "area" : "page",
+      "edge" : "lead",
+      "height" : 32,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "page.title",
+      "width" : 125,
+      "x" : 228,
+      "y" : 51.16666666666674
+    },
+    {
+      "area" : "card.Toolbar",
+      "height" : 16,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "card.Toolbar.title",
+      "width" : 49,
+      "x" : 228,
+      "y" : 1162.8333333333335
+    },
+    {
+      "area" : "pointerPreview",
+      "edge" : "lead",
+      "height" : 180,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "pointerPreview.canvas",
+      "width" : 504,
+      "x" : 244,
+      "y" : 275.16666666666674
+    },
+    {
+      "area" : "card.Appearance",
+      "height" : 70,
+      "inset" : 0,
+      "kind" : "area",
+      "name" : "card.Appearance",
+      "width" : 536,
+      "x" : 228,
+      "y" : 107.16666666666674
+    },
+    {
+      "area" : "card.Pointer Defaults",
+      "height" : 16,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "card.Pointer Defaults.title",
+      "width" : 99,
+      "x" : 228,
+      "y" : 522.1666666666667
+    },
+    {
+      "area" : "card.Motion",
+      "height" : 212,
+      "inset" : 0,
+      "kind" : "area",
+      "name" : "card.Motion",
+      "width" : 536,
+      "x" : 228,
+      "y" : 737.8333333333334
+    },
+    {
+      "area" : "card.Motion",
+      "height" : 188,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "card.Motion.body",
+      "width" : 536,
+      "x" : 228,
+      "y" : 761.8333333333334
+    },
+    {
+      "area" : "pointerPreview",
+      "edge" : "lead",
+      "height" : 22,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "pointerPreview.controls",
+      "width" : 504,
+      "x" : 244,
+      "y" : 241.16666666666674
+    },
+    {
+      "area" : "pointerPreview",
+      "height" : 273,
+      "inset" : 16,
+      "kind" : "area",
+      "name" : "pointerPreview",
+      "width" : 536,
+      "x" : 228,
+      "y" : 225.16666666666674
+    },
+    {
+      "area" : "card.Pointer preview",
+      "height" : 273,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "card.Pointer preview.body",
+      "width" : 536,
+      "x" : 228,
+      "y" : 225.16666666666674
+    },
+    {
+      "area" : "card.Pointer preview",
+      "height" : 16,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "card.Pointer preview.title",
+      "width" : 96,
+      "x" : 228,
+      "y" : 201.16666666666674
+    },
+    {
+      "area" : "card.Appearance",
+      "height" : 46,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "card.Appearance.body",
+      "width" : 536,
+      "x" : 228,
+      "y" : 131.16666666666674
+    },
+    {
+      "area" : "card.Motion",
+      "height" : 16,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "card.Motion.title",
+      "width" : 45,
+      "x" : 228,
+      "y" : 737.8333333333334
+    },
+    {
+      "area" : "card.Appearance",
+      "height" : 16,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "card.Appearance.title",
+      "width" : 75,
+      "x" : 228,
+      "y" : 107.16666666666674
+    },
+    {
+      "area" : "card.Pointer Defaults",
+      "height" : 167.66666666666663,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "card.Pointer Defaults.body",
+      "width" : 536,
+      "x" : 228,
+      "y" : 546.1666666666667
+    },
+    {
+      "area" : "page",
+      "height" : 1337,
+      "inset" : 20,
+      "kind" : "area",
+      "name" : "page",
+      "width" : 576,
+      "x" : 208,
+      "y" : 0
+    },
+    {
+      "area" : "card.Magnification",
+      "height" : 165,
+      "inset" : 0,
+      "kind" : "area",
+      "name" : "card.Magnification",
+      "width" : 536,
+      "x" : 228,
+      "y" : 973.8333333333335
+    },
+    {
+      "area" : "card.Pointer Defaults",
+      "height" : 191.66666666666663,
+      "inset" : 0,
+      "kind" : "area",
+      "name" : "card.Pointer Defaults",
+      "width" : 536,
+      "x" : 228,
+      "y" : 522.1666666666667
+    },
+    {
+      "area" : "card.Magnification",
+      "height" : 16,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "card.Magnification.title",
+      "width" : 85,
+      "x" : 228,
+      "y" : 973.8333333333334
+    },
+    {
+      "area" : "card.Pointer preview",
+      "height" : 297,
+      "inset" : 0,
+      "kind" : "area",
+      "name" : "card.Pointer preview",
+      "width" : 536,
+      "x" : 228,
+      "y" : 201.16666666666674
+    },
+    {
+      "area" : "card.Toolbar",
+      "height" : 127,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "card.Toolbar.body",
+      "width" : 536,
+      "x" : 228,
+      "y" : 1186.8333333333335
+    },
+    {
+      "area" : "card.Toolbar",
+      "height" : 151,
+      "inset" : 0,
+      "kind" : "area",
+      "name" : "card.Toolbar",
+      "width" : 536,
+      "x" : 228,
+      "y" : 1162.8333333333335
+    },
+    {
+      "area" : "page",
+      "edge" : "lead",
+      "height" : 1206.6666666666665,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "page.content",
+      "width" : 536,
+      "x" : 228,
+      "y" : 107.16666666666674
+    },
+    {
+      "area" : "pointerPreview",
+      "edge" : "lead",
+      "height" : 15,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "pointerPreview.help",
+      "width" : 499,
+      "x" : 244,
+      "y" : 467.16666666666674
+    },
+    {
+      "area" : "card.Magnification",
+      "height" : 141,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "card.Magnification.body",
+      "width" : 536,
+      "x" : 228,
+      "y" : 997.8333333333335
+    }
+  ],
+  "window" : {
+    "height" : 1054,
+    "width" : 784
+  }
+}

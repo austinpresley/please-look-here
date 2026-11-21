@@ -1,13 +1,11 @@
 # Look Here Please project status
 
 Look Here Please is Austin Presley's native Mac pointer utility, based on
-TinyHand by Kamran Ahmed. This presentation describes the combined local review
-app. The default GitHub main branch still contains the earlier functional source.
-The branding update publishes no app code, binary, hosted build or public release.
+TinyHand by Kamran Ahmed. This checkout contains the combined review app.
 
 ## Local review direction
 
-The installed app is signed/notarized **1.2.0**, build `20261116015628`.
+The 16 November review app was signed and notarized as **1.2.0**, build `20261116015628`.
 Matching Stream Deck plugin **1.1.0.0** is installed through the host's normal
 confirmation. All 18 recommendations from the 15 November review are implemented
 under [S-036 through S-053](app-review-implementation-2026-11-15.md), using Sol 6.1
@@ -60,3 +58,11 @@ volume. Build output and user app data are not part of this source backup.
 
 Origin: [TinyHand by Kamran Ahmed](https://github.com/nilbuild/tinyhand).
 The [original MIT license](../LICENSE) remains intact.
+
+## Native Settings review, 18 November 2026
+
+S-055 is implemented and locally verified in signed Review build 20261118005910.
+Seven native pages replace the mixed settings layout. Every Shortcuts group starts
+closed; search and explicit links reveal its destination. 400 tests, 54 live UI
+checks and 40 light/dark captures passed. The universal Review ZIP is notarized.
+See VALIDATION.md for the evidence and local packaging command.

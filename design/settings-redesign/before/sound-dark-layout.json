@@ -1,0 +1,100 @@
+{
+  "probes" : [
+    {
+      "area" : "page",
+      "edge" : "lead",
+      "height" : 32,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "page.title",
+      "width" : 67,
+      "x" : 228,
+      "y" : 48
+    },
+    {
+      "area" : "card.App Sound",
+      "height" : 137,
+      "inset" : 0,
+      "kind" : "area",
+      "name" : "card.App Sound",
+      "width" : 536,
+      "x" : 228,
+      "y" : 104
+    },
+    {
+      "area" : "card.Pointer Defaults",
+      "height" : 16,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "card.Pointer Defaults.title",
+      "width" : 99,
+      "x" : 228,
+      "y" : 265
+    },
+    {
+      "area" : "card.Pointer Defaults",
+      "height" : 241,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "card.Pointer Defaults.body",
+      "width" : 536,
+      "x" : 228,
+      "y" : 289
+    },
+    {
+      "area" : "card.App Sound",
+      "height" : 113,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "card.App Sound.body",
+      "width" : 536,
+      "x" : 228,
+      "y" : 128
+    },
+    {
+      "area" : "page",
+      "height" : 550,
+      "inset" : 20,
+      "kind" : "area",
+      "name" : "page",
+      "width" : 576,
+      "x" : 208,
+      "y" : 0
+    },
+    {
+      "area" : "card.Pointer Defaults",
+      "height" : 265,
+      "inset" : 0,
+      "kind" : "area",
+      "name" : "card.Pointer Defaults",
+      "width" : 536,
+      "x" : 228,
+      "y" : 265
+    },
+    {
+      "area" : "card.App Sound",
+      "height" : 16,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "card.App Sound.title",
+      "width" : 69,
+      "x" : 228,
+      "y" : 104
+    },
+    {
+      "area" : "page",
+      "edge" : "lead",
+      "height" : 426,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "page.content",
+      "width" : 536,
+      "x" : 228,
+      "y" : 104
+    }
+  ],
+  "window" : {
+    "height" : 552,
+    "width" : 784
+  }
+}

@@ -1,0 +1,925 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Look Here Please: easier, before and after</title>
+<style>
+:root{
+  --fg: var(--foreground, #1d1d1f);
+  --fg2: var(--muted-foreground, #6e6e73);
+  --bd: var(--border, rgba(0,0,0,.1));
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", system-ui, sans-serif;
+}
+html,body{margin:0;font-family:var(--font);color:var(--fg);-webkit-font-smoothing:antialiased}
+.page{max-width:1100px;margin:0 auto;padding:4px 0 24px}
+
+/* ---------- page chrome ---------- */
+.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+.top h1{font-size:22px;line-height:28px;margin:0;font-weight:700;letter-spacing:-.01em;flex:1;min-width:220px}
+.seg-page{display:inline-flex;border:1px solid var(--bd);border-radius:999px;padding:2px}
+.seg-page button{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:999px;font-size:13px;color:var(--fg2)}
+.seg-page button[aria-pressed=true]{background:var(--fg);color:var(--background,#fff)}
+.seg-page svg{width:15px;height:15px}
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 28px}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:13px;line-height:16px;padding:6px 10px;border-radius:999px;border:1px solid var(--bd);color:var(--fg)}
+.chip svg{width:16px;height:16px;flex:none}
+.chip b{font-weight:600}
+
+section{margin:0 0 44px}
+.sh{display:flex;align-items:baseline;gap:10px;margin:0 0 4px}
+.sh .n{font:600 12px/16px var(--font);color:var(--fg2);font-variant-numeric:tabular-nums}
+.sh h2{font-size:18px;line-height:24px;margin:0;font-weight:700}
+.wins{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 14px}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.pair.stack{grid-template-columns:1fr}
+@media (max-width:640px){.pair{grid-template-columns:1fr}}
+.col{min-width:0}
+.tag{display:inline-flex;align-items:center;gap:6px;font:600 11px/14px var(--font);letter-spacing:.06em;text-transform:uppercase;color:var(--fg2);margin:0 0 8px}
+.tag.after{color:#7050A0}
+.tag .dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+.stage{border-radius:14px;padding:20px;display:flex;justify-content:center;align-items:flex-start;gap:16px;flex-wrap:wrap;overflow:hidden}
+.stage.before{background:rgba(127,127,127,.10)}
+.stage.after{background:linear-gradient(160deg, rgba(201,171,240,.30), rgba(201,171,240,.10))}
+.shot{max-width:100%;height:auto;display:block;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.12),0 8px 24px rgba(0,0,0,.10)}
+.note{font-size:12px;line-height:16px;color:var(--fg2);margin:8px 2px 0}
+.fit{transform-origin:top left}
+[data-theme=light] .only-dark,[data-theme=dark] .only-light{display:none}
+.fitbox{width:100%;overflow:hidden}
+
+/* ---------- mock tokens (macOS-like) ---------- */
+.mock{--win:#ECEBEF;--side:#E2E0E6;--card:#F7F6F9;--card2:#FFFFFF;--line:rgba(0,0,0,.08);--t1:#1E1A24;--t2:#6C6676;--t3:#A39DAD;
+  --acc:#7050A0;--accSoft:rgba(112,80,160,.14);--accOn:#fff;--sel:#FFFFFF;--well:rgba(0,0,0,.055);--glass:rgba(246,245,248,.92);--shadow:0 0 0 .5px rgba(0,0,0,.18),0 10px 30px rgba(40,20,60,.18);
+  font-family:var(--font);color:var(--t1);font-size:13px;line-height:16px}
+[data-theme=dark] .mock{--win:#28252E;--side:#211F27;--card:#322F39;--card2:#3A3642;--line:rgba(255,255,255,.08);--t1:#F3F0F7;--t2:#ABA4B6;--t3:#77707F;
+  --acc:#C9ABF0;--accSoft:rgba(201,171,240,.20);--accOn:#30233D;--sel:#4A4553;--well:rgba(255,255,255,.07);--glass:rgba(40,37,46,.92);--shadow:0 0 0 .5px rgba(255,255,255,.14),0 10px 30px rgba(0,0,0,.45)}
+.mock svg{width:18px;height:18px;flex:none}
+.ib{all:unset;box-sizing:border-box;cursor:pointer;width:32px;height:32px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;color:var(--t1)}
+.ib:hover{background:var(--well)}
+.ib.dim{color:var(--t3);cursor:default}
+.ib.on{background:var(--acc);color:var(--accOn)}
+.ib.sm{width:26px;height:26px;border-radius:7px}
+.ib.sm svg{width:15px;height:15px}
+.sep{width:1px;align-self:stretch;background:var(--line);margin:4px 4px}
+.rail{display:inline-flex;gap:2px;padding:3px;border-radius:10px;background:var(--well)}
+.rail .ib{width:30px;height:30px;border-radius:7px}
+.rail .ib[aria-pressed=true]{background:var(--sel);box-shadow:0 0 0 .5px var(--line),0 1px 2px rgba(0,0,0,.12);color:var(--acc)}
+.rail .ib.cursor[aria-pressed=true]{color:var(--t1)}
+.hand{width:32px;height:32px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;position:relative;background:transparent;border:0;padding:0}
+.hand img{width:28px;height:28px;object-fit:contain}
+.hand[aria-pressed=true]{background:var(--accSoft);box-shadow:inset 0 0 0 1.5px var(--acc)}
+.dotc{width:18px;height:18px;border-radius:50%;cursor:pointer;border:0;padding:0;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
+.dotc[aria-pressed=true]{box-shadow:0 0 0 2px var(--win),0 0 0 3.5px var(--acc)}
+.rainbow{background:conic-gradient(#ff5e5e,#ffb340,#ffe14d,#4cd964,#40a8ff,#a06cff,#ff5e5e)}
+.sw{position:relative;display:inline-block;width:34px;height:20px;border-radius:999px;background:var(--acc);flex:none}
+.sw::after{content:"";position:absolute;right:2px;top:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25)}
+.sw.off{background:rgba(127,127,127,.35)}.sw.off::after{right:auto;left:2px}
+.kc{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;border-radius:5px;background:var(--card2);box-shadow:0 0 0 .5px var(--line),0 1px 0 var(--line);font:500 11px/1 var(--font);color:var(--t1);box-sizing:border-box}
+.kc.add{background:transparent;box-shadow:inset 0 0 0 1px var(--line);color:var(--t3);border-style:dashed}
+.lab{font-size:11px;line-height:14px;color:var(--t2)}
+
+/* popover */
+.pop{width:288px;box-sizing:border-box;background:var(--glass);border-radius:14px;box-shadow:var(--shadow);padding:12px;display:flex;flex-direction:column;gap:10px;position:relative;margin-top:8px;backdrop-filter:blur(20px)}
+.pop::before{content:"";position:absolute;top:-7px;left:50%;margin-left:-8px;border:8px solid transparent;border-top:0;border-bottom-color:var(--glass)}
+.row{display:flex;align-items:center;gap:4px}
+.row.sp{justify-content:space-between}
+.pop .rail{display:flex;justify-content:space-between}
+.pop .row.sp > .row .ib{width:29px}
+.pop .row.sp > .row{gap:1px}
+.colors{display:flex;justify-content:space-between;align-items:center;padding:2px 6px;min-height:22px}
+.collapsed{display:none !important}
+
+/* toolbar */
+.tb{display:inline-flex;align-items:center;gap:4px;padding:6px 8px;border-radius:14px;background:var(--glass);box-shadow:var(--shadow)}
+.grip{width:10px;height:22px;display:grid;grid-template-columns:3px 3px;gap:3px;align-content:center;margin:0 4px 0 2px;opacity:.45}
+.grip i{width:3px;height:3px;border-radius:50%;background:var(--t1)}
+.tbs{display:flex;flex-direction:column;gap:14px;align-items:flex-start}
+.tbstate{display:flex;align-items:center;gap:10px}
+.tbstate .lab{width:18px;display:flex;justify-content:center;color:var(--t2)}
+
+/* settings window */
+.win{width:760px;height:600px;border-radius:12px;background:var(--win);box-shadow:var(--shadow);display:flex;overflow:hidden;text-align:left}
+.side{width:176px;background:var(--side);padding:44px 10px 12px;box-sizing:border-box;display:flex;flex-direction:column;gap:2px;position:relative}
+.lights{position:absolute;top:14px;left:16px;display:flex;gap:8px}
+.lights i{width:12px;height:12px;border-radius:50%;background:#ff5f57}.lights i:nth-child(2){background:#febc2e}.lights i:nth-child(3){background:#28c840}
+.nav{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:8px;font-size:13px;color:var(--t1)}
+.nav svg{width:17px;height:17px;color:var(--acc)}
+.nav.cur{background:var(--well);font-weight:600}
+.side .foot{margin-top:auto;display:flex;align-items:center;gap:8px;padding:8px 10px;font-size:12px;color:var(--t2)}
+.side .foot img{width:22px;height:22px}
+.main{flex:1;min-width:0;display:flex;flex-direction:column;padding:16px 20px 16px;box-sizing:border-box;gap:12px}
+.bar{display:flex;align-items:center;gap:8px}
+.search{flex:1;display:flex;align-items:center;gap:6px;height:28px;border-radius:7px;background:var(--card2);box-shadow:inset 0 0 0 .5px var(--line);padding:0 8px;color:var(--t3);font-size:13px}
+.search svg{width:14px;height:14px}
+.segi{display:inline-flex;padding:2px;border-radius:8px;background:var(--well);gap:2px}
+.segi .ib{width:30px;height:24px;border-radius:6px}
+.segi .ib[aria-pressed=true]{background:var(--sel);box-shadow:0 0 0 .5px var(--line),0 1px 2px rgba(0,0,0,.12);color:var(--acc)}
+.segi.text .ib{width:auto;padding:0 10px;font-size:12px;gap:6px}
+.card{background:var(--card);border-radius:10px;box-shadow:inset 0 0 0 .5px var(--line)}
+.split{display:flex;gap:14px;flex:1;min-height:0}
+.lib{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px}
+.favs{display:flex;align-items:center;gap:6px;padding:8px 10px}
+.favs .star{color:#E7A93B}
+.fav{width:40px;height:40px;border-radius:9px;background:var(--card2);box-shadow:inset 0 0 0 .5px var(--line);display:flex;align-items:center;justify-content:center;position:relative}
+.fav img{width:30px;height:30px;object-fit:contain}
+.fav .wq{position:absolute;right:-3px;bottom:-3px;width:14px;height:14px;border-radius:50%;background:var(--acc);color:var(--accOn);display:flex;align-items:center;justify-content:center}
+.fav .wq svg{width:10px;height:10px}
+.fav.empty{background:transparent;box-shadow:inset 0 0 0 1px var(--line);color:var(--t3)}
+.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;overflow:hidden}
+.tile{position:relative;aspect-ratio:1;border-radius:10px;background:var(--card);box-shadow:inset 0 0 0 .5px var(--line);display:flex;align-items:center;justify-content:center;cursor:pointer;border:0;padding:0}
+.tile img{width:58%;height:58%;object-fit:contain}
+.tile .st{position:absolute;top:5px;right:5px;width:14px;height:14px;color:var(--t3)}
+.tile .st.f{color:#E7A93B}
+.tile[aria-pressed=true]{box-shadow:inset 0 0 0 2px var(--acc);background:var(--accSoft)}
+.main > .search{flex:none}
+.insp{width:230px;flex:none;display:flex;flex-direction:column;gap:10px}
+.prev{height:150px;border-radius:10px;position:relative;display:flex;align-items:center;justify-content:center;background:#F4F2F6;box-shadow:inset 0 0 0 .5px var(--line);overflow:hidden}
+[data-theme=dark] .prev{background:#1C1A20}
+.prev img{width:96px;height:96px;object-fit:contain;filter:drop-shadow(0 8px 8px rgba(0,0,0,.22));transform:rotate(-14deg)}
+.prev .pv{position:absolute;top:6px;right:6px;display:flex;gap:2px}
+.prev .play{position:absolute;bottom:8px;right:8px}
+.prow{display:flex;align-items:center;gap:8px;padding:8px 10px;min-height:36px;box-sizing:border-box}
+.prow + .prow{border-top:.5px solid var(--line)}
+.prow > svg{color:var(--t2)}
+.slider{flex:1;height:4px;border-radius:2px;background:var(--well);position:relative}
+.slider b{position:absolute;left:0;top:0;bottom:0;border-radius:2px;background:var(--acc)}
+.slider i{position:absolute;top:50%;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;background:#fff;box-shadow:0 0 0 .5px rgba(0,0,0,.2),0 1px 3px rgba(0,0,0,.25)}
+.pill{display:inline-flex;align-items:center;gap:4px;height:24px;padding:0 8px;border-radius:6px;background:var(--card2);box-shadow:0 0 0 .5px var(--line),0 1px 1px rgba(0,0,0,.06);font-size:12px;color:var(--t1)}
+.pill svg{width:12px;height:12px;color:var(--t2)}
+.reset{color:var(--acc)}
+.scope{display:flex}
+.scope .segi{flex:1;display:flex}
+.scope .segi .ib{flex:1}
+.gest{display:flex;gap:6px}
+.gest .g{width:44px;height:44px;border-radius:8px;background:var(--card2);box-shadow:inset 0 0 0 .5px var(--line);display:flex;align-items:center;justify-content:center}
+.gest .g img{width:34px;height:34px;object-fit:contain}
+.gest .g.add{background:transparent;box-shadow:inset 0 0 0 1px var(--line);color:var(--t3)}
+.h3{font-size:15px;font-weight:700;line-height:20px}
+
+/* drawing */
+.canvas{height:120px;border-radius:10px;background:#fff;box-shadow:inset 0 0 0 .5px var(--line);position:relative;overflow:hidden}
+[data-theme=dark] .canvas{background:#1C1A20}
+.canvas svg{width:100%;height:100%}
+.opt{display:flex;gap:8px}
+.optt{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 4px;border-radius:10px;background:var(--card);box-shadow:inset 0 0 0 .5px var(--line);font-size:12px;color:var(--t2);cursor:pointer;border:0;font-family:var(--font)}
+.optt svg{width:22px;height:22px;color:var(--t1)}
+.optt[aria-pressed=true]{box-shadow:inset 0 0 0 2px var(--acc);background:var(--accSoft);color:var(--t1)}
+.wch{width:44px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;background:var(--card2);box-shadow:inset 0 0 0 .5px var(--line);cursor:pointer;border:0;padding:0}
+.wch i{display:block;width:24px;border-radius:9px;background:var(--t1)}
+.wch[aria-pressed=true]{box-shadow:inset 0 0 0 2px var(--acc)}
+.opac{flex:1;height:14px;border-radius:7px;background:linear-gradient(90deg,transparent,#7a4fe0),repeating-conic-gradient(#ddd 0 25%,#fff 0 50%) 0 0/10px 10px;position:relative;box-shadow:inset 0 0 0 .5px var(--line)}
+.opac i{position:absolute;right:0;top:50%;width:16px;height:16px;margin:-8px -2px 0 0;border-radius:50%;background:#fff;box-shadow:0 0 0 .5px rgba(0,0,0,.2),0 1px 3px rgba(0,0,0,.25)}
+.chipset{display:flex;gap:4px}
+.chipset .pill[aria-pressed=true]{background:var(--acc);color:var(--accOn)}
+
+/* shortcuts */
+.hero{display:flex;align-items:center;gap:12px;padding:12px 14px}
+.hero .big{width:40px;height:40px;border-radius:10px;background:var(--accSoft);color:var(--acc);display:flex;align-items:center;justify-content:center}
+.hero .big svg{width:22px;height:22px}
+.btn{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 12px;border-radius:7px;background:var(--acc);color:var(--accOn);font-size:13px;font-weight:600}
+.btn.ghost{background:var(--card2);color:var(--t1);font-weight:500;box-shadow:0 0 0 .5px var(--line),0 1px 1px rgba(0,0,0,.06)}
+.btn svg{width:14px;height:14px}
+.krow{display:flex;align-items:center;gap:10px;padding:7px 12px}
+.krow + .krow{border-top:.5px solid var(--line)}
+.krow > svg{color:var(--acc)}
+.krow .nm{flex:1}
+.ghead{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:var(--t2);letter-spacing:.04em;text-transform:uppercase;margin:4px 2px -4px}
+.ghead svg{width:13px;height:13px}
+
+/* presets */
+.pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.pc{border-radius:12px;background:var(--card);box-shadow:inset 0 0 0 .5px var(--line);padding:12px;display:flex;flex-direction:column;gap:8px;position:relative}
+.pc.cur{box-shadow:inset 0 0 0 2px var(--acc);background:var(--accSoft)}
+.pc .art{height:64px;display:flex;align-items:center;justify-content:center}
+.pc .art img{height:60px}
+.pc .meta{display:flex;align-items:center;gap:6px;color:var(--t2)}
+.pc .meta svg{width:14px;height:14px}
+.pc .meta .dotc{width:12px;height:12px;cursor:default}
+.pc .ft{display:flex;align-items:center;justify-content:space-between;font-weight:600}
+.pc.new{align-items:center;justify-content:center;background:transparent;box-shadow:inset 0 0 0 1.5px var(--line);color:var(--t2);font-size:12px;gap:6px;min-height:150px}
+.pc.new svg{width:22px;height:22px}
+.toast{display:flex;align-items:center;gap:10px;padding:8px 10px 8px 12px;border-radius:10px;background:var(--t1);color:var(--win);font-size:12px}
+.toast svg{width:15px;height:15px}
+.toast .btn{background:transparent;color:var(--acc);height:22px;padding:0 6px}
+[data-theme=dark] .toast .btn{color:#7050A0}
+
+/* welcome + practice */
+.wel{width:340px;border-radius:14px;background:var(--win);box-shadow:var(--shadow);padding:28px 24px 20px;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;gap:18px;position:relative}
+.wel .x{position:absolute;top:10px;right:10px}
+.wel .hero-hand{width:84px;height:84px;object-fit:contain;filter:drop-shadow(0 8px 10px rgba(60,30,100,.25));animation:tap 2.4s ease-in-out infinite}
+@keyframes tap{0%,60%,100%{transform:rotate(-12deg) translateY(0)}70%{transform:rotate(-12deg) translateY(4px) scale(.96)}80%{transform:rotate(-12deg) translateY(0)}}
+@media (prefers-reduced-motion: reduce){.wel .hero-hand,.ghosthand{animation:none !important}}
+.steps3{display:flex;gap:8px;width:100%}
+.s3{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 4px;border-radius:10px;background:var(--card);box-shadow:inset 0 0 0 .5px var(--line);font-size:12px;color:var(--t1)}
+.s3 svg{width:22px;height:22px;color:var(--acc)}
+.s3 .kcs{display:flex;gap:2px}
+.bigbtn{all:unset;cursor:pointer;width:100%;box-sizing:border-box;height:36px;border-radius:9px;background:var(--acc);color:var(--accOn);display:flex;align-items:center;justify-content:center;gap:8px;font-weight:600;font-size:14px}
+.bigbtn svg{width:16px;height:16px}
+.link{display:inline-flex;align-items:center;gap:6px;color:var(--acc);font-size:13px;font-weight:500}
+.link svg{width:14px;height:14px}
+.prac{width:420px;border-radius:12px;background:var(--win);box-shadow:var(--shadow);overflow:hidden}
+.prac .tbar{height:28px;position:relative}
+.prac .tbar .lights{top:8px;left:10px}
+.prac .body{padding:4px 16px 16px;display:flex;flex-direction:column;gap:12px}
+.pdots{display:flex;gap:6px;justify-content:center}
+.pdots i{width:22px;height:4px;border-radius:2px;background:var(--well)}
+.pdots i.d{background:var(--acc)}
+.instr{display:flex;align-items:center;justify-content:center;gap:8px;font-size:15px;font-weight:600}
+.instr svg{width:20px;height:20px;color:var(--acc)}
+.pcan{height:190px;border-radius:10px;background:#fff;box-shadow:inset 0 0 0 .5px var(--line);position:relative;overflow:hidden}
+[data-theme=dark] .pcan{background:#1C1A20}
+.pcan .mini{position:absolute;left:12px;top:12px}
+.pcan svg.ink{position:absolute;inset:0;width:100%;height:100%}
+.ghosthand{position:absolute;width:44px;height:44px;left:0;top:0;animation:trace 3.2s ease-in-out infinite}
+.ghosthand img{width:44px;height:44px;transform:rotate(-14deg)}
+@keyframes trace{0%{transform:translate(70px,120px)}50%{transform:translate(210px,70px)}100%{transform:translate(330px,110px)}}
+.done{position:absolute;right:12px;bottom:12px;display:flex;align-items:center;gap:6px;background:#2FAE66;color:#fff;font-size:12px;font-weight:600;padding:4px 10px 4px 6px;border-radius:999px}
+.done svg{width:16px;height:16px}
+.pfoot{display:flex;justify-content:space-between;align-items:center}
+
+/* wheel */
+.mock svg.wheel{width:300px;height:300px}
+.wheel text{font-family:var(--font)}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+ <defs>
+  <symbol id="i-cursor" viewBox="0 0 24 24"><path d="M6 3.2v15.6l4.2-4.1 2.8 6.3 2.7-1.2-2.8-6.2h5.9z" fill="currentColor" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></symbol>
+  <symbol id="i-pen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l4.6 10.2L14.2 20H9.8l-2.4-6.8z"/><path d="M12 3v8.2"/><circle cx="12" cy="12.6" r="1.3"/></symbol>
+  <symbol id="i-hl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 3.5l6 6-8.5 8.5H8v-4z"/><path d="M12.5 5.5l6 6"/><path d="M3.5 21h9" stroke-width="2.6" opacity=".55"/></symbol>
+  <symbol id="i-rect" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="4" y="6" width="16" height="12" rx="2"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18L18 6M9.5 6H18v8.5"/></symbol>
+  <symbol id="i-text" viewBox="0 0 24 24"><text x="12" y="16.5" text-anchor="middle" font-family="-apple-system,system-ui,sans-serif" font-size="12.5" font-weight="600" fill="currentColor">Aa</text></symbol>
+  <symbol id="i-num" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.7"/><text x="12" y="16" text-anchor="middle" font-family="-apple-system,system-ui,sans-serif" font-size="11" font-weight="700" fill="currentColor">1</text></symbol>
+  <symbol id="i-eraser" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4l5.5 5.5-9.5 9.5H6.5L3.5 16z"/><path d="M9.2 9.8l5.5 5.5M11 19h9.5"/></symbol>
+  <symbol id="i-undo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 010 11H11"/></symbol>
+  <symbol id="i-redo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14l5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 000 11H13"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4.5h6V7M6.2 7l.9 13h9.8l.9-13M10 11v5.5M14 11v5.5"/></symbol>
+  <symbol id="i-camera" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="3"/><path d="M8.5 7l1.4-2.6h4.2L15.5 7"/><circle cx="12" cy="13.5" r="3.4"/></symbol>
+  <symbol id="i-mag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L20.5 20.5M10.5 7.8v5.4M7.8 10.5h5.4"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L20.5 20.5"/></symbol>
+  <symbol id="i-sound" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12.5 5v14l-5-4.5H4z" fill="currentColor"/><path d="M16 9a4.5 4.5 0 010 6M18.6 6.4a8.3 8.3 0 010 11.2"/></symbol>
+  <symbol id="i-mute" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12.5 5v14l-5-4.5H4z" fill="currentColor"/><path d="M16.5 9.5l5 5M21.5 9.5l-5 5"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M18.99 10.29 L21.10 10.63 L21.10 13.37 L18.99 13.71 L18.16 15.74 L19.40 17.46 L17.46 19.40 L15.74 18.16 L13.71 18.99 L13.37 21.10 L10.63 21.10 L10.29 18.99 L8.26 18.16 L6.54 19.40 L4.60 17.46 L5.84 15.74 L5.01 13.71 L2.90 13.37 L2.90 10.63 L5.01 10.29 L5.84 8.26 L4.60 6.54 L6.54 4.60 L8.26 5.84 L10.29 5.01 L10.63 2.90 L13.37 2.90 L13.71 5.01 L15.74 5.84 L17.46 4.60 L19.40 6.54 L18.16 8.26Z"/><circle cx="12" cy="12" r="3.2"/></symbol>
+  <symbol id="i-power" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M12 3.5v8"/><path d="M7.2 6.6a7.5 7.5 0 109.6 0"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M12.00 3.60 L14.29 9.44 L20.56 9.82 L15.71 13.81 L17.29 19.88 L12.00 16.50 L6.71 19.88 L8.29 13.81 L3.44 9.82 L9.71 9.44Z"/></symbol>
+  <symbol id="i-starf" viewBox="0 0 24 24"><path d="M12.00 3.60 L14.29 9.44 L20.56 9.82 L15.71 13.81 L17.29 19.88 L12.00 16.50 L6.71 19.88 L8.29 13.81 L3.44 9.82 L9.71 9.44Z" fill="currentColor" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="4" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.6"/></symbol>
+  <symbol id="i-keys" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="2.5" y="6" width="19" height="12" rx="2.5"/><path d="M6 9.5h.01M9.3 9.5h.01M12.6 9.5h.01M15.9 9.5h.01M18 9.5h.01M7.5 14.5h9" stroke-width="2"/></symbol>
+  <symbol id="i-export" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 14V3.5M8 7.5l4-4 4 4M5.5 11v7.5a2 2 0 002 2h9a2 2 0 002-2V11"/></symbol>
+  <symbol id="i-import" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5V14M8 10l4 4 4-4M5.5 11v7.5a2 2 0 002 2h9a2 2 0 002-2V11"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.2V12l3.2 2"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M9 3.5h6l-.9 5.8 3.2 3.2H6.7l3.2-3.2z"/><path d="M12 12.5v8"/></symbol>
+  <symbol id="i-trail" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="17" cy="7" r="2.8" fill="currentColor"/><path d="M14 10L5 19"/><path d="M11.5 7.5L7 12" opacity=".5"/><path d="M16.5 12.5L12 17" opacity=".5"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M19.5 14.8A8 8 0 019.2 4.5a8 8 0 1010.3 10.3z" fill="currentColor"/></symbol>
+  <symbol id="i-checker" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M4 4h8v8H4zM12 12h8v8h-8z" fill="currentColor" opacity=".55"/></symbol>
+  <symbol id="i-reset" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12a7.5 7.5 0 107.5-7.5H8"/><path d="M10.5 1.8L7.8 4.5l2.7 2.7"/></symbol>
+  <symbol id="i-wheel" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.6"/><path d="M15.12 13.80L19.79 16.50M12.00 15.60L12.00 21.00M8.88 13.80L4.21 16.50M8.88 10.20L4.21 7.50M12.00 8.40L12.00 3.00M15.12 10.20L19.79 7.50"/></symbol>
+  <symbol id="i-handp" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12.5V5a1.6 1.6 0 013.2 0v6"/><path d="M12.2 10.5a1.6 1.6 0 013.2 0v1"/><path d="M15.4 11a1.6 1.6 0 013.2 0v3.5a6.8 6.8 0 01-6.8 6.8h-.6a6 6 0 01-5-2.7L3.8 15a1.6 1.6 0 012.6-1.9L9 16"/></symbol>
+  <symbol id="i-stack" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M12 3.5l8.5 4.5-8.5 4.5L3.5 8z"/><path d="M3.5 12.2l8.5 4.5 8.5-4.5M3.5 16.2l8.5 4.5 8.5-4.5"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.2v13.6L19 12z" fill="currentColor" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></symbol>
+  <symbol id="i-size" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-7 7M10 20H4v-6M4 20l7-7"/></symbol>
+  <symbol id="i-shadow" viewBox="0 0 24 24"><circle cx="14" cy="14" r="6.5" fill="currentColor" opacity=".3"/><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="1.7"/></symbol>
+  <symbol id="i-gest" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="3.2"/><path d="M12 9.5V4.8a1.4 1.4 0 012.8 0V10M14.8 9.5a1.4 1.4 0 012.8 0V14a6.5 6.5 0 01-6.5 6.5h-.4A5.6 5.6 0 015 15"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10l5 5 5-5"/></symbol>
+  <symbol id="i-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></symbol>
+  <symbol id="i-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></symbol>
+  <symbol id="i-history" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 12a8.5 8.5 0 102.5-6"/><path d="M3 3.5V8h4.5"/><path d="M12 7.5V12l3 2"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.3-7.5 9.5-4.3-1.2-7.5-4.9-7.5-9.5V6z"/><path d="M8.8 12l2.2 2.2 4.3-4.4"/></symbol>
+  <symbol id="i-dots" viewBox="0 0 24 24"><circle cx="6" cy="12" r="1.7" fill="currentColor"/><circle cx="12" cy="12" r="1.7" fill="currentColor"/><circle cx="18" cy="12" r="1.7" fill="currentColor"/></symbol>
+  <symbol id="i-laser" viewBox="0 0 24 24"><circle cx="12" cy="12" r="6" fill="#FF3B30"/></symbol>
+  <symbol id="i-practice" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M10 8.5v7l5.5-3.5z" fill="currentColor"/></symbol>
+ </defs>
+</svg>
+
+<div class="page" id="page" data-theme="light">
+
+<div class="top">
+  <h1>Look Here Please, easier</h1>
+  <div class="seg-page" role="group" aria-label="Appearance">
+    <button type="button" data-set="light" aria-pressed="true"><svg><use href="#i-sun"/></svg>Light</button>
+    <button type="button" data-set="dark" aria-pressed="false"><svg><use href="#i-moon"/></svg>Dark</button>
+  </div>
+</div>
+<div class="legend mock" style="font-size:13px">
+  <span class="chip"><svg><use href="#i-cursor"/></svg><b>Cursor</b> uses apps</span>
+  <span class="chip"><svg style="color:#7050A0"><use href="#i-pen"/></svg><b>Any tool</b> draws</span>
+  <span class="chip"><svg style="color:#E7A93B"><use href="#i-starf"/></svg><b>Star</b> = toolbar + wheel</span>
+  <span class="chip"><svg><use href="#i-grid"/></svg><b>7 → 5</b> settings pages</span>
+</div>
+
+<!-- 1 MENU BAR -->
+<section>
+  <div class="sh"><span class="n">01</span><h2>Menu bar</h2></div>
+  <div class="wins">
+    <span class="chip"><svg><use href="#i-x"/></svg>Interact switch</span>
+    <span class="chip"><svg><use href="#i-cursor"/></svg>Cursor is the first tool</span>
+    <span class="chip"><svg><use href="#i-handp"/></svg>Hands, not a dropdown</span>
+  </div>
+  <div class="pair">
+    <div class="col">
+      <div class="tag"><span class="dot"></span>Before</div>
+      <div class="stage before">
+        <img class="shot only-light" src="../before/menu-light.png" width="346" alt="Current menu bar controls: Pointer On switch, pointer dropdown, Interact switch, Draw with Arrow text, tool strip, Undo, Redo, Screenshot, and Settings">
+        <img class="shot only-dark" src="../before/menu-dark.png" width="346" alt="Current menu bar controls in dark appearance">
+      </div>
+    </div>
+    <div class="col mock">
+      <div class="tag after"><span class="dot"></span>After · tap the tools</div>
+      <div class="stage after">
+        <div class="pop" data-ctx>
+          <div class="row sp">
+            <div class="row" role="group" aria-label="Favorite pointers">
+              <button class="hand" aria-pressed="true" title="Lavender toy"><img src="../hands/lavender.png" alt="Lavender toy"></button>
+              <button class="hand" aria-pressed="false" title="Cursor glove"><img src="../hands/glove.png" alt="Cursor glove"></button>
+              <button class="hand" aria-pressed="false" title="Coral vinyl"><img src="../hands/coral.png" alt="Coral vinyl"></button>
+              <button class="hand" aria-pressed="false" title="Plush"><img src="../hands/plush.png" alt="Plush"></button>
+              <button class="hand" aria-pressed="false" title="Robot"><img src="../hands/robot.png" alt="Robot"></button>
+              <button class="hand" aria-pressed="false" title="Laser dot"><svg style="width:20px;height:20px"><use href="#i-laser"/></svg></button>
+              <button class="ib sm" title="All pointers"><svg><use href="#i-grid"/></svg></button>
+            </div>
+          </div>
+          <div class="rail" role="group" aria-label="Tool">
+            <button class="ib cursor" aria-pressed="false" data-tool="cursor" title="Cursor: use apps"><svg><use href="#i-cursor"/></svg></button>
+            <button class="ib" aria-pressed="true" data-tool="pen" title="Pen"><svg><use href="#i-pen"/></svg></button>
+            <button class="ib" aria-pressed="false" data-tool="hl" title="Highlighter"><svg><use href="#i-hl"/></svg></button>
+            <button class="ib" aria-pressed="false" data-tool="rect" title="Rectangle"><svg><use href="#i-rect"/></svg></button>
+            <button class="ib" aria-pressed="false" data-tool="arrow" title="Arrow"><svg><use href="#i-arrow"/></svg></button>
+            <button class="ib" aria-pressed="false" data-tool="text" title="Text"><svg><use href="#i-text"/></svg></button>
+            <button class="ib" aria-pressed="false" data-tool="num" title="Number"><svg><use href="#i-num"/></svg></button>
+            <button class="ib" aria-pressed="false" data-tool="eraser" title="Eraser"><svg><use href="#i-eraser"/></svg></button>
+          </div>
+          <div class="colors draw-only" role="group" aria-label="Ink">
+            <button class="dotc rainbow" aria-pressed="true" title="Match pointer"></button>
+            <button class="dotc" style="background:#FF3B30" aria-pressed="false" title="Red"></button>
+            <button class="dotc" style="background:#FF9500" aria-pressed="false" title="Orange"></button>
+            <button class="dotc" style="background:#FFCC00" aria-pressed="false" title="Yellow"></button>
+            <button class="dotc" style="background:#34C759" aria-pressed="false" title="Green"></button>
+            <button class="dotc" style="background:#0A84FF" aria-pressed="false" title="Blue"></button>
+            <button class="dotc" style="background:#8E5CF0" aria-pressed="false" title="Purple"></button>
+            <button class="dotc" style="background:#fff" aria-pressed="false" title="White"></button>
+            <button class="dotc" style="background:#111" aria-pressed="false" title="Black"></button>
+          </div>
+          <div class="row sp">
+            <div class="row draw-only">
+              <button class="ib" title="Undo"><svg><use href="#i-undo"/></svg></button>
+              <button class="ib dim" title="Redo"><svg><use href="#i-redo"/></svg></button>
+              <button class="ib" title="Clear drawing"><svg><use href="#i-trash"/></svg></button>
+            </div>
+            <div class="row">
+              <button class="ib" title="Screenshot"><svg><use href="#i-camera"/></svg></button>
+              <button class="ib" title="Magnifier"><svg><use href="#i-mag"/></svg></button>
+              <button class="ib" title="Mute"><svg><use href="#i-sound"/></svg></button>
+            </div>
+            <div class="row">
+              <button class="ib" title="Settings"><svg><use href="#i-gear"/></svg></button>
+              <button class="ib" title="Pointer off"><svg><use href="#i-power"/></svg></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 2 TOOLBAR -->
+<section>
+  <div class="sh"><span class="n">02</span><h2>Floating toolbar</h2></div>
+  <div class="wins">
+    <span class="chip"><svg><use href="#i-cursor"/></svg>→ hands</span>
+    <span class="chip"><svg style="color:#7050A0"><use href="#i-pen"/></svg>→ colors + undo</span>
+    <span class="chip"><svg><use href="#i-x"/></svg>“Interact” label</span>
+  </div>
+  <div class="pair stack">
+    <div class="col">
+      <div class="tag"><span class="dot"></span>Before</div>
+      <div class="stage before">
+        <img class="shot only-light" src="../before/toolbar-light.png" width="579" alt="Current floating toolbar with Interact label and switch, six hands, undo, screenshot, magnifier, mute and close">
+        <img class="shot only-dark" src="../before/toolbar-dark.png" width="579" alt="Current floating toolbar in dark appearance">
+      </div>
+    </div>
+    <div class="col mock">
+      <div class="tag after"><span class="dot"></span>After · same row, two moments</div>
+      <div class="stage after">
+        <div class="fitbox"><div class="fit" data-w="660">
+        <div class="tbs">
+          <div class="tbstate"><span class="lab"><svg><use href="#i-cursor"/></svg></span>
+            <div class="tb">
+              <span class="grip"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+              <div class="rail">
+                <button class="ib cursor" aria-pressed="true" title="Cursor"><svg><use href="#i-cursor"/></svg></button>
+                <button class="ib" aria-pressed="false" title="Pen"><svg><use href="#i-pen"/></svg></button>
+                <button class="ib" aria-pressed="false" title="Highlighter"><svg><use href="#i-hl"/></svg></button>
+                <button class="ib" aria-pressed="false" title="More tools"><svg><use href="#i-chev"/></svg></button>
+              </div>
+              <span class="sep"></span>
+              <button class="hand" aria-pressed="true"><img src="../hands/lavender.png" alt="Lavender toy"></button>
+              <button class="hand" aria-pressed="false"><img src="../hands/glove.png" alt="Cursor glove"></button>
+              <button class="hand" aria-pressed="false"><img src="../hands/coral.png" alt="Coral vinyl"></button>
+              <button class="hand" aria-pressed="false"><img src="../hands/plush.png" alt="Plush"></button>
+              <button class="hand" aria-pressed="false"><img src="../hands/robot.png" alt="Robot"></button>
+              <button class="hand" aria-pressed="false"><svg style="width:20px;height:20px"><use href="#i-laser"/></svg></button>
+              <span class="sep"></span>
+              <button class="ib" title="Screenshot"><svg><use href="#i-camera"/></svg></button>
+              <button class="ib" title="Magnifier"><svg><use href="#i-mag"/></svg></button>
+              <button class="ib" title="Mute"><svg><use href="#i-sound"/></svg></button>
+              <span class="sep"></span>
+              <button class="ib" title="Pointer off"><svg><use href="#i-power"/></svg></button>
+            </div>
+          </div>
+          <div class="tbstate"><span class="lab" style="color:#7050A0"><svg><use href="#i-pen"/></svg></span>
+            <div class="tb">
+              <span class="grip"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+              <div class="rail">
+                <button class="ib cursor" aria-pressed="false" title="Cursor"><svg><use href="#i-cursor"/></svg></button>
+                <button class="ib" aria-pressed="true" title="Pen"><svg><use href="#i-pen"/></svg></button>
+                <button class="ib" aria-pressed="false" title="Highlighter"><svg><use href="#i-hl"/></svg></button>
+                <button class="ib" aria-pressed="false" title="More tools"><svg><use href="#i-chev"/></svg></button>
+              </div>
+              <span class="sep"></span>
+              <span class="row" style="gap:7px;padding:0 5px">
+                <button class="dotc rainbow" aria-pressed="true"></button>
+                <button class="dotc" style="background:#FF3B30" aria-pressed="false"></button>
+                <button class="dotc" style="background:#FFCC00" aria-pressed="false"></button>
+                <button class="dotc" style="background:#34C759" aria-pressed="false"></button>
+                <button class="dotc" style="background:#0A84FF" aria-pressed="false"></button>
+                <button class="dotc" style="background:#111" aria-pressed="false"></button>
+              </span>
+              <span class="sep"></span>
+              <button class="ib" title="Undo"><svg><use href="#i-undo"/></svg></button>
+              <button class="ib" title="Clear"><svg><use href="#i-trash"/></svg></button>
+              <span class="sep"></span>
+              <button class="ib" title="Screenshot"><svg><use href="#i-camera"/></svg></button>
+              <button class="ib" title="Magnifier"><svg><use href="#i-mag"/></svg></button>
+              <button class="ib" title="Mute"><svg><use href="#i-sound"/></svg></button>
+              <span class="sep"></span>
+              <button class="ib" title="Pointer off"><svg><use href="#i-power"/></svg></button>
+            </div>
+          </div>
+        </div>
+        </div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 3 POINTERS -->
+<section>
+  <div class="sh"><span class="n">03</span><h2>Pointers</h2></div>
+  <div class="wins">
+    <span class="chip"><svg><use href="#i-stack"/></svg>3 pages → 1</span>
+    <span class="chip"><svg style="color:#E7A93B"><use href="#i-starf"/></svg>One favorites list</span>
+    <span class="chip"><svg><use href="#i-reset"/></svg>Reset per value</span>
+  </div>
+  <div class="pair stack">
+    <div class="col">
+      <div class="tag"><span class="dot"></span>Before · Pointers, Customize sheet, Pointer defaults</div>
+      <div class="stage before" style="align-items:flex-start">
+        <img class="shot only-light" src="../before/pointers-light.png" style="width:31%;min-width:200px" alt="Current Pointers page with current pointer summary, Toolbar favorites, a separate Quick controls map and the pointer grid">
+        <img class="shot only-dark" src="../before/pointers-dark.png" style="width:31%;min-width:200px" alt="Current Pointers page, dark">
+        <img class="shot only-light" src="../before/customize-light.png" style="width:27%;min-width:180px" alt="Current Customize sheet for one pointer">
+        <img class="shot only-dark" src="../before/customize-dark.png" style="width:27%;min-width:180px" alt="Current Customize sheet, dark">
+        <img class="shot only-light" src="../before/appearance-light.png" style="width:31%;min-width:200px" alt="Current Pointer defaults page">
+        <img class="shot only-dark" src="../before/appearance-dark.png" style="width:31%;min-width:200px" alt="Current Pointer defaults page, dark">
+      </div>
+    </div>
+    <div class="col mock">
+      <div class="tag after"><span class="dot"></span>After · pick, star, tune</div>
+      <div class="stage after">
+        <div class="fitbox"><div class="fit" data-w="760">
+        <div class="win">
+          <div class="side">
+            <div class="lights"><i></i><i></i><i></i></div>
+            <div class="nav cur"><svg><use href="#i-handp"/></svg>Pointers</div>
+            <div class="nav"><svg><use href="#i-pen"/></svg>Drawing</div>
+            <div class="nav"><svg><use href="#i-keys"/></svg>Shortcuts</div>
+            <div class="nav"><svg><use href="#i-stack"/></svg>Presets</div>
+            <div class="nav"><svg><use href="#i-gear"/></svg>General</div>
+            <div class="foot"><img src="../hands/lavender.png" alt="">Look Here Please</div>
+          </div>
+          <div class="main">
+            <div class="bar">
+              <div class="search"><svg><use href="#i-search"/></svg>Search</div>
+              <div class="segi" role="group" aria-label="Show">
+                <button class="ib" aria-pressed="true" title="All"><svg><use href="#i-grid"/></svg></button>
+                <button class="ib" aria-pressed="false" title="Favorites"><svg><use href="#i-star"/></svg></button>
+              </div>
+              <button class="ib" title="New hand"><svg><use href="#i-plus"/></svg></button>
+            </div>
+            <div class="split">
+              <div class="lib">
+                <div class="card favs" title="Favorites: toolbar and Quick controls. Drag to reorder.">
+                  <svg class="star"><use href="#i-starf"/></svg>
+                  <div class="fav"><img src="../hands/glove.png" alt="Cursor glove"><span class="wq"><svg><use href="#i-wheel"/></svg></span></div>
+                  <div class="fav"><img src="../hands/lavender.png" alt="Lavender toy"><span class="wq"><svg><use href="#i-wheel"/></svg></span></div>
+                  <div class="fav"><img src="../hands/coral.png" alt="Coral vinyl"><span class="wq"><svg><use href="#i-wheel"/></svg></span></div>
+                  <div class="fav"><img src="../hands/plush.png" alt="Plush"><span class="wq"><svg><use href="#i-wheel"/></svg></span></div>
+                  <div class="fav"><img src="../hands/robot.png" alt="Robot"><span class="wq"><svg><use href="#i-wheel"/></svg></span></div>
+                  <div class="fav"><svg style="width:26px;height:26px"><use href="#i-laser"/></svg><span class="wq"><svg><use href="#i-wheel"/></svg></span></div>
+                  <div class="fav empty" title="Star a pointer to add it"><svg><use href="#i-plus"/></svg></div>
+                </div>
+                <div class="grid" id="ptrgrid">
+                  <button class="tile" aria-pressed="true" data-n="Lavender toy" data-i="lavender"><img src="../hands/lavender.png" alt="Lavender toy"><svg class="st f"><use href="#i-starf"/></svg></button>
+                  <button class="tile" aria-pressed="false" data-n="Cursor glove" data-i="glove"><img src="../hands/glove.png" alt="Cursor glove"><svg class="st f"><use href="#i-starf"/></svg></button>
+                  <button class="tile" aria-pressed="false" data-n="Coral vinyl" data-i="coral"><img src="../hands/coral.png" alt="Coral vinyl"><svg class="st f"><use href="#i-starf"/></svg></button>
+                  <button class="tile" aria-pressed="false" data-n="Plush" data-i="plush"><img src="../hands/plush.png" alt="Plush"><svg class="st f"><use href="#i-starf"/></svg></button>
+                  <button class="tile" aria-pressed="false" data-n="Robot" data-i="robot"><img src="../hands/robot.png" alt="Robot"><svg class="st f"><use href="#i-starf"/></svg></button>
+                  <button class="tile" aria-pressed="false" data-n="Bubblegum" data-i="pink"><img src="../hands/pink.png" alt="Bubblegum"><svg class="st"><use href="#i-star"/></svg></button>
+                  <button class="tile" aria-pressed="false" data-n="Sky" data-i="blue"><img src="../hands/blue.png" alt="Sky"><svg class="st"><use href="#i-star"/></svg></button>
+                  <button class="tile" aria-pressed="false" data-n="Mint" data-i="mint"><img src="../hands/mint.png" alt="Mint"><svg class="st"><use href="#i-star"/></svg></button>
+                  <button class="tile" aria-pressed="false" data-n="Lemon" data-i="lemon"><img src="../hands/lemon.png" alt="Lemon"><svg class="st"><use href="#i-star"/></svg></button>
+                  <button class="tile" aria-pressed="false" data-n="Midnight" data-i="black"><img src="../hands/black.png" alt="Midnight"><svg class="st"><use href="#i-star"/></svg></button>
+                  <button class="tile" aria-pressed="false" data-n="Chrome" data-i="chrome"><img src="../hands/chrome.png" alt="Chrome"><svg class="st"><use href="#i-star"/></svg></button>
+                  <button class="tile" aria-pressed="false" data-n="Holo" data-i="holo"><img src="../hands/holo.png" alt="Holo"><svg class="st"><use href="#i-star"/></svg></button>
+                  <button class="tile" aria-pressed="false" data-n="Fuzzy"><img src="../hands/fuzzy.png" alt="Fuzzy"><svg class="st"><use href="#i-star"/></svg></button>
+                  <button class="tile" aria-pressed="false" data-n="Wood"><img src="../hands/wood.png" alt="Wood"><svg class="st"><use href="#i-star"/></svg></button>
+                  <button class="tile" aria-pressed="false" data-n="Marble"><img src="../hands/marble.png" alt="Marble"><svg class="st"><use href="#i-star"/></svg></button>
+                  <button class="tile" aria-pressed="false" data-n="Terrazzo"><img src="../hands/terrazzo.png" alt="Terrazzo"><svg class="st"><use href="#i-star"/></svg></button>
+                  <button class="tile" aria-pressed="false" data-n="Glass"><img src="../hands/glass.png" alt="Glass"><svg class="st"><use href="#i-star"/></svg></button>
+                  <button class="tile" aria-pressed="false" data-n="Jelly"><img src="../hands/jelly.png" alt="Jelly"><svg class="st"><use href="#i-star"/></svg></button>
+                  <button class="tile" aria-pressed="false" data-n="Pastel"><img src="../hands/pastel.png" alt="Pastel"><svg class="st"><use href="#i-star"/></svg></button>
+                  <button class="tile" aria-pressed="false" data-n="Pixel"><img src="../hands/pixel.png" alt="Pixel"><svg class="st"><use href="#i-star"/></svg></button>
+                  <button class="tile" aria-pressed="false" data-n="Low poly"><img src="../hands/lowpoly.png" alt="Low poly"><svg class="st"><use href="#i-star"/></svg></button>
+                  <button class="tile" aria-pressed="false" data-n="Knit"><img src="../hands/knit.png" alt="Knit"><svg class="st"><use href="#i-star"/></svg></button>
+                  <button class="tile" aria-pressed="false" data-n="Skeleton"><img src="../hands/skeleton.png" alt="Skeleton"><svg class="st"><use href="#i-star"/></svg></button>
+                  <button class="tile" aria-pressed="false" data-n="Astronaut"><img src="../hands/astro.png" alt="Astronaut"><svg class="st"><use href="#i-star"/></svg></button>
+                  <button class="tile" aria-pressed="false" data-n="Space"><img src="../hands/space.png" alt="Space"><svg class="st"><use href="#i-star"/></svg></button>
+                </div>
+              </div>
+              <div class="insp">
+                <div class="prev">
+                  <img id="inspimg" src="../hands/lavender.png" alt="">
+                  <div class="pv segi">
+                    <button class="ib" aria-pressed="true" title="Light"><svg><use href="#i-sun"/></svg></button>
+                    <button class="ib" aria-pressed="false" title="Dark"><svg><use href="#i-moon"/></svg></button>
+                    <button class="ib" aria-pressed="false" title="Pattern"><svg><use href="#i-checker"/></svg></button>
+                  </div>
+                  <button class="ib sm play" title="Preview tap"><svg><use href="#i-play"/></svg></button>
+                </div>
+                <div class="row sp"><span class="h3" id="inspname">Lavender toy</span><button class="ib sm" title="Favorite"><svg style="color:#E7A93B"><use href="#i-starf"/></svg></button></div>
+                <div class="scope"><div class="segi text" role="group" aria-label="Apply to">
+                  <button class="ib" aria-pressed="true" title="Only this hand"><img src="../hands/lavender.png" alt="" style="width:16px;height:16px">This</button>
+                  <button class="ib" aria-pressed="false" title="Every hand"><svg style="width:15px;height:15px"><use href="#i-stack"/></svg>All</button>
+                </div></div>
+                <div class="card">
+                  <div class="prow" title="Size"><svg><use href="#i-size"/></svg><div class="slider"><b style="width:62%"></b><i style="left:62%"></i></div><button class="ib sm reset" title="Use default (13%)"><svg><use href="#i-reset"/></svg></button></div>
+                  <div class="prow" title="Shadow"><svg><use href="#i-shadow"/></svg><span style="flex:1"></span><span class="pill">Original<svg><use href="#i-chev"/></svg></span><span class="sw"></span></div>
+                  <div class="prow" title="Tap sound"><svg><use href="#i-sound"/></svg><span style="flex:1"></span><span class="pill">Thock<svg><use href="#i-chev"/></svg></span><button class="ib sm" title="Play"><svg><use href="#i-play"/></svg></button></div>
+                  <div class="prow" title="Gestures"><svg><use href="#i-gest"/></svg><span style="flex:1"></span>
+                    <div class="gest"><div class="g" title="OK"><img src="../hands/gesture_ok.png" alt="OK gesture"></div><div class="g" title="Shaka"><img src="../hands/gesture_shaka.png" alt="Shaka gesture"></div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        </div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 4 DRAWING -->
+<section>
+  <div class="sh"><span class="n">04</span><h2>Drawing</h2></div>
+  <div class="wins">
+    <span class="chip"><svg><use href="#i-pen"/></svg><svg><use href="#i-mag"/></svg><svg><use href="#i-camera"/></svg>Icon tabs</span>
+    <span class="chip"><svg><use href="#i-pin"/></svg><svg><use href="#i-clock"/></svg><svg><use href="#i-trail"/></svg>Pick by picture</span>
+    <span class="chip"><svg><use href="#i-play"/></svg>Live preview, no buttons</span>
+  </div>
+  <div class="pair">
+    <div class="col">
+      <div class="tag"><span class="dot"></span>Before</div>
+      <div class="stage before">
+        <img class="shot only-light" src="../before/drawing-light.png" alt="Current Tools page with Drawing, Magnification and Screenshots text tabs, a practice canvas with Interact and Draw, ink sliders and fading options">
+        <img class="shot only-dark" src="../before/drawing-dark.png" alt="Current Tools page, dark">
+      </div>
+    </div>
+    <div class="col mock">
+      <div class="tag after"><span class="dot"></span>After</div>
+      <div class="stage after">
+        <div class="fitbox"><div class="fit" data-w="584">
+        <div class="win" style="width:584px;height:560px">
+          <div class="side" style="width:150px">
+            <div class="lights"><i></i><i></i><i></i></div>
+            <div class="nav"><svg><use href="#i-handp"/></svg>Pointers</div>
+            <div class="nav cur"><svg><use href="#i-pen"/></svg>Drawing</div>
+            <div class="nav"><svg><use href="#i-keys"/></svg>Shortcuts</div>
+            <div class="nav"><svg><use href="#i-stack"/></svg>Presets</div>
+            <div class="nav"><svg><use href="#i-gear"/></svg>General</div>
+          </div>
+          <div class="main">
+            <div class="bar" style="justify-content:center">
+              <div class="segi" role="group" aria-label="Section">
+                <button class="ib" aria-pressed="true" title="Ink" style="width:56px"><svg><use href="#i-pen"/></svg></button>
+                <button class="ib" aria-pressed="false" title="Magnifier" style="width:56px"><svg><use href="#i-mag"/></svg></button>
+                <button class="ib" aria-pressed="false" title="Screenshots" style="width:56px"><svg><use href="#i-camera"/></svg></button>
+              </div>
+            </div>
+            <div class="canvas" title="Preview">
+              <svg viewBox="0 0 400 120" preserveAspectRatio="none"><path id="pvpath" d="M30 78 C 80 20, 120 20, 160 62 S 240 104, 280 58 S 350 30, 372 52" fill="none" stroke="#8E5CF0" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="card">
+              <div class="prow"><svg><use href="#i-pen"/></svg><span style="flex:1"></span>
+                <div class="row" style="gap:9px" id="inkdots">
+                  <button class="dotc rainbow" aria-pressed="false" data-c="#C9ABF0" title="Match pointer"></button>
+                  <button class="dotc" style="background:#FF3B30" data-c="#FF3B30" aria-pressed="false"></button>
+                  <button class="dotc" style="background:#FF9500" data-c="#FF9500" aria-pressed="false"></button>
+                  <button class="dotc" style="background:#FFCC00" data-c="#FFCC00" aria-pressed="false"></button>
+                  <button class="dotc" style="background:#34C759" data-c="#34C759" aria-pressed="false"></button>
+                  <button class="dotc" style="background:#0A84FF" data-c="#0A84FF" aria-pressed="false"></button>
+                  <button class="dotc" style="background:#8E5CF0" data-c="#8E5CF0" aria-pressed="true"></button>
+                  <button class="dotc" style="background:#111" data-c="#111111" aria-pressed="false"></button>
+                </div></div>
+              <div class="prow"><svg viewBox="0 0 24 24"><path d="M4 7h16" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><path d="M4 12h16" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M4 17.5h16" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg><span style="flex:1"></span>
+                <div class="row" style="gap:6px" id="widths">
+                  <button class="wch" aria-pressed="false" data-w="3" title="3 pt"><i style="height:2px"></i></button>
+                  <button class="wch" aria-pressed="true" data-w="6" title="6 pt"><i style="height:4px"></i></button>
+                  <button class="wch" aria-pressed="false" data-w="10" title="10 pt"><i style="height:6px"></i></button>
+                  <button class="wch" aria-pressed="false" data-w="16" title="16 pt"><i style="height:9px"></i></button>
+                </div></div>
+              <div class="prow" title="Opacity"><svg><use href="#i-checker"/></svg><span style="width:14px"></span><div class="opac"><i></i></div></div>
+            </div>
+            <div class="opt" id="fade">
+              <button class="optt" aria-pressed="false" title="Keep until cleared"><svg><use href="#i-pin"/></svg>Keep</button>
+              <button class="optt" aria-pressed="true" title="Fade after a few seconds"><svg><use href="#i-clock"/></svg>Fade</button>
+              <button class="optt" aria-pressed="false" title="Fade from the tail"><svg><use href="#i-trail"/></svg>Trail</button>
+            </div>
+            <div class="row sp" id="fadetime"><svg style="color:var(--t2)"><use href="#i-clock"/></svg>
+              <div class="chipset">
+                <span class="pill" aria-pressed="false">1s</span><span class="pill" aria-pressed="true">3s</span><span class="pill" aria-pressed="false">5s</span><span class="pill" aria-pressed="false">10s</span>
+              </div>
+              <button class="ib sm" title="Smoothing and timing"><svg><use href="#i-dots"/></svg></button>
+            </div>
+          </div>
+        </div>
+        </div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 5 SHORTCUTS -->
+<section>
+  <div class="sh"><span class="n">05</span><h2>Shortcuts</h2></div>
+  <div class="wins">
+    <span class="chip"><svg><use href="#i-check"/></svg>Keys ready on day one</span>
+    <span class="chip"><svg><use href="#i-x"/></svg>Seven closed sections</span>
+  </div>
+  <div class="pair">
+    <div class="col">
+      <div class="tag"><span class="dot"></span>Before</div>
+      <div class="stage before">
+        <img class="shot only-light" src="../before/shortcuts-light.png" alt="Current Shortcuts page with seven closed sections, all marked Unassigned">
+        <img class="shot only-dark" src="../before/shortcuts-dark.png" alt="Current Shortcuts page, dark">
+      </div>
+    </div>
+    <div class="col mock">
+      <div class="tag after"><span class="dot"></span>After · keys shown as keys</div>
+      <div class="stage after">
+        <div class="fitbox"><div class="fit" data-w="440">
+        <div class="win" style="width:440px;height:520px">
+          <div class="main" style="padding-top:36px;position:relative">
+            <div class="lights" style="position:absolute;top:14px;left:16px"><i></i><i></i><i></i></div>
+            <div class="card hero">
+              <div class="big"><svg><use href="#i-keys"/></svg></div>
+              <div style="flex:1;font-weight:600">Suggested keys</div>
+              <button class="btn"><svg><use href="#i-check"/></svg>Use</button>
+            </div>
+            <div class="search"><svg><use href="#i-search"/></svg>Search</div>
+            <div class="ghead"><svg><use href="#i-handp"/></svg>Pointer</div>
+            <div class="card">
+              <div class="krow"><svg><use href="#i-power"/></svg><span class="nm">On / off</span><span class="kc">⌃</span><span class="kc">⌥</span><span class="kc">P</span></div>
+              <div class="krow"><svg><use href="#i-right"/></svg><span class="nm">Next hand</span><span class="kc">⌃</span><span class="kc">⌥</span><span class="kc">]</span></div>
+              <div class="krow"><svg><use href="#i-wheel"/></svg><span class="nm">Quick controls</span><span class="lab">hold</span><span class="kc">⌃</span><span class="kc">⌥</span></div>
+            </div>
+            <div class="ghead"><svg><use href="#i-pen"/></svg>Drawing</div>
+            <div class="card">
+              <div class="krow"><svg><use href="#i-cursor"/></svg><span class="nm">Cursor ↔ last tool</span><span class="kc">⌃</span><span class="kc">⌥</span><span class="kc">D</span></div>
+              <div class="krow"><svg><use href="#i-undo"/></svg><span class="nm">Undo</span><span class="kc">⌃</span><span class="kc">⌥</span><span class="kc">Z</span></div>
+              <div class="krow"><svg><use href="#i-trash"/></svg><span class="nm">Clear</span><span class="kc add">+</span></div>
+              <div class="krow"><svg><use href="#i-camera"/></svg><span class="nm">Screenshot</span><span class="kc add">+</span></div>
+            </div>
+          </div>
+        </div>
+        </div></div>
+        <p class="note" style="width:100%;text-align:center">Example keys. Real defaults need a conflict check.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 6 PRESETS -->
+<section>
+  <div class="sh"><span class="n">06</span><h2>Presets &amp; backup</h2></div>
+  <div class="wins">
+    <span class="chip"><svg><use href="#i-handp"/></svg>Setups as pictures</span>
+    <span class="chip"><svg><use href="#i-reset"/></svg>Undo in the toast</span>
+  </div>
+  <div class="pair">
+    <div class="col">
+      <div class="tag"><span class="dot"></span>Before</div>
+      <div class="stage before">
+        <img class="shot only-light" src="../before/presets-light.png" alt="Current Presets and Backup page with text rows, Apply buttons and several paragraphs">
+        <img class="shot only-dark" src="../before/presets-dark.png" alt="Current Presets and Backup page, dark">
+      </div>
+    </div>
+    <div class="col mock">
+      <div class="tag after"><span class="dot"></span>After</div>
+      <div class="stage after">
+        <div class="fitbox"><div class="fit" data-w="460">
+        <div class="win" style="width:460px;height:440px">
+          <div class="main" style="padding-top:36px;position:relative">
+            <div class="lights" style="position:absolute;top:14px;left:16px"><i></i><i></i><i></i></div>
+            <div class="pgrid">
+              <div class="pc cur">
+                <div class="art"><img src="../hands/lavender.png" alt=""></div>
+                <div class="meta"><span class="dotc rainbow"></span><svg><use href="#i-pen"/></svg><svg><use href="#i-sound"/></svg></div>
+                <div class="ft">Workshop<svg style="width:16px;height:16px;color:var(--acc)"><use href="#i-check"/></svg></div>
+              </div>
+              <div class="pc">
+                <div class="art"><img src="../hands/glove.png" alt=""></div>
+                <div class="meta"><span class="dotc" style="background:#FF3B30"></span><svg><use href="#i-arrow"/></svg><svg><use href="#i-mute"/></svg></div>
+                <div class="ft">Quiet demo<button class="ib sm" title="Apply"><svg><use href="#i-play"/></svg></button></div>
+              </div>
+              <div class="pc new"><svg><use href="#i-plus"/></svg>Save current</div>
+            </div>
+            <div class="toast"><svg><use href="#i-check"/></svg><span style="flex:1">Workshop applied</span><button class="btn"><svg><use href="#i-undo"/></svg>Undo</button></div>
+            <div class="card prow" style="gap:6px">
+              <svg><use href="#i-shield"/></svg><span style="flex:1">Backup</span>
+              <button class="btn ghost"><svg><use href="#i-export"/></svg>Export</button>
+              <button class="btn ghost"><svg><use href="#i-import"/></svg>Import</button>
+              <button class="ib sm" title="Recovery copies"><svg><use href="#i-history"/></svg></button>
+            </div>
+          </div>
+        </div>
+        </div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 7 FIRST RUN -->
+<section>
+  <div class="sh"><span class="n">07</span><h2>First run</h2></div>
+  <div class="wins">
+    <span class="chip"><svg><use href="#i-handp"/></svg><svg><use href="#i-pen"/></svg><svg><use href="#i-wheel"/></svg>Three pictures</span>
+    <span class="chip"><svg><use href="#i-practice"/></svg>Practice by doing</span>
+  </div>
+  <div class="pair stack">
+    <div class="col">
+      <div class="tag"><span class="dot"></span>Before · welcome, practice</div>
+      <div class="stage before">
+        <img class="shot only-light" src="../before/welcome-light.png" width="340" alt="Current welcome window explaining Interact in two sentences">
+        <img class="shot only-dark" src="../before/welcome-dark.png" width="340" alt="Current welcome window, dark">
+        <img class="shot only-light" src="../before/practice-light.png" width="380" alt="Current practice step 4 of 4 with paragraphs and five simulated buttons">
+        <img class="shot only-dark" src="../before/practice-dark.png" width="380" alt="Current practice window, dark">
+      </div>
+    </div>
+    <div class="col mock">
+      <div class="tag after"><span class="dot"></span>After</div>
+      <div class="stage after">
+        <div class="wel">
+          <button class="ib sm x" title="Close"><svg><use href="#i-x"/></svg></button>
+          <img class="hero-hand" src="../hands/lavender.png" alt="">
+          <div class="steps3">
+            <div class="s3"><svg><use href="#i-cursor"/></svg>Point</div>
+            <div class="s3"><svg><use href="#i-pen"/></svg>Draw</div>
+            <div class="s3"><svg><use href="#i-wheel"/></svg><span class="kcs"><span class="kc">⌃</span><span class="kc">⌥</span></span></div>
+          </div>
+          <button class="bigbtn"><svg><use href="#i-handp"/></svg>Show Pointer</button>
+          <span class="link"><svg><use href="#i-practice"/></svg>Practice</span>
+        </div>
+        <div class="prac">
+          <div class="tbar"><div class="lights"><i></i><i></i><i></i></div></div>
+          <div class="body">
+            <div class="pdots"><i class="d"></i><i class="d"></i><i></i></div>
+            <div class="instr"><svg><use href="#i-pen"/></svg>Pick the pen, then draw</div>
+            <div class="pcan">
+              <div class="mini rail">
+                <button class="ib cursor" aria-pressed="false"><svg><use href="#i-cursor"/></svg></button>
+                <button class="ib" aria-pressed="true"><svg><use href="#i-pen"/></svg></button>
+                <button class="ib" aria-pressed="false"><svg><use href="#i-hl"/></svg></button>
+              </div>
+              <svg class="ink" viewBox="0 0 420 190" preserveAspectRatio="none"><path d="M90 150 C 150 60, 210 70, 240 110 S 320 140, 360 120" fill="none" stroke="#8E5CF0" stroke-width="5" stroke-linecap="round"/></svg>
+              <div class="ghosthand"><img src="../hands/lavender.png" alt=""></div>
+              <div class="done"><svg><use href="#i-check"/></svg>Nice</div>
+            </div>
+            <div class="pfoot">
+              <button class="ib" title="Back"><svg><use href="#i-left"/></svg></button>
+              <button class="btn">Next<svg><use href="#i-right"/></svg></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 8 QUICK CONTROLS -->
+<section>
+  <div class="sh"><span class="n">08</span><h2>Quick controls</h2></div>
+  <div class="wins">
+    <span class="chip"><svg><use href="#i-cursor"/></svg>Cursor slice replaces “Interact ON”</span>
+    <span class="chip"><svg><use href="#i-handp"/></svg>Center shows your hand</span>
+  </div>
+  <div class="pair">
+    <div class="col">
+      <div class="tag"><span class="dot"></span>Before</div>
+      <div class="stage before">
+        <img class="shot only-light" src="../before/wheel-light.png" width="300" alt="Current Quick controls wheel with Quick controls and Esc closes text in the center and an Interact ON badge">
+        <img class="shot only-dark" src="../before/wheel-dark.png" width="300" alt="Current Quick controls wheel, dark">
+      </div>
+    </div>
+    <div class="col mock">
+      <div class="tag after"><span class="dot"></span>After · small change</div>
+      <div class="stage after">
+        <svg class="wheel" viewBox="0 0 300 300" id="wheel" role="img" aria-label="Proposed Quick controls wheel"></svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<script>
+(function(){
+  const page=document.getElementById('page');
+  // theme toggle
+  document.querySelectorAll('.seg-page button').forEach(b=>b.addEventListener('click',()=>{
+    page.dataset.theme=b.dataset.set;
+    document.querySelectorAll('.seg-page button').forEach(x=>x.setAttribute('aria-pressed',x===b));
+    drawWheel();
+  }));
+  // fit fixed-size mocks into their column
+  function fit(){
+    document.querySelectorAll('.fit').forEach(el=>{
+      const box=el.parentElement, w=+el.dataset.w, avail=box.clientWidth;
+      const s=Math.min(1,avail/w);
+      el.style.transform='scale('+s+')';
+      el.style.width=w+'px';
+      box.style.height=(el.scrollHeight*s)+'px';
+      el.style.marginLeft=Math.max(0,(avail-w*s)/2)+'px';
+    });
+  }
+  new ResizeObserver(fit).observe(document.body); fit();
+  // single-select groups
+  function group(sel,cb){document.querySelectorAll(sel).forEach(g=>{g.addEventListener('click',e=>{
+    const t=e.target.closest('button'); if(!t||!g.contains(t)||t.parentElement!==g&&!g.contains(t.parentElement)) return;
+    const sibs=[...g.querySelectorAll(':scope > button')]; if(!sibs.includes(t)) return;
+    sibs.forEach(s=>s.setAttribute('aria-pressed',s===t)); cb&&cb(t,g);
+  })})}
+  // popover: cursor hides drawing-only rows
+  group('.pop .rail',(t)=>{
+    const pop=t.closest('.pop'); const cur=t.dataset.tool==='cursor';
+    pop.querySelectorAll('.draw-only').forEach(x=>x.classList.toggle('collapsed',cur)); fit();
+  });
+  group('.pop .colors'); group('.pop .row[role=group]');
+  group('.segi'); group('#inkdots',t=>{document.getElementById('pvpath').setAttribute('stroke',t.dataset.c)});
+  group('#widths',t=>{document.getElementById('pvpath').setAttribute('stroke-width',t.dataset.w)});
+  group('#fade',t=>{document.getElementById('fadetime').style.visibility=t.title.startsWith('Fade after')?'visible':'hidden'});
+  group('#ptrgrid',t=>{
+    document.getElementById('inspimg').src=t.querySelector('img').src;
+    document.getElementById('inspname').textContent=t.dataset.n;
+  });
+  // star toggles without selecting
+  document.querySelectorAll('#ptrgrid .st').forEach(st=>st.addEventListener('click',e=>{
+    e.stopPropagation(); const on=!st.classList.contains('f'); st.classList.toggle('f',on);
+    st.querySelector('use').setAttribute('href',on?'#i-starf':'#i-star');
+  }));
+
+  // wheel
+  function drawWheel(){
+    const dark=page.dataset.theme==='dark';
+    const c={bg:dark?'#3B3740':'#E7E4E1',line:dark?'rgba(255,255,255,.10)':'rgba(0,0,0,.08)',center:dark?'#2C2931':'#F5F3F0',t:dark?'#F3F0F7':'#2A2530',t2:dark?'#ABA4B6':'#6C6676',acc:dark?'#C9ABF0':'#7050A0'};
+    const items=[
+      {l:'Pointer',img:'../hands/lavender.png'},{l:'Color',dot:true},{l:'Draw',i:'i-pen'},{l:'Clear',i:'i-trash'},
+      {l:'Cursor',i:'i-cursor',on:true},{l:'Screenshot',i:'i-camera'},{l:'Undo',i:'i-undo'},{l:'More',i:'i-dots'}];
+    const W=300,cx=150,cy=150,R=146,r=52; let s='';
+    s+=`<defs><filter id="ws" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="6" stdDeviation="8" flood-opacity="${dark?.5:.18}"/></filter></defs>`;
+    s+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="${c.bg}" filter="url(#ws)"/>`;
+    items.forEach((it,k)=>{
+      const a0=(-90-22.5+k*45)*Math.PI/180;
+      s+=`<line x1="${cx+r*Math.cos(a0)}" y1="${cy+r*Math.sin(a0)}" x2="${cx+R*Math.cos(a0)}" y2="${cy+R*Math.sin(a0)}" stroke="${c.line}"/>`;
+      const am=(-90+k*45)*Math.PI/180, rr=101, x=cx+rr*Math.cos(am), y=cy+rr*Math.sin(am);
+      if(it.img) s+=`<image href="${it.img}" x="${x-14}" y="${y-24}" width="28" height="28"/>`;
+      else if(it.dot) s+=`<circle cx="${x}" cy="${y-10}" r="10" fill="#8E5CF0"/>`;
+      else s+=`<use href="#${it.i}" x="${x-11}" y="${y-21}" width="22" height="22" style="color:${c.t}"/>`;
+      s+=`<text x="${x}" y="${y+19}" text-anchor="middle" font-size="12" font-weight="500" fill="${c.t}">${it.l}</text>`;
+      if(it.on){s+=`<circle cx="${x+13}" cy="${y-4}" r="7" fill="${c.acc}"/><use href="#i-check" x="${x+8}" y="${y-9}" width="10" height="10" style="color:${dark?'#30233D':'#fff'}"/>`}
+    });
+    s+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="${c.center}" stroke="${c.line}"/>`;
+    s+=`<image href="../hands/lavender.png" x="${cx-22}" y="${cy-32}" width="44" height="44"/>`;
+    s+=`<rect x="${cx-15}" y="${cy+18}" width="30" height="16" rx="4" fill="none" stroke="${c.t2}" stroke-width=".8"/><text x="${cx}" y="${cy+30}" text-anchor="middle" font-size="10" fill="${c.t2}">esc</text>`;
+    document.getElementById('wheel').innerHTML=s;
+  }
+  drawWheel();
+})();
+</script>
+</body>
+</html>

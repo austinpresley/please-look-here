@@ -14,6 +14,7 @@ final class ArmView: NSView {
     private(set) var style: PointerStyle = .lavender
     private var asset: HandAsset?
     private var baseAsset: HandAsset?
+    private var loadedArtworkSignature = ""
     private(set) var activeGesture: HandGestureSlot?
 
     private var previewConfiguration: PointerPreviewConfiguration?
@@ -117,7 +118,9 @@ final class ArmView: NSView {
         }
         if previewConfiguration == nil {
             NotificationCenter.default.addObserver(forName: Preferences.changed, object: nil, queue: .main) { [weak self] _ in
-                self?.updatePointerConfiguration()
+                guard let self else { return }
+                if let name = self.style.assetName, HandAsset.imageSignature(name) != self.loadedArtworkSignature { self.setStyle(self.style) }
+                else { self.updatePointerConfiguration() }
             }
         }
     }
@@ -138,8 +141,9 @@ final class ArmView: NSView {
 
     func applyPreviewConfiguration(_ configuration: PointerPreviewConfiguration) {
         guard previewConfiguration != nil else { return }
+        let artworkChanged = previewConfiguration?.artworkSignature != configuration.artworkSignature
         previewConfiguration = configuration
-        if style != configuration.style { setStyle(configuration.style) }
+        if style != configuration.style || artworkChanged { setStyle(configuration.style) }
         updatePointerConfiguration()
         displayImageHeight = 0
     }
@@ -159,6 +163,7 @@ final class ArmView: NSView {
         style = newStyle
         asset = newStyle.assetName.flatMap(HandAsset.load)
         baseAsset = asset; activeGesture = nil
+        loadedArtworkSignature = newStyle.assetName.map(HandAsset.imageSignature) ?? ""
         if newStyle.assetName != nil && asset == nil {
             style = .laser
         }
@@ -205,7 +210,7 @@ final class ArmView: NSView {
 
     // A compact sample uses a fixed reference height so hands and contact shadows
     // stay readable at the same settings as the full desktop renderer.
-    private var renderingHeight: CGFloat { previewConfiguration == nil ? bounds.height : max(720, bounds.height) }
+    private var renderingHeight: CGFloat { previewConfiguration?.referenceHeight ?? (previewConfiguration == nil ? bounds.height : max(720, bounds.height)) }
 
     func aim(cursor: CGPoint) {
         lastCursor = cursor
@@ -218,7 +223,10 @@ final class ArmView: NSView {
         if NSWorkspace.shared.accessibilityDisplayShouldReduceMotion { swing.cancel() }
         let swings = swing.active
         let tap = swing.pose(at: CACurrentMediaTime(), held: held)
-        let grip = CGPoint(x: gx + tap.gripX * screenH, y: (tap.gripY - gripDepthFrac) * screenH)
+        // A compact inspector keeps the grip inside its own sample. Desktop and
+        // practice rendering keep their existing off-screen grip and scale.
+        let gripY = previewConfiguration?.referenceHeight == nil ? -gripDepthFrac * screenH : 8
+        let grip = CGPoint(x: gx + tap.gripX * screenH, y: gripY + tap.gripY * screenH)
 
         if !held {
             pressAmount += (0 - pressAmount) * 0.18

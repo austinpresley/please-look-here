@@ -2,9 +2,9 @@ import AppKit
 
 enum PointerMode: String, CaseIterable {
     case point, draw
-    // Preserve stored values and protocol v1 clients while presenting one Interact toggle.
+    // Preserve stored values and protocol v1 clients while presenting Cursor and drawing tools.
     var isInteractive: Bool { self == .point }
-    var title: String { isInteractive ? "Interact On" : "Interact Off" }
+    var title: String { isInteractive ? "Cursor" : "Draw" }
 
     func hidesPointer(whilePressing pressing: Bool, keepsHand: Bool) -> Bool {
         isInteractive && pressing && !keepsHand
@@ -97,6 +97,7 @@ struct Annotation: Equatable, Identifiable {
 
 /// Value geometry and edit history, independent of event taps and windows.
 struct AnnotationDocument {
+    private(set) var revision = UUID()
     private(set) var annotations: [Annotation] = []
     private var history: [[Annotation]] = []
     private var future: [[Annotation]] = []
@@ -127,11 +128,13 @@ struct AnnotationDocument {
     }
     mutating func undo() {
         guard let previous = history.popLast() else { return }
+        revision = UUID()
         future.append(annotations)
         annotations = previous
     }
     mutating func redo() {
         guard let next = future.popLast() else { return }
+        revision = UUID()
         history.append(annotations)
         annotations = next
     }
@@ -143,6 +146,7 @@ struct AnnotationDocument {
         }
     }
     private mutating func checkpoint() {
+        revision = UUID()
         history.append(annotations)
         if history.count > 100 { history.removeFirst() }
         future.removeAll()

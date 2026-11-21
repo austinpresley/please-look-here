@@ -1,0 +1,47 @@
+{
+  "groups": [
+    {
+      "name": "Actual pointer artwork",
+      "layers": [
+        {
+          "name": "Original hand PNG",
+          "image-name": "hand_lavender.png",
+          "glass": false
+        }
+      ],
+      "position": {
+        "scale": 1.4,
+        "translation-in-points": [
+          0,
+          520
+        ]
+      },
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.15
+      },
+      "translucency": {
+        "enabled": false,
+        "value": 0.5
+      }
+    }
+  ],
+  "fill-specializations": [
+    {
+      "value": {
+        "automatic-gradient": "srgb:0.96078,0.94118,0.90588,1.00000"
+      }
+    },
+    {
+      "appearance": "dark",
+      "value": {
+        "automatic-gradient": "srgb:0.18824,0.13725,0.23922,1.00000"
+      }
+    }
+  ],
+  "supported-platforms": {
+    "squares": [
+      "macOS"
+    ]
+  }
+}

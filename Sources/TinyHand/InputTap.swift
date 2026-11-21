@@ -1,10 +1,21 @@
 import AppKit
 
 final class InputTap {
+    /// Injectable connection operations keep opening/enable ordering testable
+    /// without installing a system tap or requesting Accessibility.
+    struct Installation {
+        var install: () -> Bool
+        var isEnabled: () -> Bool
+        var setEnabled: (Bool) -> Void
+    }
+    private let lifecycleLock = NSRecursiveLock()
+    private var nativeConnection: NativeConnection?
     private let sessionLocked: () -> Bool
+    private let installation: Installation?
+    private var connectionInstalled = false
     var onScreenLocked: (() -> Void)?
-    init(sessionLocked: @escaping () -> Bool = { PresentationSession.isLocked }, radial: RadialInput = RadialInput()) {
-        self.sessionLocked = sessionLocked; self.radial = radial
+    init(sessionLocked: @escaping () -> Bool = { PresentationSession.isLocked }, radial: RadialInput = RadialInput(), installation: Installation? = nil) {
+        self.sessionLocked = sessionLocked; self.radial = radial; self.installation = installation
     }
     private let controls = ControlInput()
     var onDismissControls: (() -> Void)?
@@ -22,6 +33,19 @@ final class InputTap {
         if trigger != nil && eligible { _ = install() }
         lock.withLock { updateEnabled() }
     }
+    @discardableResult func openQuickControls(at point: CGPoint, onConnectionFailure: () -> Void = {}) -> UInt? {
+        guard install() else { onConnectionFailure(); return nil }
+        let enabled = lock.withLock {
+            openingQuickControls = true; updateEnabled()
+            if !connectionEnabled { openingQuickControls = false; return false }
+            return true
+        }
+        guard enabled else { onConnectionFailure(); return nil }
+        // The connection is live before RadialInput can enqueue its open event.
+        let id = radial.openPersistent(at: point)
+        lock.withLock { openingQuickControls = false; updateEnabled() }
+        return id
+    }
     enum Feedback {
         case draw, interact
     }
@@ -36,6 +60,7 @@ final class InputTap {
 
     private let lock = NSLock()
     private var active = false
+    private var openingQuickControls = false
     private var generation: UInt = 0
     private var presses: [Int64: Press] = [:]
     private var _passThroughRects: [CGRect] = []
@@ -43,7 +68,7 @@ final class InputTap {
     private var eventCount = 0
     private var eventTypes: [String: Int] = [:]
     var diagnostics: [String: Any] {
-        lock.withLock { ["installed": tap != nil, "enabled": tap.map { CGEvent.tapIsEnabled(tap: $0) } ?? false, "active": active, "events": eventCount, "types": eventTypes, "radial": radial.diagnostics, "controls": controls.diagnostics, "capturedButtons": presses.keys.sorted()] }
+        lock.withLock { ["installed": tap != nil || connectionInstalled, "enabled": connectionEnabled, "active": active, "events": eventCount, "types": eventTypes, "radial": radial.diagnostics, "controls": controls.diagnostics, "capturedButtons": presses.keys.sorted()] }
     }
 
     var passThroughRects: [CGRect] {
@@ -53,12 +78,18 @@ final class InputTap {
 
     var maxWaitMs: Double { lock.withLock { _maxWaitMs } }
     private var tap: CFMachPort?
-    private var eventRunLoop: CFRunLoop?
-    var isInstalled: Bool { lock.withLock { tap != nil } }
+    var isInstalled: Bool { lock.withLock { tap != nil || connectionInstalled } }
+    private var connectionEnabled: Bool { installation?.isEnabled() ?? tap.map { CGEvent.tapIsEnabled(tap: $0) } ?? false }
 
     @discardableResult
     func install() -> Bool {
+        lifecycleLock.lock(); defer { lifecycleLock.unlock() }
         guard !isInstalled else {
+            return true
+        }
+        if let installation {
+            guard installation.install() else { return false }
+            lock.withLock { connectionInstalled = true; updateEnabled() }
             return true
         }
 
@@ -78,7 +109,8 @@ final class InputTap {
             (1 << CGEventType.keyUp.rawValue) |
             (1 << CGEventType.scrollWheel.rawValue)
 
-        let refcon = Unmanaged.passUnretained(self).toOpaque()
+        let context = CallbackContext(owner: self)
+        let refcon = Unmanaged.passRetained(context).toOpaque()
         guard let tap = CGEvent.tapCreate(
             tap: .cgSessionEventTap,
             place: .headInsertEventTap,
@@ -88,39 +120,94 @@ final class InputTap {
                 guard let refcon = refcon else {
                     return Unmanaged.passUnretained(event)
                 }
-                let me = Unmanaged<InputTap>.fromOpaque(refcon).takeUnretainedValue()
-                return me.handle(type: type, event: event)
+                let context = Unmanaged<CallbackContext>.fromOpaque(refcon).takeUnretainedValue()
+                guard let owner = context.owner else { return Unmanaged.passUnretained(event) }
+                return owner.handle(type: type, event: event)
             },
             userInfo: refcon
         ) else {
+            Unmanaged<CallbackContext>.fromOpaque(refcon).release()
             return false
         }
         CGEvent.tapEnable(tap: tap, enable: false)
 
-        let source = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, tap, 0)
-        let ready = DispatchSemaphore(value: 0)
-        let thread = Thread { [weak self] in
-            let runLoop = CFRunLoopGetCurrent()
-            self?.lock.withLock { self?.eventRunLoop = runLoop }
-            CFRunLoopAddSource(runLoop, source, .commonModes)
-            ready.signal()
-            CFRunLoopRun()
-        }
-        thread.name = "TinyHand event tap"
-        thread.qualityOfService = .userInteractive
-        thread.start()
-        ready.wait()
-
-        lock.withLock {
-            self.tap = tap
-            updateEnabled()
-        }
+        let connection = NativeConnection(tap: tap, context: refcon)
+        connection.start()
+        nativeConnection = connection
+        lock.withLock { self.tap = tap; updateEnabled() }
         return true
     }
 
-    deinit {
-        if let tap = tap { CGEvent.tapEnable(tap: tap, enable: false); CFMachPortInvalidate(tap) }
-        if let runLoop = eventRunLoop { CFRunLoopStop(runLoop) }
+    /// Call while the owner is alive. Invalidation and callback drainage finish
+    /// before returning; repeated stop calls are harmless and installation may restart.
+    func stop() {
+        lifecycleLock.lock(); defer { lifecycleLock.unlock() }
+        lock.withLock {
+            active = false; openingQuickControls = false; generation &+= 1
+            if let installation, connectionInstalled { installation.setEnabled(false) }
+            connectionInstalled = false
+            if let tap { CGEvent.tapEnable(tap: tap, enable: false) }
+            tap = nil
+        }
+        let connection = nativeConnection
+        nativeConnection = nil
+        connection?.stop()
+    }
+
+    deinit { stop() }
+
+    /// Native code retains this context, never an unretained InputTap. A weak
+    /// load cannot resurrect an owner whose deinit has already begun.
+    private final class CallbackContext {
+        weak var owner: InputTap?
+        init(owner: InputTap) { self.owner = owner }
+    }
+    private final class NativeConnection {
+        let tap: CFMachPort
+        let source: CFRunLoopSource
+        let context: UnsafeMutableRawPointer
+        private var runLoop: CFRunLoop!
+        private let exited = DispatchGroup()
+        init(tap: CFMachPort, context: UnsafeMutableRawPointer) {
+            self.tap = tap; self.context = context
+            source = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, tap, 0)
+        }
+        func start() {
+            let ready = DispatchSemaphore(value: 0)
+            exited.enter()
+            let thread = Thread { [self] in
+                runLoop = CFRunLoopGetCurrent()
+                CFRunLoopAddSource(runLoop, source, .commonModes)
+                ready.signal()
+                CFRunLoopRun()
+                CFRunLoopRemoveSource(runLoop, source, .commonModes)
+                CFMachPortInvalidate(tap)
+                Unmanaged<CallbackContext>.fromOpaque(context).release()
+                exited.leave()
+            }
+            thread.name = "TinyHand event tap"
+            thread.qualityOfService = .userInteractive
+            thread.start()
+            ready.wait()
+        }
+        func stop() {
+            let invalidate = { [self] in
+                CGEvent.tapEnable(tap: tap, enable: false)
+                CFMachPortInvalidate(tap)
+                CFRunLoopSourceInvalidate(source)
+                CFRunLoopStop(runLoop)
+            }
+            if CFRunLoopGetCurrent() === runLoop {
+                // The callback can release its final temporary owner on this
+                // thread. Invalidate inline; thread cleanup releases the context
+                // only after this callback has returned to the native run loop.
+                invalidate()
+            } else {
+                CFRunLoopPerformBlock(runLoop, CFRunLoopMode.commonModes.rawValue, invalidate)
+                CFRunLoopWakeUp(runLoop)
+                exited.wait()
+            }
+        }
     }
 
     func setActive(_ value: Bool) {
@@ -134,12 +221,13 @@ final class InputTap {
     }
 
     private func updateEnabled() {
-        guard let tap = tap else { return }
+        guard tap != nil || connectionInstalled else { return }
         // Finish any press that started in Draw, even after turning the pointer off or changing mode.
-        let desired = active || !presses.isEmpty || radial.needsTap || controls.needsTap
-        if CGEvent.tapIsEnabled(tap: tap) != desired {
+        let desired = active || openingQuickControls || !presses.isEmpty || radial.needsTap || controls.needsTap
+        if connectionEnabled != desired {
             if desired { radial.resetKeyboardObservation() }
-            CGEvent.tapEnable(tap: tap, enable: desired)
+            if let installation { installation.setEnabled(desired) }
+            else if let tap { CGEvent.tapEnable(tap: tap, enable: desired) }
         }
     }
 

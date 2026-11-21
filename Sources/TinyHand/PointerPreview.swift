@@ -3,46 +3,67 @@ import SwiftUI
 
 private enum PointerPreviewBackground: String, CaseIterable {
     case light = "Light", dark = "Dark", patterned = "Patterned"
+    var symbol: String { switch self { case .light: return "sun.max"; case .dark: return "moon"; case .patterned: return "square.grid.3x3" } }
 }
 
 struct PointerPreview: View {
     let configuration: PointerPreviewConfiguration
+    var compact = false
+    var inspector = false
     @State private var background: PointerPreviewBackground = .light
     @State private var tap = 0
     @State private var motion = 0
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     var body: some View {
-        Card(title: "Pointer preview") {
+        Card(title: inspector ? nil : "Pointer preview") {
             VStack(alignment: .leading, spacing: Space.md) {
                 HStack(spacing: Space.sm) {
                     Picker("Sample background", selection: $background) {
-                        ForEach(PointerPreviewBackground.allCases, id: \.self) { Text($0.rawValue).tag($0) }
-                    }.labelsHidden().pickerStyle(.segmented).frame(width: 232)
+                        ForEach(PointerPreviewBackground.allCases, id: \.self) { background in
+                            if inspector { Image(systemName: background.symbol).tag(background).help(background.rawValue).accessibilityLabel(background.rawValue) }
+                            else { Text(background.rawValue).tag(background) }
+                        }
+                    }.labelsHidden().pickerStyle(.segmented).frame(width: inspector ? 176 : 232)
                     Spacer(minLength: Space.sm)
-                    Button("Preview Tap") { tap += 1 }
-                    Button("Preview Motion") { motion += 1 }.disabled(reduceMotion)
+                    Menu {
+                        Button("Preview Tap") { tap += 1 }
+                        Button("Preview Motion") { motion += 1 }.disabled(reduceMotion)
+                    } label: { Image(systemName: "play.fill") }
+                        .menuStyle(.borderlessButton).fixedSize()
+                        .accessibilityLabel("Preview Tap or Motion").help("Preview a tap or pointer motion in this sample")
                 }
                 .fixedSize(horizontal: false, vertical: true)
                 .gridProbe("pointerPreview.controls", area: "pointerPreview")
-                PointerPreviewCanvas(configuration: configuration, tap: tap, motion: motion)
-                    .frame(height: 180)
+                Group {
+                    if inspector, let name = configuration.style.assetName, !HandAsset.isAvailable(name) {
+                        VStack(spacing: Space.sm) {
+                            Image(systemName: "photo.badge.exclamationmark")
+                            Text("Artwork unavailable").font(.callout)
+                        }.foregroundStyle(background == .dark ? Color.white : Color.black)
+                            .frame(maxWidth: .infinity).accessibilityLabel("Artwork unavailable for \(configuration.style.title)")
+                    } else { PointerPreviewCanvas(configuration: configuration, tap: tap, motion: motion) }
+                }
+                    .frame(height: inspector ? 96 : compact ? 112 : 180)
                     .background(sampleBackground)
                     .clipShape(RoundedRectangle(cornerRadius: Space.sm))
                     .overlay(RoundedRectangle(cornerRadius: Space.sm).strokeBorder(Color.primary.opacity(0.16)))
                     .gridProbe("pointerPreview.canvas", area: "pointerPreview")
-                Text("\(configuration.style.title). Move over the sample or preview a tap. Your desktop pointer stays as it is.")
+                if inspector && compact { Text("Sample").font(.system(size: 10)).foregroundStyle(.secondary) }
+                if !inspector {
+                Text(compact ? "This sample uses Pointer defaults. Customized pointers keep their own values." : "\(configuration.style.title). Move over the sample or preview a tap. Your desktop pointer stays as it is.")
                     .font(.callout).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
                     .gridProbe("pointerPreview.help", area: "pointerPreview")
-                if hasCustomizedAppearance {
+                }
+                if hasCustomizedAppearance && !compact && !inspector {
                     Text("Some appearance values are customized for \(configuration.style.title) in Pointers.")
                         .font(.callout).foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                         .gridProbe("pointerPreview.customization", area: "pointerPreview")
                 }
             }
-            .padding(Space.lg)
-            .gridArea("pointerPreview", inset: Space.lg)
+            .padding(inspector ? Space.sm : Space.lg)
+            .gridArea("pointerPreview", inset: inspector ? Space.sm : Space.lg)
         }
     }
     private var hasCustomizedAppearance: Bool {
@@ -118,7 +139,7 @@ final class PointerPreviewView: NSView {
         guard bounds.width > 0, bounds.height > 0 else { return }
         if lastSize != bounds.size {
             lastSize = bounds.size
-            playback.move(to: CGPoint(x: bounds.midX, y: bounds.height * 0.6))
+            playback.move(to: CGPoint(x: bounds.midX, y: bounds.height * (configuration.referenceHeight == nil ? 0.6 : 0.72)))
         }
         arm.aim(cursor: playback.cursor)
         wake()

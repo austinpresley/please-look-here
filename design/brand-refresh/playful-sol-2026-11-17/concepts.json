@@ -1,0 +1,30 @@
+[
+  {
+    "id": "S1",
+    "name": "Lemon pop",
+    "note": "Purple, tilted and oversized.",
+    "bg": "#F7CD35",
+    "dark": "#51426D"
+  },
+  {
+    "id": "S2",
+    "name": "Double take",
+    "note": "The white and purple hands meet.",
+    "bg": "#EF6251",
+    "dark": "#4D2642"
+  },
+  {
+    "id": "S3",
+    "name": "Sticky situation",
+    "note": "A purple pointer over a peeled note.",
+    "bg": "#31B3A2",
+    "dark": "#174D51"
+  },
+  {
+    "id": "S4",
+    "name": "Ribbon dance",
+    "note": "A white hand with loud marker stripes.",
+    "bg": "#493766",
+    "dark": "#261C3A"
+  }
+]

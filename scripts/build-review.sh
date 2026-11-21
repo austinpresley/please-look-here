@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
-export TINYHAND_APP_NAME="Look Here Please"
-export TINYHAND_BUNDLE_ID="com.austinpresley.pleaselookhere.integration"
+export TINYHAND_APP_NAME="Look Here Please Review"
+export TINYHAND_BUNDLE_ID="com.austinpresley.pleaselookhere.review"
 source "$(dirname "$0")/lib.sh"
 cd "$ROOT"
 OPEN=false
@@ -38,7 +38,6 @@ ARCHIVE="$ROOT/dist/$APP_NAME-review.zip"
 RECEIPT="$ROOT/dist/review-notarization.json"
 INSTALL="$HOME/Applications/$APP_NAME.app"
 BASELINE="$INSTALL"
-if [[ ! -d "$BASELINE" ]]; then BASELINE="$HOME/Applications/TinyHand Integration.app"; fi
 REQUIREMENT=""
 if [[ -d "$BASELINE" ]]; then
     codesign --verify --deep --strict "$BASELINE"

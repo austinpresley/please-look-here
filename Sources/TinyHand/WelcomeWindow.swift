@@ -3,9 +3,14 @@ import ApplicationServices
 
 final class WelcomeWindow: NSObject {
     var onTryIt: ((PointerMode) -> Void)?
+    var onSetKey: (() -> Void)?
+    private let keyButton = NSButton()
+    private let practiceLink = NSButton()
     var onPractice: (() -> Void)?
     private var forDrawing = false
     var simulateUntrusted = false
+    var accessibility: () -> Bool = { AXIsProcessTrusted() }
+    var primaryButton: NSButton { button }
 
     private final class Card: NSWindow {
         override var canBecomeKey: Bool { true }
@@ -14,6 +19,7 @@ final class WelcomeWindow: NSObject {
         }
     }
 
+    var nativeWindow: NSWindow? { window }
     private var window: Card?
     private var timer: Timer?
     private var askedAt: Date?
@@ -30,7 +36,7 @@ final class WelcomeWindow: NSObject {
             build()
         }
         refresh()
-        UserDefaults.standard.set(true, forKey: WelcomeWindow.shownKey)
+        Preferences.storage.set(true, forKey: WelcomeWindow.shownKey)
         NSApp.activate(ignoringOtherApps: true)
         window?.center()
         window?.makeKeyAndOrderFront(nil)
@@ -45,13 +51,22 @@ final class WelcomeWindow: NSObject {
     }
 
     private var granted: Bool {
-        AXIsProcessTrusted() && !simulateUntrusted
+        accessibility() && !simulateUntrusted
     }
 
     private func refresh() {
+        title.isHidden = !forDrawing
         title.stringValue = forDrawing ? (granted ? "Drawing is ready" : "Allow drawing") : "Look Here Please"
-        subtitle.stringValue = forDrawing ? "Turn Interact off to draw on screen.\nInteract stays available without permission." : "Use apps normally with Interact on.\nTurn it off when you want to draw."
+        subtitle.stringValue = forDrawing ? "Choose a drawing tool to draw on screen.\nCursor works without permission." : ""
+        subtitle.isHidden = !forDrawing
+        keyButton.title = Preferences.radialTrigger.map(\.holdInstruction) ?? "Set key"
+        keyButton.setAccessibilityLabel(Preferences.radialTrigger.map(\.holdHelp) ?? "Set key for Quick controls")
+        keyButton.toolTip = Preferences.radialTrigger.map { $0.holdHelp + " Change key in Shortcuts." } ?? "Choose the held key for Quick controls in Shortcuts."
+        let linkColor = NSApp.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua ? ControlPalette.foreground(NSApp.effectiveAppearance) : ControlPalette.accent(NSApp.effectiveAppearance)
+        practiceLink.attributedTitle = NSAttributedString(string: "Practice", attributes: [.foregroundColor: linkColor, .font: NSFont.systemFont(ofSize: 13)])
+        button.bezelColor = ControlPalette.accent(NSApp.effectiveAppearance)
         button.title = forDrawing ? (granted ? "Start Drawing" : "Open Settings") : "Show Pointer"
+        button.setAccessibilityLabel(button.title)
         tip.isHidden = !forDrawing || granted || askedAt.map { Date().timeIntervalSince($0) < 10 } ?? true
     }
 
@@ -75,13 +90,15 @@ final class WelcomeWindow: NSObject {
         window?.orderOut(nil)
     }
 
+    @objc private func setKeyPressed() { close(); onSetKey?() }
+
     @objc private func practicePressed() {
         close()
         onPractice?()
     }
 
     private func build() {
-        let size = CGSize(width: 340, height: 336)
+        let size = CGSize(width: 340, height: 380)
         let w = Card(contentRect: CGRect(origin: .zero, size: size), styleMask: [.borderless], backing: .buffered, defer: false)
         w.title = "Look Here Please"
         w.isOpaque = false
@@ -99,7 +116,7 @@ final class WelcomeWindow: NSObject {
         w.contentView = card
 
         let icon = NSImageView()
-        icon.image = NSImage(named: "AppIcon") ?? NSApp.applicationIconImage
+        icon.image = Toolbar.icon(for: PointerStyle.saved)
         icon.imageScaling = .scaleProportionallyUpOrDown
         icon.widthAnchor.constraint(equalToConstant: 76).isActive = true
         icon.heightAnchor.constraint(equalToConstant: 76).isActive = true
@@ -118,21 +135,42 @@ final class WelcomeWindow: NSObject {
         button.bezelStyle = .rounded
         button.controlSize = .large
         button.keyEquivalent = "\r"
-        button.widthAnchor.constraint(equalToConstant: 180).isActive = true
 
         tip.font = NSFont.systemFont(ofSize: 11)
         tip.textColor = .secondaryLabelColor
         tip.alignment = .center
 
-        let practice = NSButton(title: "Try Getting Started Practice…", target: self, action: #selector(practicePressed))
+        let practice = practiceLink
+        practice.title = "Practice"; practice.target = self; practice.action = #selector(practicePressed)
         practice.bezelStyle = .rounded
-        practice.toolTip = "Practice Pointer On, Interact, drawing and quick controls in a local window. No permission is needed."
-        let stack = NSStackView(views: [icon, title, subtitle, button, practice, tip])
+        practice.isBordered = false
+        practice.contentTintColor = ControlPalette.accent(NSApp.effectiveAppearance)
+        practice.toolTip = "Practice Cursor, drawing and Quick controls locally. No permission is needed."
+        let tiles = NSStackView(); tiles.orientation = .horizontal; tiles.spacing = 8
+        for (name, symbol) in [("Click", "cursorarrow.click"), ("Draw", "pencil.tip"), ("Quick controls", "circle.grid.2x2")] {
+            let picture = WelcomePicture(kind: name)
+            picture.setAccessibilityLabel(name)
+            picture.widthAnchor.constraint(equalToConstant: 80).isActive = true
+            picture.heightAnchor.constraint(equalToConstant: 48).isActive = true
+            let label: NSView
+            if name == "Quick controls" {
+                keyButton.target = self; keyButton.action = #selector(setKeyPressed); keyButton.bezelStyle = .rounded; label = keyButton
+            } else { label = NSTextField(labelWithString: name) }
+            let tile = NSStackView(views: [picture, label]); tile.orientation = .vertical; tile.spacing = 8
+            tile.edgeInsets = NSEdgeInsets(top: 8, left: 4, bottom: 8, right: 4)
+            tile.wantsLayer = true; tile.layer?.cornerRadius = 12
+            tile.setAccessibilityLabel(name); tile.toolTip = name == "Click" ? "Cursor sends clicks through to apps" : name == "Draw" ? "Choose a drawing tool to draw" : "Hold, move, release to choose"
+            _ = symbol
+            tiles.addArrangedSubview(tile)
+        }
+        title.isHidden = true
+        button.widthAnchor.constraint(equalToConstant: 280).isActive = true
+        let stack = NSStackView(views: [icon, title, subtitle, tiles, button, practice, tip])
         stack.orientation = .vertical
         stack.alignment = .centerX
-        stack.spacing = 6
+        stack.spacing = 8
         stack.setCustomSpacing(16, after: icon)
-        stack.setCustomSpacing(22, after: subtitle)
+        stack.setCustomSpacing(16, after: tiles)
         stack.setCustomSpacing(12, after: button)
         stack.translatesAutoresizingMaskIntoConstraints = false
         card.addSubview(stack)
@@ -165,13 +203,37 @@ final class WelcomeWindow: NSObject {
         guard let view = window?.contentView else {
             return nil
         }
-        window?.appearance = NSAppearance(named: .aqua)
-        view.layer?.backgroundColor = NSColor(white: 0.96, alpha: 1).cgColor
         view.layoutSubtreeIfNeeded()
         guard let rep = view.bitmapImageRepForCachingDisplay(in: view.bounds) else {
             return nil
         }
         view.cacheDisplay(in: view.bounds, to: rep)
         return rep
+    }
+}
+
+/// Small illustrations explain the actions without requesting desktop input.
+private final class WelcomePicture: NSView {
+    let kind: String
+    init(kind: String) { self.kind = kind; super.init(frame: .zero) }
+    required init?(coder: NSCoder) { fatalError("init(coder:) not used") }
+    override func draw(_ dirtyRect: NSRect) {
+        let frame = bounds.insetBy(dx: 12, dy: 8)
+        NSColor.secondaryLabelColor.withAlphaComponent(0.5).setStroke()
+        let outline = NSBezierPath(roundedRect: frame, xRadius: 4, yRadius: 4); outline.lineWidth = 1; outline.stroke()
+        if kind == "Draw" {
+            ControlPalette.accent(effectiveAppearance).setStroke()
+            let line = NSBezierPath(); line.move(to: CGPoint(x: 18, y: 16)); line.curve(to: CGPoint(x: 64, y: 28), controlPoint1: CGPoint(x: 32, y: 48), controlPoint2: CGPoint(x: 44, y: 0)); line.lineWidth = 3; line.stroke()
+        } else {
+            let symbol = "cursorarrow"
+            var tint = NSColor.labelColor
+            effectiveAppearance.performAsCurrentDrawingAppearance { tint = NSColor.labelColor.usingColorSpace(.deviceRGB) ?? .labelColor }
+            let image = NSImage(size: CGSize(width: 24, height: 24), flipped: false) { rect in
+                (self.kind == "Click" ? NSImage(systemSymbolName: symbol, accessibilityDescription: nil) : UsabilityGlyph.wheel.image)?.draw(in: rect)
+                tint.setFill(); rect.fill(using: .sourceAtop)
+                return true
+            }
+            image.draw(in: CGRect(x: 28, y: 12, width: 24, height: 24))
+        }
     }
 }

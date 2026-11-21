@@ -1,0 +1,1 @@
+{"groups": [{"layers": [{"name": "Hand", "image-name": "hand.svg", "glass": false}], "shadow": {"kind": "neutral", "opacity": 0.15}, "translucency": {"enabled": false, "value": 0.5}}], "fill": {"automatic-gradient": "srgb:0.97000,0.79000,0.20000,1.00000"}, "supported-platforms": {"squares": ["macOS"]}}

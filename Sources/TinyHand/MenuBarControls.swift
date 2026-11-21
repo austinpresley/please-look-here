@@ -10,9 +10,16 @@ final class MenuBarControls: NSObject, NSPopoverDelegate, NSMenuDelegate {
     private let content = NSView()
     private let root = NSStackView()
     private let pointer = NSSwitch()
-    private let interact = NSSwitch()
-    private let chooser = NSPopUpButton()
-    private let tools = NSSegmentedControl()
+    private let favorites = NSStackView()
+    private let tools = NSStackView()
+    private let colors = NSStackView()
+    private let permission = NSStackView()
+    private var toolButtons: [ControlToolKey: ControlIconButton] = [:]
+    private var styleButtons: [PointerStyle: ControlIconButton] = [:]
+    var favoriteButtons: [PointerStyle: ControlIconButton] { styleButtons }
+    private var inkButtons: [InkChoice: ControlIconButton] = [:]
+    private var fixture: PresentationControlsState?
+    private enum ControlToolKey: Hashable { case cursor, tool(DrawingTool) }
     private let summary = NSTextField(labelWithString: "")
     private let message = NSTextField(wrappingLabelWithString: "")
     private let pointerTitle = NSTextField(labelWithString: "Pointer Off")
@@ -91,61 +98,51 @@ final class MenuBarControls: NSObject, NSPopoverDelegate, NSMenuDelegate {
             root.topAnchor.constraint(equalTo: content.topAnchor), root.bottomAnchor.constraint(equalTo: content.bottomAnchor),
             widthConstraint
         ])
-        let title = pointerTitle
-        title.font = .systemFont(ofSize: 13, weight: .semibold) // grid: ok system text size
-        pointer.target = self; pointer.action = #selector(tapped(_:)); pointer.setAccessibilityLabel("Pointer")
+        pointerTitle.stringValue = "Show pointer"
+        pointerTitle.font = .systemFont(ofSize: 13, weight: .medium) // grid: ok system text
+        pointer.target = self; pointer.action = #selector(tapped(_:)); pointer.setAccessibilityLabel("Show pointer")
         actions[pointer] = { [weak self] in self?.send("toggle") }
-        addRow(horizontal([title, flex(), pointer]))
-        chooser.bezelStyle = .rounded; chooser.target = self; chooser.action = #selector(chosePointer)
-        chooser.setAccessibilityLabel("Choose Pointer")
-        chooser.cell?.lineBreakMode = .byTruncatingTail
-        addRow(horizontal([chooser]))
-        let label = NSTextField(labelWithString: "Interact")
-        interact.target = self; interact.action = #selector(tapped(_:)); interact.setAccessibilityLabel("Interact")
-        actions[interact] = { [weak self] in
-            guard let self else { return }
-            self.send("interact", ["enabled": !self.overlay.mode.isInteractive])
+        let hand = NSImageView(image: NSImage(systemSymbolName: "hand.point.up.left", accessibilityDescription: "Pointer")!)
+        hand.widthAnchor.constraint(equalToConstant: 20).isActive = true
+        let sound = button("sound", "Tap sound", "speaker.wave.2") { [weak self] in self?.send("toggle-current-sound") }
+        let settings = button("settings", "Settings…", "gearshape") { [weak self] in self?.send("settings") }
+        addRow(horizontal([hand, pointerTitle, pointer, flex(), sound, settings]))
+        for stack in [favorites, tools, colors, permission] { stack.orientation = .horizontal; stack.spacing = 4; stack.alignment = .centerY }
+        addRow(favorites)
+        for choice in ControlTool.all {
+            let key: ControlToolKey = choice == .cursor ? .cursor : .tool({ if case .drawing(let t) = choice { return t }; return .pen }())
+            let b = button("tool.\(choice.title)", choice.title, choice.symbol) { [weak self] in
+                guard let self else { return }
+                if case .drawing(let tool) = choice { self.overlay.chooseToolFromControls(tool) }
+                else { self.send("interact", ["enabled": true]) }
+                self.refresh(); self.resize()
+            }
+            toolButtons[key] = b; tools.addArrangedSubview(b)
         }
-        addRow(horizontal([label, flex(), interact]))
+        addRow(permission)
+        addRow(tools)
+        for ink in InkChoice.allCases {
+            let b = button("ink.\(ink.rawValue)", ink.title, "circle.fill") { [weak self] in self?.send("configure", ["settings": ["ink": ink.rawValue]]) }
+            inkButtons[ink] = b; colors.addArrangedSubview(b)
+        }
+        addRow(colors)
+        let lock = NSImageView(image: NSImage(systemSymbolName: "lock", accessibilityDescription: nil)!)
+        let needs = NSTextField(labelWithString: "Drawing needs access")
+        needs.font = .systemFont(ofSize: 12)
+        let allow = button("allow", "Allow drawing", "lock.open", title: "Allow") { [weak self] in self?.close(); self?.overlay.requestDrawingPermission() }
+        permission.addArrangedSubview(lock); permission.addArrangedSubview(needs); permission.addArrangedSubview(flex()); permission.addArrangedSubview(allow)
+        addDivider()
+        addRow(horizontal([
+            button("undo", "Undo", "arrow.uturn.backward") { [weak self] in self?.send("undo") },
+            button("redo", "Redo", "arrow.uturn.forward") { [weak self] in self?.send("redo") },
+            button("clear", "Clear drawing", "trash") { [weak self] in self?.send("clear") }, flex(),
+            button("capture", "Screenshot", "camera") { [weak self] in self?.send("capture") },
+            button("magnifier", "Magnifier", "plus.magnifyingglass") { [weak self] in
+                guard let self else { return }; self.send("magnifier", ["enabled": !self.overlay.isMagnifying])
+            }
+        ]))
         summary.font = .systemFont(ofSize: 12); summary.textColor = .secondaryLabelColor
         addRow(summary)
-        addDivider()
-        tools.segmentCount = DrawingTool.allCases.count; tools.trackingMode = .selectOne; tools.segmentStyle = .rounded
-        tools.target = self; tools.action = #selector(choseTool); tools.setAccessibilityLabel("Drawing tool")
-        for (index, tool) in DrawingTool.allCases.enumerated() {
-            tools.setImage(NSImage(systemSymbolName: tool.symbol, accessibilityDescription: tool.title), forSegment: index)
-            tools.setWidth(32, forSegment: index)
-        }
-        addRow(tools)
-        let history = horizontal([button("undo", "Undo Annotation", "arrow.uturn.backward", title: "Undo") { [weak self] in self?.send("undo") },
-                                  button("redo", "Redo Annotation", "arrow.uturn.forward", title: "Redo") { [weak self] in self?.send("redo") },
-                                  flex(), button("clear", "Clear Drawing", "trash") { [weak self] in self?.send("clear") }])
-        addRow(history)
-        addDivider()
-        let capture = button("capture", "Take Screenshot", "camera", title: "Screenshot") { [weak self] in self?.send("capture") }
-        let magnifier = button("magnifier", "Magnification", "plus.magnifyingglass") { [weak self] in
-            guard let self else { return }; self.send("magnifier", ["enabled": !self.overlay.isMagnifying])
-        }
-        let sound = button("sound", "Tap Sound", "speaker.wave.2") { [weak self] in self?.send("toggle-current-sound") }
-        // A native pull-down supplies a complete AX Press reply before tracking.
-        // NSButton + synchronous NSMenu.popUp can strand that reply until close.
-        let more = NSPopUpButton(frame: .zero, pullsDown: true)
-        if let cell = more.cell as? NSPopUpButtonCell {
-            cell.usesItemFromMenu = false; cell.arrowPosition = .noArrow
-            let face = NSMenuItem(title: "More Commands", action: nil, keyEquivalent: "")
-            face.image = NSImage(systemSymbolName: "ellipsis.circle", accessibilityDescription: "More Commands")
-            cell.menuItem = face
-        }
-        more.autoenablesItems = false; more.menu = commands.menu; commands.menu.items.first?.isHidden = false
-        commands.menu.delegate = self; more.bezelStyle = .rounded; more.imagePosition = .imageOnly
-        more.setAccessibilityLabel("More Commands"); more.toolTip = "Open grouped Pointer, Drawing and Presentation commands"
-        more.widthAnchor.constraint(equalToConstant: 32).isActive = true
-        buttons["more"] = more
-        addRow(horizontal([capture, flex(), magnifier, sound, more]))
-        let settings = button("settings", "Settings…", "gearshape", title: "Settings…") { [weak self] in self?.send("settings") }
-        settings.isBordered = false
-        let footer = horizontal([settings, flex(), button("close", "Close Controls", "xmark") { [weak self] in self?.close() }])
-        addRow(footer)
         message.font = .systemFont(ofSize: 12); message.textColor = .secondaryLabelColor; message.isHidden = true
         addRow(message)
         content.layoutSubtreeIfNeeded()
@@ -164,9 +161,15 @@ final class MenuBarControls: NSObject, NSPopoverDelegate, NSMenuDelegate {
         return row
     }
     private func flex() -> NSView { let view = NSView(); view.setContentHuggingPriority(.defaultLow, for: .horizontal); return view }
-    private func button(_ id: String, _ name: String, _ symbol: String, title: String = "", action: @escaping () -> Void) -> NSButton {
-        let button = NSButton(title: title, target: self, action: #selector(tapped(_:)))
-        button.bezelStyle = .rounded; button.image = NSImage(systemSymbolName: symbol, accessibilityDescription: name)
+    private func button(_ id: String, _ name: String, _ symbol: String, title: String = "", action: @escaping () -> Void) -> ControlIconButton {
+        let button = ControlIconButton(title: title, target: self, action: #selector(tapped(_:)))
+        button.bezelStyle = .regularSquare; button.isBordered = false; button.focusRingType = .none
+        button.widthAnchor.constraint(greaterThanOrEqualToConstant: 28).isActive = true
+        button.heightAnchor.constraint(equalToConstant: 28).isActive = true
+        if title.isEmpty { button.widthAnchor.constraint(equalToConstant: 28).isActive = true }
+        button.contentTintColor = .labelColor
+        button.imageScaling = .scaleProportionallyDown
+        button.image = id == "all" ? UsabilityGlyph.library.image : NSImage(systemSymbolName: symbol, accessibilityDescription: name)
         button.imagePosition = title.isEmpty ? .imageOnly : .imageLeading
         button.setAccessibilityLabel(name); button.toolTip = name; actions[button] = action; buttons[id] = button
         return button
@@ -177,48 +180,49 @@ final class MenuBarControls: NSObject, NSPopoverDelegate, NSMenuDelegate {
         // The app's explicit Light/Dark choice applies to its controls as well.
         let appearance = NSApp.effectiveAppearance
         if popover.appearance?.name != appearance.name { popover.appearance = appearance }
-        if chooser.menu?.appearance?.name != appearance.name { chooser.menu?.appearance = appearance }
         let on = overlay.isActive
         let image = Bundle.main.image(forResource: on ? "menubar_on" : "menubar_off")
             ?? NSImage(systemSymbolName: on ? "hand.point.up.left.fill" : "hand.point.up.left", accessibilityDescription: "Look Here Please")
         image?.size = CGSize(width: 18, height: 18); image?.isTemplate = true // grid: ok retained status artwork size
         statusItem.button?.image = image
-        statusItem.button?.toolTip = "Look Here Please · Pointer \(on ? "On" : "Off") · Interact \(overlay.mode.isInteractive ? "On" : "Off"). Click for controls. Right-click for commands."
-        statusItem.button?.setAccessibilityValue("Pointer \(on ? "On" : "Off"), Interact \(overlay.mode.isInteractive ? "On" : "Off")")
-        pointer.state = on ? .on : .off
-        pointer.toolTip = Preferences.toggleShortcut.help(on ? "Turn pointer off" : "Turn pointer on")
-        pointerTitle.stringValue = on ? "Pointer On" : "Pointer Off"
-        let styles = PointerCatalog.selectableStyles
-        if catalog != styles || chooser.itemTitles != styles.map(\.title) {
-            catalog = styles; chooser.removeAllItems()
+        let state = fixture ?? overlay.controlsState
+        statusItem.button?.toolTip = "Look Here Please · \(state.value). Click for controls. Right-click for commands."
+        statusItem.button?.setAccessibilityValue(state.value)
+        pointer.state = state.pointerVisible ? .on : .off
+        pointer.setAccessibilityValue(state.pointerVisible ? "Shown" : "Hidden")
+        pointer.toolTip = Preferences.toggleShortcut.help("Show or hide pointer. Choices stay editable while hidden.")
+        let styles = PointerCatalog.quickStyles
+        if catalog != styles {
+            for b in styleButtons.values { actions[b] = nil }
+            favorites.arrangedSubviews.forEach { favorites.removeArrangedSubview($0); $0.removeFromSuperview() }
+            catalog = styles; styleButtons.removeAll()
             for style in styles {
-                chooser.addItem(withTitle: style.title)
-                chooser.lastItem?.representedObject = style.rawValue
-                chooser.lastItem?.image = Toolbar.icon(for: style)?.copy() as? NSImage
-                chooser.lastItem?.image?.size = CGSize(width: 20, height: 20)
+                let b = button("pointer.\(style.rawValue)", style.title, "hand.point.up.left") { [weak self] in self?.send("style", ["style": style.rawValue]) }
+                b.image = Toolbar.icon(for: style); b.imageScaling = .scaleProportionallyUpOrDown
+                styleButtons[style] = b; favorites.addArrangedSubview(b)
             }
-            chooser.menu?.delegate = self
+            favorites.addArrangedSubview(flex())
+            favorites.addArrangedSubview(button("all", "All pointers", "square.grid.2x2") { [weak self] in self?.close(); self?.overlay.showAllPointersFromControls() })
         }
-        chooser.selectItem(at: catalog.firstIndex(of: overlay.style) ?? -1)
-        chooser.toolTip = "Choose an enabled pointer. Selected: \(overlay.style.title). Keeps Pointer and Interact unchanged."
-        interact.state = overlay.mode.isInteractive ? .on : .off
-        interact.isEnabled = !overlay.isCapturing && (overlay.mode == .draw || overlay.drawingAllowed)
-        interact.toolTip = Preferences.shortcut(for: .mode).help(overlay.drawingAllowed ? "On: use apps normally. Off: draw on screen." : "Allow Accessibility in Settings to turn Interact off.")
-        if overlay.isCapturing { summary.stringValue = "Taking screenshot…" }
-        else if !overlay.drawingAllowed { summary.stringValue = "Allow Accessibility in Settings to draw." }
-        else if !on { summary.stringValue = "Pointer is off · \(Preferences.drawingTool.title) selected" }
-        else if overlay.mode.isInteractive { summary.stringValue = "Use apps normally · \(Preferences.drawingTool.title) selected" }
-        else { summary.stringValue = "Draw with \(Preferences.drawingTool.title)" }
-        summary.toolTip = summary.stringValue
-        let selectedTool = DrawingTool.allCases.firstIndex(of: Preferences.drawingTool) ?? 0
-        // Reassigning an unchanged segment also resets AppKit's keyboard focus
-        // within the group. Preserve focus while observing the same selection.
-        if tools.selectedSegment != selectedTool { tools.selectedSegment = selectedTool }
-        tools.isEnabled = overlay.drawingAllowed && !overlay.isCapturing
-        for (index, tool) in DrawingTool.allCases.enumerated() {
-            tools.setToolTip(Preferences.shortcut(for: PresentationAction(rawValue: tool.rawValue)!).help("Select \(tool.title). Turns Interact off; keeps Pointer unchanged."), forSegment: index)
+        for (style, b) in styleButtons { b.updateFavorite(style); b.updateSelection(style == overlay.style) }
+        for (key, b) in toolButtons {
+            let choice: ControlTool = key == .cursor ? .cursor : { if case .tool(let t) = key { return .drawing(t) }; return .cursor }()
+            b.updateSelection(choice == state.selection, notReady: choice == state.selection && state.notReady)
+            b.isEnabled = !state.capturing
+            b.toolTip = choice == .cursor ? "Cursor: use apps normally" : "\(choice.title): draw on screen"
         }
-        tools.setAccessibilityValue("\(Preferences.drawingTool.title), \(on && overlay.mode == .draw && tools.isEnabled ? "Ready" : "Selected")")
+        for (ink, b) in inkButtons {
+            b.image = ControlArtwork.ink(ink, pointer: overlay.style)
+            b.imageScaling = .scaleProportionallyUpOrDown
+            b.updateSelection(ink == Preferences.inkChoice)
+            b.toolTip = ink == .match ? "Match pointer: \(overlay.style.title) ink" : ink.title
+        }
+        colors.isHidden = !state.showsColors
+        permission.isHidden = state.drawingAllowed && !state.notReady
+        permission.wantsLayer = true; permission.layer?.cornerRadius = 8
+        appearance.performAsCurrentDrawingAppearance { permission.layer?.backgroundColor = NSColor.systemYellow.withAlphaComponent(0.12).cgColor }
+        summary.stringValue = state.notReady ? "\(state.tool.title) kept for later" : state.value
+        summary.toolTip = state.value
         buttons["undo"]?.isEnabled = overlay.canUndo && !overlay.isCapturing
         buttons["redo"]?.isEnabled = overlay.canRedo && !overlay.isCapturing
         buttons["clear"]?.isEnabled = overlay.inkStrokes > 0 && !overlay.isCapturing
@@ -231,9 +235,10 @@ final class MenuBarControls: NSObject, NSPopoverDelegate, NSMenuDelegate {
         buttons["magnifier"]?.isEnabled = !overlay.isCapturing
         buttons["magnifier"]?.setAccessibilityValue(overlay.isMagnifying ? "On" : "Off")
         buttons["magnifier"]?.toolTip = Preferences.shortcut(for: .magnifier).help("Toggle magnification")
-        buttons["sound"]?.image = NSImage(systemSymbolName: overlay.soundAudible ? "speaker.wave.2" : "speaker.slash", accessibilityDescription: "Tap Sound")
-        buttons["sound"]?.toolTip = Preferences.shortcut(for: .sound).help("\(overlay.soundStatus). Toggle current pointer tap sound.")
-        buttons["sound"]?.setAccessibilityValue("\(overlay.soundOn ? "Enabled" : "Disabled"). \(overlay.soundStatus)")
+        let sound = TapSoundState(pointerEnabled: overlay.soundOn, outputMuted: Preferences.soundMuted || Preferences.soundVolume == 0)
+        buttons["sound"]?.image = NSImage(systemSymbolName: sound.symbol, accessibilityDescription: "Tap sound")
+        buttons["sound"]?.toolTip = "\(sound.title). Toggle current pointer tap sound."
+        buttons["sound"]?.setAccessibilityValue(sound.title)
         buttons["settings"]?.toolTip = Preferences.shortcut(for: .settings).help("Open Settings")
         commands.refresh()
     }
@@ -242,7 +247,7 @@ final class MenuBarControls: NSObject, NSPopoverDelegate, NSMenuDelegate {
     }
     private func send(_ request: [String: Any]) {
         actionCounts[request["operation"] as? String ?? "", default: 0] += 1
-        let leavesControls = ["capture", "capture-region", "settings", "magnifier", "gesture"].contains(request["operation"] as? String ?? "")
+        let leavesControls = ["capture", "capture-region", "settings", "magnifier", "gesture", "radial-open"].contains(request["operation"] as? String ?? "")
         if leavesControls { close() }
         let result = perform(request)
         message.stringValue = result; message.isHidden = result.isEmpty
@@ -250,14 +255,6 @@ final class MenuBarControls: NSObject, NSPopoverDelegate, NSMenuDelegate {
         if popover.isShown { resize() }
     }
     @objc private func tapped(_ sender: NSControl) { actions[sender]?() }
-    @objc private func chosePointer() {
-        guard let id = chooser.selectedItem?.representedObject as? String else { refresh(); return }
-        send("style", ["style": id])
-    }
-    @objc private func choseTool() {
-        guard DrawingTool.allCases.indices.contains(tools.selectedSegment) else { return }
-        send("tool", ["tool": DrawingTool.allCases[tools.selectedSegment].rawValue])
-    }
     @objc private func statusClicked() {
         let wasOpen = statusWasOpen || popover.isShown
         statusWasOpen = false
@@ -293,7 +290,6 @@ final class MenuBarControls: NSObject, NSPopoverDelegate, NSMenuDelegate {
     func close() {
         wantsControls = false; statusWasOpen = false; explicitClosing = true
         commands.allMenus.forEach { $0.cancelTrackingWithoutAnimation() }
-        chooser.menu?.cancelTrackingWithoutAnimation()
         popover.performClose(nil)
         explicitClosing = false; testAnchor?.orderOut(nil); testAnchor = nil; syncLease()
     }
@@ -302,7 +298,6 @@ final class MenuBarControls: NSObject, NSPopoverDelegate, NSMenuDelegate {
         if !explicitClosing, statusFrame?.contains(NSEvent.mouseLocation) == true { statusWasOpen = true }
     }
     private func resize() {
-        for index in DrawingTool.allCases.indices { tools.setWidth(width <= 280 ? 28 : 32, forSegment: index) }
         content.layoutSubtreeIfNeeded()
         popover.contentSize = CGSize(width: width, height: root.fittingSize.height)
     }
@@ -325,6 +320,12 @@ final class MenuBarControls: NSObject, NSPopoverDelegate, NSMenuDelegate {
 
     // Available only behind test mode + the isolated S-023 suite gate.
     func verify(_ request: [String: Any]) -> [String: Any] {
+        if let selection = request["selection"] as? String {
+            let tool = DrawingTool(rawValue: selection)
+            fixture = PresentationControlsState(mode: tool == nil ? .point : .draw, tool: tool ?? Preferences.drawingTool,
+                pointerVisible: request["pointer"] as? Bool ?? true, drawingAllowed: request["permission"] as? Bool ?? true)
+        }
+        if let theme = request["appearance"] as? String, ["light", "dark"].contains(theme) { NSApp.appearance = NSAppearance(named: theme == "dark" ? .darkAqua : .aqua) }
         if let edge = request["anchor"] as? String, ["left", "right"].contains(edge), let screen = NSScreen.main {
             close()
             let area = screen.visibleFrame
@@ -336,11 +337,11 @@ final class MenuBarControls: NSObject, NSPopoverDelegate, NSMenuDelegate {
             panel.orderFrontRegardless(); testAnchor = panel
         }
         if let narrow = request["width"] as? Int, [280, 320].contains(narrow) {
-            width = CGFloat(narrow); widthConstraint.constant = width; resize()
+            width = max(320, CGFloat(narrow)); widthConstraint.constant = width; resize()
         }
         if request["open"] as? Bool == true { show() }
         if request["open"] as? Bool == false { close() }
-        refresh()
+        refresh(); resize()
         if let path = request["snapshot"] as? String, popover.isShown, let window = content.window,
            path.hasPrefix("/"), path.hasSuffix(".png"), NSApp.isActive, window.isKeyWindow,
            let image = CGWindowListCreateImage(.null, .optionIncludingWindow, CGWindowID(window.windowNumber), [.boundsIgnoreFraming, .bestResolution]),
@@ -353,8 +354,8 @@ final class MenuBarControls: NSObject, NSPopoverDelegate, NSMenuDelegate {
                 "menus": commands.diagnostics, "tracking": tracking.count, "summary": summary.stringValue,
                 "appearance": popover.effectiveAppearance.name.rawValue,
                 "actionCounts": actionCounts, "message": message.stringValue,
-                "pointer": pointer.state == .on, "interact": interact.state == .on, "tool": tools.selectedSegment,
-                "choice": chooser.selectedItem?.representedObject as? String ?? "", "choices": catalog.map(\.rawValue),
+                "pointer": pointer.state == .on, "interact": (fixture ?? overlay.controlsState).selection == .cursor, "tool": (fixture ?? overlay.controlsState).tool.rawValue,
+                "choice": overlay.style.rawValue, "choices": catalog.map(\.rawValue),
                 "reduceMotion": NSWorkspace.shared.accessibilityDisplayShouldReduceMotion,
                 "reduceTransparency": NSWorkspace.shared.accessibilityDisplayShouldReduceTransparency,
                 "buttons": buttons.mapValues { ["enabled": $0.isEnabled, "label": $0.accessibilityLabel() ?? "", "value": String(describing: $0.accessibilityValue() ?? "")] }]

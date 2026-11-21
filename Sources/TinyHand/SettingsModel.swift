@@ -4,8 +4,47 @@ import Carbon.HIToolbox
 import SwiftUI
 
 final class SettingsModel: ObservableObject {
-    @Published var section: SettingsSection = .general {
-        didSet { if section != oldValue { cancelShortcutNavigation() } }
+    @Published var section: SettingsSection = .pointers {
+        didSet {
+            if section == .appearance || section == .sound {
+                pointerInspector.scope = .defaults
+                revealDefaultSound = section == .sound
+                section = .pointers
+            }
+            if section == .about { section = .general }
+            if section != oldValue {
+                cancelShortcutNavigation()
+                if section == .shortcuts { resetShortcutSections() }
+            }
+        }
+    }
+    let presetsModel = PresetsSettingsModel()
+    @Published var showingAbout = false
+    @Published var drawingAdvanced = false
+    @Published var scrollToBottom = false
+    @Published var toolsPane: ToolSettingsPane = .drawing
+    @Published var revealDefaultSound = false
+    @Published var pointerInspector = PointerInspectorState()
+    @Published var libraryFilter = PointerLibraryFilter()
+    func inspectPointer(_ style: PointerStyle) {
+        pointerInspector.select(style)
+        if PointerCatalog.entries.first(where: { $0.style == style })?.selectable == true { selectPointer(style) }
+    }
+    @Published var shortcutQuery = ""
+    @Published var shortcutAssignedOnly = false
+    @Published var shortcutDisclosure = ShortcutDisclosureState()
+
+    func resetShortcutSections() {
+        shortcutDisclosure.reset()
+        shortcutQuery = ""
+        shortcutAssignedOnly = false
+    }
+
+    func navigate(_ route: SettingsRoute) {
+        section = route.section
+        if let tool = route.tool { toolsPane = tool }
+        if route.defaults { pointerInspector.scope = .defaults }
+        if route.sound { revealDefaultSound = true }
     }
     @Published var pinMessage: String?
     @Published var pointerMessage: String?
@@ -20,9 +59,12 @@ final class SettingsModel: ObservableObject {
     var onContentHeightChanged: ((CGFloat) -> Void)?
     var onRecording: ((Bool) -> Void)?
     var updater: Updater?
+    @Published var suggestedResult: SuggestedShortcuts.Result?
+    var suggestedUndo: SuggestedShortcuts.Undo?
     @Published var shortcutError: String?
     @Published var shortcutConflicts: [String: String] = [:]
     @Published private(set) var shortcutFocusRequest: ShortcutFocusRequest?
+    var editQuickControlFavorites: (() -> Void)?
     var openPractice: ((PracticeLesson) -> Void)?
     var onShortcutNavigationLayout: (() -> Void)?
 
@@ -30,11 +72,28 @@ final class SettingsModel: ObservableObject {
 
     func focusShortcut(_ target: PracticeShortcutTarget) {
         section = .shortcuts
+        shortcutQuery = ""
+        shortcutAssignedOnly = false
+        shortcutDisclosure.reveal(command: target.rawValue)
         shortcutFocusRequest = ShortcutFocusRequest(target: target)
+    }
+
+    func focusShortcut(command: String) {
+        section = .shortcuts
+        shortcutQuery = ""
+        shortcutAssignedOnly = false
+        shortcutDisclosure.reveal(command: command)
+        shortcutFocusRequest = ShortcutFocusRequest(target: PracticeShortcutTarget(rawValue: command) ?? .pointer, command: command)
+    }
+
+    func shortcutExpansion(_ group: ShortcutSettingsGroup) -> Binding<Bool> {
+        Binding(get: { self.shortcutDisclosure.expanded.contains(group) },
+                set: { self.shortcutDisclosure.set(group, expanded: $0) })
     }
 
     private var observer: Any?
     private var handsObserver: Any?
+    @Published var artworkRecovery: PointerArtworkRecovery?
     @Published var handMessage: String?
     @Published var gestureMessage: String?
     @Published private(set) var removedHands: [HandRecoveryStore.Receipt] = []
@@ -132,7 +191,9 @@ final class SettingsModel: ObservableObject {
             let made = try HandMaker.make(from: url)
             draft = HandDraft(image: made.image, ink: made.ink)
             draftError = nil
-            handName = CustomHands.suggestedName(for: url)
+            if handName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                handName = CustomHands.suggestedName(for: url)
+            }
         } catch let problem as HandMaker.Problem {
             draft = nil
             draftError = problem.message
@@ -157,9 +218,11 @@ final class SettingsModel: ObservableObject {
                 Preferences.pinnedStyles = pinned
                 handMessage = "\(style.title) is in your toolbar."
             } else {
-                handMessage = "\(style.title) is ready. Remove a toolbar pin, then press + to add it."
+                handMessage = "\(style.title) is ready. Unstar a favorite, then star this hand."
             }
             PointerStyle.saved = style
+            pointerInspector.select(style)
+            libraryFilter = PointerLibraryFilter()
             NotificationCenter.default.post(name: Preferences.changed, object: nil)
             self.draft = nil
             handIdea = ""
@@ -254,36 +317,6 @@ final class SettingsModel: ObservableObject {
     }
     func stopPreview() { previewSound?.stop() }
 
-    @Published var dragging: PointerStyle?
-    @Published private var draftOrder: [PointerStyle]?
-
-    var pinnedOrder: [PointerStyle] {
-        draftOrder ?? Preferences.pinnedStyles
-    }
-
-    private(set) var baseOrder: [PointerStyle] = []
-
-    func beginDrag(_ style: PointerStyle) {
-        dragging = style
-        baseOrder = Preferences.pinnedStyles
-        draftOrder = baseOrder
-        pinMessage = nil
-    }
-
-    func setDraft(_ order: [PointerStyle]) {
-        guard order != draftOrder else {
-            return
-        }
-        withAnimation(.spring(response: 0.25, dampingFraction: 0.85)) {
-            draftOrder = order
-        }
-    }
-
-    func cancelDrag() {
-        draftOrder = nil
-        dragging = nil
-    }
-
     func resetToolbar() {
         pinMessage = nil
         withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
@@ -291,13 +324,16 @@ final class SettingsModel: ObservableObject {
         }
     }
 
-    func resetAll() {
+    func resetAll(exportBackup: (() -> Void)? = nil) {
         let alert = NSAlert()
         alert.messageText = "Reset all settings?"
         alert.informativeText = "All pointers are enabled and shortcut assignments are cleared. Toolbar pointers, size, shadow, drawing and sound return to their initial settings. Custom hands, Open at login and Accessibility stay as they are."
         alert.addButton(withTitle: "Reset")
         alert.addButton(withTitle: "Cancel")
-        guard alert.runModal() == .alertFirstButtonReturn else {
+        if exportBackup != nil { alert.addButton(withTitle: "Export Backup First…") }
+        let response = alert.runModal()
+        if response == .alertThirdButtonReturn { exportBackup?(); return }
+        guard response == .alertFirstButtonReturn else {
             return
         }
         Preferences.resetAll()
@@ -306,14 +342,6 @@ final class SettingsModel: ObservableObject {
         pointerMessage = nil
         pointerErrorID = nil
         revision += 1
-    }
-
-    func endDrag() {
-        if let order = draftOrder {
-            Preferences.pinnedStyles = order
-        }
-        draftOrder = nil
-        dragging = nil
     }
 
     func pin(_ style: PointerStyle) {
@@ -327,18 +355,6 @@ final class SettingsModel: ObservableObject {
             return
         }
         pinned.append(style)
-        pinMessage = nil
-        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-            Preferences.pinnedStyles = pinned
-        }
-    }
-
-    func swap(_ old: PointerStyle, for new: PointerStyle) {
-        var pinned = Preferences.pinnedStyles
-        guard let i = pinned.firstIndex(of: old), !pinned.contains(new) else {
-            return
-        }
-        pinned[i] = new
         pinMessage = nil
         withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
             Preferences.pinnedStyles = pinned

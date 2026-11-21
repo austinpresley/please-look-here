@@ -1,0 +1,293 @@
+{
+  "astro-ok": {
+    "pass": true,
+    "notes": "Five digits; clear open thumb-index loop and three extended fingers. Padded glove, display and blue trim match. Clean on gray pilot."
+  },
+  "astro-shaka": {
+    "pass": true,
+    "notes": "Thumb and pinky extended, three curled middle fingers. Same astronaut glove and display. Cuff retained."
+  },
+  "black-ok": {
+    "pass": true,
+    "selected_attempt": 2,
+    "notes": "Second generation corrects the stacked collar. Five digits and readable pose, black glossy vinyl matches. Final lower-palm contour blends into the original single cuff."
+  },
+  "black-shaka": {
+    "pass": true,
+    "selected_attempt": 2,
+    "notes": "Second generation corrects the stacked collar. Five digits and readable pose, black glossy vinyl matches. Final lower-palm contour blends into the original single cuff."
+  },
+  "blue-ok": {
+    "pass": true,
+    "notes": "Five digits, readable OK loop, sky blue vinyl matches. Raised original-cuff restoration line removes extra generated wrist lip."
+  },
+  "blue-shaka": {
+    "pass": true,
+    "notes": "Reviewed on light, dark and checkerboard detail sheet. Exactly five digits; correct readable pose, matching material, color and rendering style. Original cuff and rod retained."
+  },
+  "cactus-ok": {
+    "pass": true,
+    "notes": "Reviewed on light, dark and checkerboard detail sheet. Exactly five digits; correct readable pose, matching material, color and rendering style. Original cuff and rod retained."
+  },
+  "cactus-shaka": {
+    "pass": true,
+    "notes": "Reviewed on light, dark and checkerboard detail sheet. Exactly five digits; correct readable pose, matching material, color and rendering style. Original cuff and rod retained."
+  },
+  "choco-ok": {
+    "pass": true,
+    "notes": "Reviewed on light, dark and checkerboard detail sheet. Exactly five digits; correct readable pose, matching material, color and rendering style. Original cuff and rod retained."
+  },
+  "choco-shaka": {
+    "pass": true,
+    "notes": "Reviewed on light, dark and checkerboard detail sheet. Exactly five digits; correct readable pose, matching material, color and rendering style. Original cuff and rod retained."
+  },
+  "chrome-ok": {
+    "pass": true,
+    "notes": "Reviewed on light, dark and checkerboard detail sheet. Exactly five digits; correct readable pose, matching material, color and rendering style. Original cuff and rod retained."
+  },
+  "chrome-shaka": {
+    "pass": true,
+    "notes": "Reviewed on light, dark and checkerboard detail sheet. Exactly five digits; correct readable pose, matching material, color and rendering style. Original cuff and rod retained."
+  },
+  "cloud-ok": {
+    "pass": true,
+    "notes": "Reviewed normalized full hand/cuff details on light, dark and checkerboard. Five digits, clear correct pose. Material and palette match; no visible halo or cropped digit. Original cuff and rod restored. Cloud texture remains readable; lower-palm contour normalized to avoid a second cuff."
+  },
+  "cloud-shaka": {
+    "pass": true,
+    "notes": "Reviewed normalized full hand/cuff details on light, dark and checkerboard. Five digits, clear correct pose. Material and palette match; no visible halo or cropped digit. Original cuff and rod restored."
+  },
+  "cookie-ok": {
+    "pass": true,
+    "notes": "Reviewed normalized full hand/cuff details on light, dark and checkerboard. Five digits, clear correct pose. Material and palette match; no visible halo or cropped digit. Original cuff and rod restored."
+  },
+  "cookie-shaka": {
+    "pass": true,
+    "notes": "Reviewed normalized full hand/cuff details on light, dark and checkerboard. Five digits, clear correct pose. Material and palette match; no visible halo or cropped digit. Original cuff and rod restored."
+  },
+  "coral-ok": {
+    "pass": true,
+    "selected_attempt": 2,
+    "notes": "Second generation selected. Five digits and clearly open thumb-index loop. Original broad lower palm and single cuff retained. Separate registration and restoration lines preserve the circle while matching the original wrist. The right palm edge remains slightly more angular than the base, a minor weakness for lead review."
+  },
+  "coral-shaka": {
+    "pass": true,
+    "notes": "Thumb and pinky extended with three curled middle knuckles. Same broad coral vinyl body and original cuff/rod. Final restoration line sits in lower palm to remove the extra generated collar."
+  },
+  "fuzzy-ok": {
+    "pass": true,
+    "notes": "Reviewed normalized full hand/cuff details on light, dark and checkerboard. Five digits, clear correct pose. Material and palette match; no visible halo or cropped digit. Original cuff and rod restored."
+  },
+  "fuzzy-shaka": {
+    "pass": true,
+    "notes": "Reviewed normalized full hand/cuff details on light, dark and checkerboard. Five digits, clear correct pose. Material and palette match; no visible halo or cropped digit. Original cuff and rod restored."
+  },
+  "glass-ok": {
+    "pass": true,
+    "notes": "Reviewed normalized full hand/cuff details on light, dark and checkerboard. Five digits, clear correct pose. Material and palette match; no visible halo or cropped digit. Original cuff and rod restored."
+  },
+  "glass-shaka": {
+    "pass": true,
+    "notes": "Reviewed normalized full hand/cuff details on light, dark and checkerboard. Five digits, clear correct pose. Material and palette match; no visible halo or cropped digit. Original cuff and rod restored."
+  },
+  "glove-ok": {
+    "pass": true,
+    "notes": "Reviewed normalized full hand/cuff details on light, dark and checkerboard. Five digits, clear correct pose. Material and palette match; no visible halo or cropped digit. Original cuff and rod restored."
+  },
+  "glove-shaka": {
+    "pass": true,
+    "notes": "Reviewed normalized full hand/cuff details on light, dark and checkerboard. Five digits, clear correct pose. Material and palette match; no visible halo or cropped digit. Original cuff and rod restored."
+  },
+  "grass-ok": {
+    "pass": true,
+    "notes": "Reviewed on light, dark and checkerboard. Exactly five digits, correct readable pose, clean silhouette. Material and palette match. Original cuff and rod position retained."
+  },
+  "grass-shaka": {
+    "pass": true,
+    "notes": "Reviewed on light, dark and checkerboard. Exactly five digits, correct readable pose, clean silhouette. Material and palette match. Original cuff and rod position retained."
+  },
+  "holo-ok": {
+    "pass": true,
+    "notes": "Reviewed on light, dark and checkerboard. Exactly five digits, correct readable pose, clean silhouette. Material and palette match. Original cuff and rod position retained."
+  },
+  "holo-shaka": {
+    "pass": true,
+    "notes": "Reviewed on light, dark and checkerboard. Exactly five digits, correct readable pose, clean silhouette. Material and palette match. Original cuff and rod position retained."
+  },
+  "jelly-ok": {
+    "pass": true,
+    "notes": "Reviewed on light, dark and checkerboard. Exactly five digits, correct readable pose, clean silhouette. Material and palette match. Original cuff and rod position retained."
+  },
+  "jelly-shaka": {
+    "pass": true,
+    "notes": "Reviewed on light, dark and checkerboard. Exactly five digits, correct readable pose, clean silhouette. Material and palette match. Original cuff and rod position retained."
+  },
+  "knit-ok": {
+    "pass": true,
+    "notes": "Reviewed on light, dark and checkerboard. Exactly five digits, correct readable pose, clean silhouette. Material and palette match. Original cuff and rod position retained. Interlocking V yarn stitches remain visible on fingers and cuff."
+  },
+  "knit-shaka": {
+    "pass": true,
+    "notes": "Reviewed on light, dark and checkerboard. Exactly five digits, correct readable pose, clean silhouette. Material and palette match. Original cuff and rod position retained. Knitted yarn remains knitted, with no smooth-vinyl substitution."
+  },
+  "lava-ok": {
+    "pass": true,
+    "notes": "Reviewed on light, dark and checkerboard. Exactly five digits, correct readable pose, clean silhouette. Material and palette match. Original cuff and rod position retained."
+  },
+  "lava-shaka": {
+    "pass": true,
+    "notes": "Reviewed on light, dark and checkerboard. Exactly five digits, correct readable pose, clean silhouette. Material and palette match. Original cuff and rod position retained."
+  },
+  "lavender-ok": {
+    "pass": true,
+    "notes": "Five digits and clear open OK circle. Matches pale lavender vinyl. Cuff and rod aligned, no visible halo."
+  },
+  "leaf-ok": {
+    "pass": true,
+    "notes": "Reviewed all three backgrounds. Five digits, correct readable pose. Matches base material, colors, lighting and style. Cuff/stick geometry retained, no visible halo or cropped finger."
+  },
+  "leaf-shaka": {
+    "pass": true,
+    "notes": "Reviewed all three backgrounds. Five digits, correct readable pose. Matches base material, colors, lighting and style. Cuff/stick geometry retained, no visible halo or cropped finger."
+  },
+  "lemon-ok": {
+    "pass": true,
+    "notes": "Reviewed all three backgrounds. Five digits, correct readable pose. Matches base material, colors, lighting and style. Cuff/stick geometry retained, no visible halo or cropped finger."
+  },
+  "lemon-shaka": {
+    "pass": true,
+    "notes": "Reviewed all three backgrounds. Five digits, correct readable pose. Matches base material, colors, lighting and style. Cuff/stick geometry retained, no visible halo or cropped finger."
+  },
+  "lowpoly-ok": {
+    "pass": true,
+    "notes": "Reviewed all three backgrounds. Five digits, correct readable pose. Matches base material, colors, lighting and style. Cuff/stick geometry retained, no visible halo or cropped finger. Hard triangular facets remain, no smooth shading substitution."
+  },
+  "lowpoly-shaka": {
+    "pass": true,
+    "notes": "Reviewed all three backgrounds. Five digits, correct readable pose. Matches base material, colors, lighting and style. Cuff/stick geometry retained, no visible halo or cropped finger. Hard triangular facets remain, no smooth shading substitution."
+  },
+  "marble-ok": {
+    "pass": true,
+    "notes": "Reviewed all three backgrounds. Five digits, correct readable pose. Matches base material, colors, lighting and style. Cuff/stick geometry retained, no visible halo or cropped finger."
+  },
+  "marble-shaka": {
+    "pass": true,
+    "notes": "Reviewed all three backgrounds. Five digits, correct readable pose. Matches base material, colors, lighting and style. Cuff/stick geometry retained, no visible halo or cropped finger."
+  },
+  "mech-ok": {
+    "pass": true,
+    "notes": "Reviewed all three backgrounds. Five digits, correct readable pose. Matches base material, colors, lighting and style. Cuff/stick geometry retained, no visible halo or cropped finger. White armor, dark mechanical seams and orange cuff match."
+  },
+  "mech-shaka": {
+    "pass": true,
+    "notes": "Reviewed all three backgrounds. Five digits, correct readable pose. Matches base material, colors, lighting and style. Cuff/stick geometry retained, no visible halo or cropped finger. White armor, dark mechanical seams and orange cuff match."
+  },
+  "lavender-shaka": {
+    "pass": true,
+    "notes": "Thumb and pinky extended with exactly three curled knuckles. Pale lavender vinyl matches. Clean silhouette and aligned cuff/rod."
+  },
+  "mint-ok": {
+    "pass": true,
+    "notes": "Five digits, readable OK circle. Mint vinyl, highlights and cuff match. Clean silhouette on all backgrounds."
+  },
+  "neon-ok": {
+    "pass": true,
+    "notes": "Reviewed on light, dark and checkerboard. Five digits, clear pose and matching base material/palette. Cuff and rod aligned; no halo or clipped finger. Bright tube edge stays inside the alpha silhouette."
+  },
+  "neon-shaka": {
+    "pass": true,
+    "notes": "Reviewed on light, dark and checkerboard. Five digits, clear pose and matching base material/palette. Cuff and rod aligned; no halo or clipped finger. Bright tube edge stays inside the alpha silhouette."
+  },
+  "pastel-ok": {
+    "pass": true,
+    "notes": "Reviewed on light, dark and checkerboard. Five digits, clear pose and matching base material/palette. Cuff and rod aligned; no halo or clipped finger."
+  },
+  "pastel-shaka": {
+    "pass": true,
+    "notes": "Reviewed on light, dark and checkerboard. Five digits, clear pose and matching base material/palette. Cuff and rod aligned; no halo or clipped finger."
+  },
+  "pink-ok": {
+    "pass": true,
+    "notes": "Reviewed on light, dark and checkerboard. Five digits, clear pose and matching base material/palette. Cuff and rod aligned; no halo or clipped finger."
+  },
+  "pink-shaka": {
+    "pass": true,
+    "notes": "Reviewed on light, dark and checkerboard. Five digits, clear pose and matching base material/palette. Cuff and rod aligned; no halo or clipped finger."
+  },
+  "pixel-ok": {
+    "pass": true,
+    "notes": "Reviewed on light, dark and checkerboard. Five digits, clear pose and matching base material/palette. Cuff and rod aligned; no halo or clipped finger. Black stepped voxel outlines, white tile grid and block fingers retain the source pixel style."
+  },
+  "pixel-shaka": {
+    "pass": true,
+    "notes": "Reviewed on light, dark and checkerboard. Five digits, clear pose and matching base material/palette. Cuff and rod aligned; no halo or clipped finger. Black stepped voxel outlines, white tile grid and block fingers retain the source pixel style."
+  },
+  "mint-shaka": {
+    "pass": true,
+    "notes": "Thumb and pinky extended, three curled central fingers. Mint glossy toy style, lighting and cuff match. Clean on all backgrounds."
+  },
+  "plush-ok": {
+    "pass": true,
+    "notes": "Five digits, open OK loop. Cyan felt and white blanket stitching retained. Original sewn cuff and wooden stick aligned. Source rod shortened by one bottom edge pixel only."
+  },
+  "monster-ok": {
+    "pass": true,
+    "notes": "Five digits with orange claws; correct readable pose. Lime shaggy fur matches base. Raised restoration boundary removes the generated extra cuff ring. No visible halo or clipping on light, dark or checkerboard."
+  },
+  "monster-shaka": {
+    "pass": true,
+    "notes": "Five digits with orange claws; correct readable pose. Lime shaggy fur matches base. Raised restoration boundary removes the generated extra cuff ring. No visible halo or clipping on light, dark or checkerboard."
+  },
+  "robot-ok": {
+    "pass": true,
+    "notes": "Reviewed on light, dark and checkerboard. Exactly five digits; correct clear gesture, matching base character and material. No clipped digit or visible halo. Original cuff/rod geometry retained. Green armor, metal ball joints, backplate screws and steel wrist retained. Original rod edge trimmed one pixel."
+  },
+  "robot-shaka": {
+    "pass": true,
+    "notes": "Reviewed on light, dark and checkerboard. Exactly five digits; correct clear gesture, matching base character and material. No clipped digit or visible halo. Original cuff/rod geometry retained. Green armor, metal ball joints, backplate screws and steel wrist retained. Original rod edge trimmed one pixel."
+  },
+  "skeleton-ok": {
+    "pass": true,
+    "notes": "Reviewed on light, dark and checkerboard. Exactly five digits; correct clear gesture, matching base character and material. No clipped digit or visible halo. Original cuff/rod geometry retained. Ivory segmented phalange design retained; no skin or glove replacement."
+  },
+  "skeleton-shaka": {
+    "pass": true,
+    "notes": "Reviewed on light, dark and checkerboard. Exactly five digits; correct clear gesture, matching base character and material. No clipped digit or visible halo. Original cuff/rod geometry retained. Ivory segmented phalange design retained; no skin or glove replacement."
+  },
+  "space-ok": {
+    "pass": true,
+    "notes": "Reviewed on light, dark and checkerboard. Exactly five digits; correct clear gesture, matching base character and material. No clipped digit or visible halo. Original cuff/rod geometry retained. Saturn emblem, white glove and red cuff stripe retained."
+  },
+  "space-shaka": {
+    "pass": true,
+    "notes": "Reviewed on light, dark and checkerboard. Exactly five digits; correct clear gesture, matching base character and material. No clipped digit or visible halo. Original cuff/rod geometry retained. Saturn emblem, white glove and red cuff stripe retained."
+  },
+  "water-ok": {
+    "pass": true,
+    "notes": "Reviewed on light, dark and checkerboard. Exactly five digits; correct clear gesture, matching base character and material. No clipped digit or visible halo. Original cuff/rod geometry retained."
+  },
+  "water-shaka": {
+    "pass": true,
+    "notes": "Reviewed on light, dark and checkerboard. Exactly five digits; correct clear gesture, matching base character and material. No clipped digit or visible halo. Original cuff/rod geometry retained."
+  },
+  "plush-shaka": {
+    "pass": true,
+    "notes": "Two outer digits extended, three middle knuckles curled. Cyan felt and sewn white edging match. Original sewn cuff and wooden stick retained. One bottom rod edge pixel cleared."
+  },
+  "wood-ok": {
+    "pass": true,
+    "notes": "Five digits, correct readable pose. Reviewed on light, dark and checkerboard with clean edges and no cropping. Original cuff and rod retained. Wood grain and light honey color match after a small reference RGB correction."
+  },
+  "wood-shaka": {
+    "pass": true,
+    "notes": "Five digits, correct readable pose. Reviewed on light, dark and checkerboard with clean edges and no cropping. Original cuff and rod retained. Wood grain and light honey color match after a small reference RGB correction."
+  },
+  "terrazzo-ok": {
+    "pass": true,
+    "notes": "Five digits, correct readable pose. Reviewed on light, dark and checkerboard with clean edges and no cropping. Original cuff and rod retained. Cream stone and orange/gray chips match. Higher restoration removes the thin extra generated cuff band."
+  },
+  "terrazzo-shaka": {
+    "pass": true,
+    "notes": "Five digits, correct readable pose. Reviewed on light, dark and checkerboard with clean edges and no cropping. Original cuff and rod retained. Cream stone and orange/gray chips match. Higher restoration removes the thin extra generated cuff band."
+  }
+}

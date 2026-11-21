@@ -119,29 +119,24 @@ import Testing
             #expect(command.request["tool"] as? String == tool.rawValue)
         }
     }
-    @Test func radialToolPagesKeepEveryChoiceAndHistoryTracksExpiration() {
+    @Test func radialToolRingKeepsEveryChoiceAndHistoryTracksExpiration() {
         let geometry = RadialGeometry(cursor: CGPoint(x: 700, y: 500), bounds: CGRect(x: 0, y: 0, width: 1440, height: 1000))
-        let tools = DrawingTool.allCases.map { tool in
-            RadialItem(id: tool.rawValue, title: tool.title, symbol: tool.symbol, request: ["operation": "tool", "tool": tool.rawValue])
+        var session = RadialCatalog.make(geometry: geometry,
+            state: RadialCurrentState(pointerID: "lavender", ink: .match, tool: .pen, interact: false, tapSound: false, muted: false, toolbar: true),
+            favorites: RadialFavorites.defaults, pointers: [], canUndo: false, canRedo: false, hasInk: true)
+        _ = session.activate(2)
+        #expect(session.items.count == 8)
+        #expect(Set(session.items.dropFirst().map(\.id)) == Set(DrawingTool.allCases.map(\.rawValue)))
+        for tool in [DrawingTool.eraser, .highlighter] {
+            var selection = session
+            let index = selection.items.firstIndex { $0.id == tool.rawValue }!
+            #expect(selection.activate(index)?.request?["tool"] as? String == tool.rawValue)
         }
-        let history = [RadialItem(id: "undo", title: "Undo", symbol: "arrow.uturn.backward", request: ["operation": "undo"]),
-                       RadialItem(id: "clear", title: "Clear Drawing", symbol: "trash", request: ["operation": "clear"])]
-        var session = RadialSession(geometry: geometry,
-                                    root: [RadialItem(id: "tools", title: "Tools", symbol: "pencil.tip", group: "tools"),
-                                           RadialItem(id: "history", title: "History", symbol: "arrow.uturn.backward", group: "history")],
-                                    groups: ["tools": tools, "history": history])
-        _ = session.activate(0)
-        #expect(session.pages == 2)
-        #expect(session.items[5].id == "eraser")
-        #expect(session.activate(5)?["tool"] as? String == "eraser")
-        _ = session.activate(7)
-        #expect(session.items[0].id == "highlighter")
-        #expect(session.activate(0)?["tool"] as? String == "highlighter")
-        session.back(); _ = session.activate(1)
+        session.back()
         session.updateHistory(canUndo: true, canRedo: false, hasInk: false)
-        #expect(session.items[0].enabled)
-        #expect(!session.items[1].enabled)
-        #expect(session.activate(1) == nil)
+        #expect(session.root[6].enabled)
+        #expect(!session.root[3].enabled)
+        #expect(session.activate(3) == nil)
     }
 
 }

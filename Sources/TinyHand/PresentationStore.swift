@@ -35,6 +35,40 @@ struct PresentationStore {
         let preferencesAfter: Data
         let files: [FileChange]
     }
+    /// Small catalogue entries never retain artwork or preference payloads.
+    struct RecoverySummary: Codable, Identifiable {
+        let id: UUID
+        let created: Date
+        let title: String
+        var problem: String? = nil
+        var restored = false
+        init(_ receipt: Recovery) { id = receipt.id; created = receipt.created; title = receipt.title }
+        init(id: UUID, created: Date, title: String, problem: String? = nil) {
+            self.id = id; self.created = created; self.title = title; self.problem = problem
+        }
+    }
+    /// Test seam proves catalogue listing never asks for a journal payload.
+    var loadRecoveryPayload: (URL) throws -> Data = { try Data(contentsOf: $0) }
+    struct RestorePlan {
+        let receipt: Recovery
+        let preferencesAtPreview: Data
+        let files: [FileChange]
+        let changedSettings: [String]
+        var replacedFiles: [String] { files.map(\.path) }
+        var presetChanges: [String] {
+            guard let change = files.first(where: { $0.path == ".Presentation/presets.json" }) else { return [] }
+            func names(_ data: Data?) -> [NamedPresentationPreset] {
+                data.flatMap { try? JSONDecoder().decode(PresetDocument.self, from: $0).presets } ?? []
+            }
+            let before = names(change.before), after = names(change.after)
+            let removed = before.filter { p in !after.contains(where: { $0.id == p.id }) }.map(\.name)
+            let restored = after.filter { p in !before.contains(where: { $0.id == p.id }) }.map(\.name)
+            let updated = after.filter { p in before.contains(where: { $0.id == p.id && $0 != p }) }.map(\.name)
+            return [("Remove", removed), ("Restore", restored), ("Replace", updated)].compactMap { title, values in
+                values.isEmpty ? nil : "\(title) \(values.count): \(values.joined(separator: ", "))"
+            }
+        }
+    }
     struct Preview {
         let addedHands: [String]
         let addedArtwork: [String]
@@ -164,7 +198,7 @@ struct PresentationStore {
         let hands = try hands()
         var artwork: [String: Data] = [:]
         let customIDs = Set(hands.map(\.id))
-        var candidates = hands.map { "\($0.id).png" }
+        var candidates = hands.map { "\($0.id).png" } + PortablePresentationArchive.builtInBaseArtworkPaths.sorted()
         for id in customIDs.union(PortablePresentationArchive.builtInHandIDs) {
             candidates += ["Gestures/\(id)-first.png", "Gestures/\(id)-second.png"]
         }
@@ -277,9 +311,11 @@ struct PresentationStore {
             }
             // Serialize the large durable journal before entering the main queue.
             let journalData = try JSONEncoder().encode(receipt)
+            let infoData = try JSONEncoder().encode(RecoverySummary(receipt))
+            try writeFile(infoData, staging.appendingPathComponent("journal.info"))
             try writeFile(journalData, staging.appendingPathComponent("journal.json"))
             var stagedFiles: [String: FileStamp] = [:]
-            let stagedBytes = plan.files.compactMap { file in file.after.map { (file.path, $0) } } + [("journal.json", journalData)]
+            let stagedBytes = plan.files.compactMap { file in file.after.map { (file.path, $0) } } + [("journal.json", journalData), ("journal.info", infoData)]
             for (path, data) in stagedBytes {
                 let url = try safeURL(".Presentation/Staging/\(receipt.id.uuidString)/\(path)")
                 let before = try stamp(url)
@@ -322,6 +358,7 @@ struct PresentationStore {
         // so another Settings action cannot slip a new Undo journal past preview.
         try fm.createDirectory(at: journal.deletingLastPathComponent(), withIntermediateDirectories: true)
         try moveStaged(prepared.staging.appendingPathComponent("journal.json"), to: journal)
+        try moveStaged(prepared.staging.appendingPathComponent("journal.info"), to: try safeURL(recoveryInfoPath(prepared.receipt.id)))
         var published: [FileChange] = []
         do {
             for file in plan.files {
@@ -425,6 +462,14 @@ struct PresentationStore {
         return try transact(title: "Remove \(name)", preferences: nil,
             files: [FileChange(path: presetsPath, before: try read(presetsPath), after: try presetData(values))])
     }
+    @discardableResult func renamePreset(_ id: UUID, name: String) throws -> Recovery {
+        var values = try presets()
+        guard let index = values.firstIndex(where: { $0.id == id }) else { throw problem("This preset was removed. Refresh and try again.") }
+        values[index].name = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        try values[index].validate()
+        return try transact(title: "Rename preset", preferences: nil,
+            files: [FileChange(path: presetsPath, before: try read(presetsPath), after: try presetData(values))])
+    }
 
     private func appliedPreferences(_ setup: PresentationSetup, importedIDs: Set<String> = []) throws -> [String: Any] {
         var values = setup.preferences
@@ -469,6 +514,7 @@ struct PresentationStore {
         // Durable journal precedes every user-data write. Keep older journals as
         // local backups, but only the newest can be undone without conflicts.
         try put(JSONEncoder().encode(receipt), at: recoveryPath(receipt.id))
+        try put(JSONEncoder().encode(RecoverySummary(receipt)), at: recoveryInfoPath(receipt.id))
         do {
             for file in files { try put(file.after, at: file.path) }
             if let preferences { setPreferences(preferences) }
@@ -479,26 +525,97 @@ struct PresentationStore {
         }
         return receipt
     }
+    private func recoveryInfoPath(_ id: UUID) -> String { ".Presentation/Recovery/\(id.uuidString).info" }
     func latestRecovery() throws -> Recovery? {
-        _ = try safeURL(".Presentation/Recovery/probe.json")
-        guard exists(recoveryDirectory) else { return nil }
-        let urls = try fm.contentsOfDirectory(at: recoveryDirectory, includingPropertiesForKeys: [.contentModificationDateKey])
-            .filter { $0.pathExtension == "json" && UUID(uuidString: $0.deletingPathExtension().lastPathComponent) != nil }
-            .sorted {
-                ((try? $0.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantPast) >
-                ((try? $1.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantPast)
-            }
-        for url in urls {
-            let id = UUID(uuidString: url.deletingPathExtension().lastPathComponent)!
-            if try read(".Presentation/Recovery/\(id.uuidString).restored", limit: 1) != nil { continue }
-            return try readRecovery(id)
+        for entry in try recoveryCatalogue() where !entry.restored {
+            // A corrupt historical journal never prevents a usable Undo.
+            if let receipt = try? readRecovery(entry.id) { return receipt }
         }
         return nil
     }
-    private func readRecovery(_ id: UUID) throws -> Recovery? {
-        guard let data = try read(recoveryPath(id), limit: 150_000_000) else { return nil }
+    /// Resolve Undo off-main, releasing each payload before reading the next.
+    /// Sidecars are hints; only a journal read can establish an unusable copy.
+    func resolvedRecoveryCatalogue() throws -> (copies: [RecoverySummary], latest: RecoverySummary?) {
+        var entries = try recoveryCatalogue()
+        for index in entries.indices where !entries[index].restored {
+            do {
+                guard let receipt = try readRecovery(entries[index].id) else { throw problem("Recovery copy is missing.") }
+                let summary = RecoverySummary(receipt)
+                entries[index] = summary
+                return (entries, summary)
+            } catch {
+                entries[index].problem = "Unreadable copy. Kept on disk. \(error.localizedDescription)"
+            }
+        }
+        return (entries, nil)
+    }
+    func recoveryCatalogue() throws -> [RecoverySummary] {
+        _ = try safeURL(".Presentation/Recovery/probe.json")
+        guard exists(recoveryDirectory) else { return [] }
+        let urls = try fm.contentsOfDirectory(at: recoveryDirectory, includingPropertiesForKeys: [.contentModificationDateKey, .fileSizeKey])
+            .filter { $0.pathExtension == "json" && UUID(uuidString: $0.deletingPathExtension().lastPathComponent) != nil }
+        return try urls.map { url in
+            let id = UUID(uuidString: url.deletingPathExtension().lastPathComponent)!
+            let values = try url.resourceValues(forKeys: [.contentModificationDateKey, .fileSizeKey])
+            var entry = RecoverySummary(id: id, created: values.contentModificationDate ?? .distantPast, title: "Saved change")
+            do {
+                if let data = try? read(recoveryInfoPath(id), limit: 16_384),
+                   let hint = try? JSONDecoder().decode(RecoverySummary.self, from: data), hint.id == id {
+                    entry = RecoverySummary(id: id, created: hint.created, title: hint.title)
+                } else {
+                    // Missing or broken sidecars never block a journal. Read only bounded metadata.
+                    // Large artwork journals are loaded only for Undo/review.
+                    let safe = try safeURL(recoveryPath(id))
+                    let handle = try FileHandle(forReadingFrom: safe)
+                    defer { try? handle.close() }
+                    if (values.fileSize ?? 0) <= 16_384 {
+                        struct Header: Decodable { let id: UUID; let created: Date; let title: String }
+                        let header = try JSONDecoder().decode(Header.self, from: handle.readToEnd() ?? Data())
+                        guard header.id == id else { throw problem("Recovery identity mismatch.") }
+                        entry = RecoverySummary(id: id, created: header.created, title: header.title)
+                    } else {
+                        let start = try handle.read(upToCount: 1)
+                        try handle.seek(toOffset: UInt64((values.fileSize ?? 1) - 1))
+                        let end = try handle.read(upToCount: 1)
+                        guard start == Data("{".utf8), end == Data("}".utf8) else { throw problem("Incomplete recovery journal.") }
+                    }
+                }
+            } catch { entry.problem = "Unreadable copy. Kept on disk. \(error.localizedDescription)" }
+            entry.restored = try read(".Presentation/Recovery/\(id.uuidString).restored", limit: 1) != nil
+            return entry
+        }.sorted { $0.created > $1.created }
+    }
+    /// Compatibility for non-UI callers. The Settings page uses the lightweight catalogue.
+    func recoveryCopies() throws -> [Recovery] {
+        try recoveryCatalogue().compactMap { try? readRecovery($0.id) }
+    }
+    /// Restoring an older copy is explicit replacement, unlike conflict-checked
+    /// Undo. Review captures the current state; Apply rejects intervening edits.
+    func previewRestore(_ recovery: Recovery) throws -> RestorePlan {
+        guard let receipt = try readRecovery(recovery.id) else { throw problem("This recovery copy is no longer available.") }
+        let current = currentPreferences(), target = try decodePreferences(receipt.preferencesBefore)
+        let changed = PresentationSetup.preferenceKeys.filter { key in
+            !NSDictionary(dictionary: current[key].map { [key: $0] } ?? [:]).isEqual(to: target[key].map { [key: $0] } ?? [:])
+        }.map { PresentationSettingsSchema.titles[$0] ?? $0 }.sorted()
+        let files = try receipt.files.map { FileChange(path: $0.path, before: try read($0.path), after: $0.before) }
+        return RestorePlan(receipt: receipt, preferencesAtPreview: try preferencesData(current), files: files, changedSettings: changed)
+    }
+    @discardableResult func restoreCopy(_ plan: RestorePlan) throws -> Recovery {
+        guard preferencesEqual(try decodePreferences(plan.preferencesAtPreview), currentPreferences()) else {
+            throw problem("Settings changed after review. Review this recovery copy again. Nothing was replaced.")
+        }
+        // transact journals ALL current portable preferences and affected file
+        // bytes before the first write. Undoing this receipt restores now.
+        return try transact(title: "Restore before \(plan.receipt.title)", preferences: try decodePreferences(plan.receipt.preferencesBefore), files: plan.files)
+    }
+    func readRecovery(_ id: UUID) throws -> Recovery? {
+        let url = try safeURL(recoveryPath(id))
+        guard exists(url) else { return nil }
+        guard let size = try fm.attributesOfItem(atPath: url.path)[.size] as? NSNumber, size.intValue <= 150_000_000 else { throw problem("Recovery copy exceeds 150 MB.") }
+        let data = try loadRecoveryPayload(url)
+        guard data.count <= 150_000_000 else { throw problem("Recovery copy grew beyond its limit.") }
         let receipt = try JSONDecoder().decode(Recovery.self, from: data)
-        guard receipt.version == 1, receipt.id == id, receipt.files.count <= 842,
+        guard receipt.version == 1, receipt.id == id, receipt.files.count <= 878,
               receipt.files.allSatisfy({ validRecoveryPath($0.path) }),
               Set(receipt.files.map { $0.path.lowercased() }).count == receipt.files.count else {
             throw problem("Invalid recovery journal. Keep \(recoveryDirectory.path) for recovery.")

@@ -349,59 +349,153 @@ import Testing
         #expect(r.diagnostics["open"] as? Bool == false)
         #expect(r.diagnostics["held"] as? Bool == false)
     }
-    @Test func accessibleNavigationUsesSameCatalogAndCommands() {
-        var s = session()
-        #expect(s.activate(0) == nil && s.group == "pointer")
-        #expect(s.activate(7) == nil && s.page == 1)
-        #expect(s.activate(0)?["style"] as? String == "p6")
-        s.back(); #expect(s.group == nil && s.candidate == nil)
-    }
-    @Test func fixedDirectionsAndEdgeFitWithoutCursorWarp() {
-        let bounds = CGRect(x: -1200, y: 24, width: 1200, height: 800)
-        for cursor in [CGPoint(x: -1198, y: 26), CGPoint(x: -2, y: 820), CGPoint(x: -600, y: 424)] {
-            let g = RadialGeometry(cursor: cursor, bounds: bounds)
-            #expect(bounds.contains(g.frame))
-            for slot in 0..<8 {
-                let p = RadialGeometry.point(slot: slot, radius: 216, center: g.center)
-                #expect(RadialGeometry.direction(p, from: g.center) == slot)
-                #expect(g.frame.contains(p))
+    @Test(arguments: ["key", "chord", "modifier", "escape", "pointer", "scroll", "pointer-cancel", "eligibility", "system", "release"])
+    func pendingCancellationNeverOpensOrExecutes(_ route: String) async {
+        let r = input(clock: { 0 })
+        var events: [String] = []
+        r.onEvent = { _, e in
+            switch e {
+            case .open: events.append("open")
+            case .release: events.append("release")
+            case .click: events.append("click")
+            default: break
             }
         }
+        r.configure(trigger: .option, eligible: true)
+        _ = r.handle(.flagsChanged, event: event(.flagsChanged, flags: .maskAlternate), dragging: false)
+        let id = r.currentSessionID!
+        #expect(r.diagnostics["pending"] as? Bool == true)
+        switch route {
+        case "key", "chord", "escape":
+            let code: Int64 = route == "escape" ? 53 : 8
+            let flags: CGEventFlags = route == "chord" ? [.maskAlternate, .maskCommand] : .maskAlternate
+            #expect(r.handle(.keyDown, event: event(.keyDown, flags: flags, key: code), dragging: false) == (route == "escape"))
+            #expect(r.handle(.keyUp, event: event(.keyUp, key: code), dragging: false) == (route == "escape"))
+        case "modifier": _ = r.handle(.flagsChanged, event: event(.flagsChanged, flags: [.maskAlternate, .maskShift]), dragging: false)
+        case "pointer":
+            #expect(!r.handle(.leftMouseDown, event: event(.leftMouseDown), dragging: false))
+            #expect(!r.handle(.leftMouseUp, event: event(.leftMouseUp), dragging: false))
+        case "scroll": _ = r.handle(.scrollWheel, event: event(.scrollWheel), dragging: false)
+        case "pointer-cancel": r.pointerCancelled()
+        case "eligibility": r.configure(trigger: .option, eligible: false)
+        case "system": r.suspendForSystem(releasingButton: nil, key: nil)
+        default: _ = r.handle(.flagsChanged, event: event(.flagsChanged), dragging: false)
+        }
+        r.advanceHold(flags: .maskAlternate, dragging: false, now: 1, sessionID: id)
+        _ = r.handle(.mouseMoved, event: event(.mouseMoved), dragging: false)
+        _ = r.handle(.flagsChanged, event: event(.flagsChanged), dragging: false)
+        await withCheckedContinuation { continuation in DispatchQueue.main.async { continuation.resume() } }
+        #expect(events.isEmpty)
+        #expect(r.diagnostics["open"] as? Bool == false)
+        #expect(r.diagnostics["pending"] as? Bool == false)
     }
-    private func session(shifted: Bool = false) -> RadialSession {
-        let g = RadialGeometry(cursor: shifted ? .zero : CGPoint(x: 500, y: 500), bounds: CGRect(x: 0, y: 0, width: 1000, height: 1000))
-        let root = [RadialItem(id: "pointer", title: "Pointer", symbol: "", group: "pointer")]
-        let all = (0..<37).map { RadialItem(id: "p\($0)", title: "Pointer \($0)", symbol: "", request: ["style": "p\($0)"]) }
-        return RadialSession(geometry: g, root: root, groups: ["pointer": all])
-    }
-    @Test func hierarchyBacktrackingImmediateReleaseAndShiftedArming() {
-        var s = session(shifted: true)
-        #expect(!s.armed && s.candidate == nil)
-        s.move(RadialGeometry.point(slot: 0, radius: 128, center: s.geometry.center))
-        #expect(s.group == nil && s.candidate == nil)
-        s.move(s.geometry.center); #expect(s.armed)
-        s.move(RadialGeometry.point(slot: 0, radius: 128, center: s.geometry.center)); #expect(s.group == "pointer")
-        #expect(s.candidate == nil)
-        s.move(RadialGeometry.point(slot: 1, radius: 216, center: s.geometry.center)); #expect(s.candidate?.id == "p1")
-        s.move(s.geometry.center); #expect(s.group == nil && s.candidate == nil)
-        s.move(CGPoint(x: s.geometry.center.x + 400, y: s.geometry.center.y)); #expect(s.candidate == nil)
-    }
-    @Test func completeCatalogPagesKeepTargetsAndRequireFreshMovement() {
-        var s = session(); let center = s.geometry.center
-        s.move(RadialGeometry.point(slot: 0, radius: 128, center: center))
-        var ids: [String] = []
-        for page in 0..<7 {
-            #expect(s.page == page && s.pages == 7)
-            ids += s.items.filter { $0.request != nil }.map(\.id)
-            if page < 6 {
-                s.move(RadialGeometry.point(slot: 7, radius: 216, center: center))
-                #expect(s.page == page + 1 && !s.pageArmed && s.candidate == nil)
-                s.move(RadialGeometry.point(slot: 7, radius: 216, center: center))
-                #expect(s.page == page + 1)
-                s.move(RadialGeometry.point(slot: 0, radius: 144, center: center))
+    @Test func persistentTransportDrainsKeysButtonsAndRejectsOpenOverOwnedPair() async throws {
+        let r = input()
+        r.configure(trigger: nil, eligible: true)
+        var events: [String] = []
+        r.onEvent = { _, e in
+            switch e {
+            case .persistentOpen: events.append("open")
+            case .pointerDown: events.append("down")
+            case .pointerUp: events.append("up")
+            case .move: events.append("move")
+            case .pointerCancel: events.append("pointer-cancel")
+            case .key(let key, let modifiers):
+                #expect(key == .right && modifiers.isEmpty); events.append("key")
+            default: break
             }
         }
-        #expect(ids == (0..<37).map { "p\($0)" })
-        #expect(!s.items[7].enabled)
+        let id = try #require(r.openPersistent(at: CGPoint(x: 100, y: 100)))
+        #expect(r.needsTap)
+        #expect(!r.handle(.keyDown, event: event(.keyDown, flags: [.maskControl, .maskAlternate], key: 124), dragging: false))
+        #expect(!r.handle(.keyUp, event: event(.keyUp, key: 124), dragging: false))
+        #expect(r.handle(.keyDown, event: event(.keyDown, key: 124), dragging: false))
+        #expect(r.handle(.keyUp, event: event(.keyUp, key: 124), dragging: false))
+        #expect(r.handle(.leftMouseDown, event: event(.leftMouseDown), dragging: false))
+        #expect(r.handle(.leftMouseDragged, event: event(.leftMouseDragged), dragging: true))
+        #expect(r.handle(.leftMouseUp, event: event(.leftMouseUp), dragging: false))
+        r.pointerCancelled()
+        #expect(r.handle(.leftMouseDown, event: event(.leftMouseDown), dragging: false))
+        // Deliver navigation while this session owns focus. Closure now rejects
+        // queued activations; this test separately proves the pair still drains.
+        await withCheckedContinuation { continuation in DispatchQueue.main.async { continuation.resume() } }
+        #expect(events == ["open", "key", "down", "move", "up", "pointer-cancel", "down"])
+        r.end(sessionID: id)
+        #expect(r.openPersistent(at: .zero) == nil)
+        #expect(r.handle(.leftMouseUp, event: event(.leftMouseUp), dragging: false))
+        #expect(!r.needsTap)
+        await withCheckedContinuation { continuation in DispatchQueue.main.async { continuation.resume() } }
+        #expect(events == ["open", "key", "down", "move", "up", "pointer-cancel", "down"])
+    }
+    @Test func heldNavigationIgnoresOnlyItsInvocationModifierAndDrainsAfterClose() async throws {
+        let r = input()
+        r.configure(trigger: .option, eligible: true)
+        var keys = 0
+        r.onEvent = { _, event in if case .key(.right, []) = event { keys += 1 } }
+        _ = r.handle(.flagsChanged, event: event(.flagsChanged, flags: .maskAlternate), dragging: false)
+        r.advanceHold(flags: .maskAlternate, dragging: false, now: .greatestFiniteMagnitude)
+        #expect(r.handle(.keyDown, event: event(.keyDown, flags: .maskAlternate, key: 124), dragging: false))
+        await withCheckedContinuation { continuation in DispatchQueue.main.async { continuation.resume() } }
+        #expect(keys == 1)
+        r.end(sessionID: try #require(r.currentSessionID))
+        r.configure(trigger: nil, eligible: false)
+        #expect(r.handle(.keyDown, event: event(.keyDown, key: 124, repeatDown: true), dragging: false))
+        #expect(r.handle(.keyUp, event: event(.keyUp, key: 124), dragging: false))
+        await withCheckedContinuation { continuation in DispatchQueue.main.async { continuation.resume() } }
+        #expect(keys == 1 && !r.needsTap)
+    }
+    @Test func dedicatedFavoritesPersistSwapStayIndependentAndReset() {
+        Preferences.resetAll()
+        let initial = Preferences.quickControlFavorites
+        #expect(initial == ["glove", "lavender", "coral", "plush", "robot", "laser"])
+        #expect(Preferences.storage.stringArray(forKey: RadialFavorites.storageKey) == initial)
+        Preferences.pinnedStyles = [.laser]
+        #expect(Preferences.quickControlFavorites == initial)
+        #expect(Preferences.assignQuickControlFavorite("lavender", to: 0))
+        #expect(Preferences.quickControlFavorites == ["lavender", "glove", "coral", "plush", "robot", "laser"])
+        #expect(Preferences.assignQuickControlFavorite("custom-absent", to: 5))
+        #expect(Preferences.quickControlFavorites[5] == "custom-absent")
+        Preferences.disabledPointerIDs = ["glove"]
+        #expect(Preferences.quickControlFavorites[1] == "glove")
+        #expect(!Preferences.assignQuickControlFavorite("../bad", to: 0))
+        #expect(!Preferences.assignQuickControlFavorite("laser", to: 6))
+        Preferences.resetAll()
+        #expect(Preferences.quickControlFavorites == initial)
+    }
+}
+
+@Suite(.serialized) @MainActor struct RadialAccessibilityInputTests {
+    @Test(arguments: [RadialMode.held, .persistent])
+    func voiceOverChordsIncludingEscapeAlwaysPass(mode: RadialMode) throws {
+        let input = RadialInput(nativeKeyState: { _ in false }, scheduleHold: { _, _ in })
+        input.configure(trigger: .option, eligible: true)
+        func event(_ type: CGEventType, key: Int64) -> CGEvent {
+            let event = CGEvent(source: nil)!
+            event.type = type; event.flags = [.maskControl, .maskAlternate]; event.setIntegerValueField(.keyboardEventKeycode, value: key)
+            return event
+        }
+        if mode == .persistent { #expect(input.openPersistent(at: .zero) != nil) }
+        else {
+            let flags = CGEvent(source: nil)!; flags.type = .flagsChanged; flags.flags = .maskAlternate
+            _ = input.handle(.flagsChanged, event: flags, dragging: false)
+            input.advanceHold(flags: .maskAlternate, dragging: false, now: .greatestFiniteMagnitude)
+        }
+        for code: Int64 in [53, 124, 36, 49] {
+            #expect(!input.handle(.keyDown, event: event(.keyDown, key: code), dragging: false))
+            #expect(!input.handle(.keyUp, event: event(.keyUp, key: code), dragging: false))
+            #expect(input.diagnostics["open"] as? Bool == true)
+        }
+    }
+    @Test func listWheelPassesToNativeScrollViewWithoutGivingUpPointerPairs() throws {
+        let input = RadialInput(nativeKeyState: { _ in false }, scheduleHold: { _, _ in })
+        input.configure(trigger: nil, eligible: true)
+        let id = try #require(input.openPersistent(at: .zero))
+        let event = CGEvent(source: nil)!
+        #expect(input.handle(.scrollWheel, event: event, dragging: false))
+        input.setListMode(true)
+        #expect(!input.handle(.scrollWheel, event: event, dragging: false))
+        #expect(input.handle(.leftMouseDown, event: event, dragging: false))
+        input.end(sessionID: id)
+        #expect(input.handle(.leftMouseUp, event: event, dragging: false))
     }
 }

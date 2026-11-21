@@ -1,0 +1,83 @@
+{
+  "groups": [
+    {
+      "name": "Stage, curtains and apron",
+      "layers": [
+        {
+          "name": "stage",
+          "image-name": "stage.svg",
+          "glass": false
+        }
+      ],
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.18
+      },
+      "translucency": {
+        "enabled": false,
+        "value": 0.5
+      }
+    },
+    {
+      "name": "Original hand",
+      "layers": [
+        {
+          "name": "Original hand PNG",
+          "image-name": "hand_lavender-puppet.png",
+          "glass": false
+        }
+      ],
+      "position": {
+        "scale": 1.08,
+        "translation-in-points": [
+          25.36,
+          331.7
+        ]
+      },
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.28
+      },
+      "translucency": {
+        "enabled": false,
+        "value": 0.5
+      }
+    },
+    {
+      "name": "Spotlight",
+      "layers": [
+        {
+          "name": "spotlight",
+          "image-name": "spotlight.svg",
+          "glass": false
+        }
+      ],
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.18
+      },
+      "translucency": {
+        "enabled": false,
+        "value": 0.5
+      }
+    }
+  ],
+  "fill-specializations": [
+    {
+      "value": {
+        "automatic-gradient": "srgb:0.11765,0.06275,0.20000,1.00000"
+      }
+    },
+    {
+      "appearance": "dark",
+      "value": {
+        "automatic-gradient": "srgb:0.07059,0.03529,0.12157,1.00000"
+      }
+    }
+  ],
+  "supported-platforms": {
+    "squares": [
+      "macOS"
+    ]
+  }
+}

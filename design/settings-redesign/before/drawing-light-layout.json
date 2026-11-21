@@ -1,0 +1,214 @@
+{
+  "probes" : [
+    {
+      "area" : "card.Practice drawing",
+      "height" : 16,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "card.Practice drawing.title",
+      "width" : 104,
+      "x" : 228,
+      "y" : 196
+    },
+    {
+      "area" : "card.Tools",
+      "height" : 44,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "card.Tools.body",
+      "width" : 536,
+      "x" : 228,
+      "y" : 128
+    },
+    {
+      "area" : "card.Practice drawing",
+      "height" : 292,
+      "inset" : 0,
+      "kind" : "area",
+      "name" : "card.Practice drawing",
+      "width" : 536,
+      "x" : 228,
+      "y" : 196
+    },
+    {
+      "area" : "card.Tools",
+      "height" : 16,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "card.Tools.title",
+      "width" : 36,
+      "x" : 228,
+      "y" : 104
+    },
+    {
+      "area" : "card.Practice drawing",
+      "height" : 268,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "card.Practice drawing.body",
+      "width" : 536,
+      "x" : 228,
+      "y" : 220
+    },
+    {
+      "area" : "card.Ink",
+      "height" : 178,
+      "inset" : 0,
+      "kind" : "area",
+      "name" : "card.Ink",
+      "width" : 536,
+      "x" : 228,
+      "y" : 706
+    },
+    {
+      "area" : "drawingPreview",
+      "edge" : "lead",
+      "height" : 148,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "drawingPreview.canvas",
+      "width" : 504,
+      "x" : 244,
+      "y" : 270
+    },
+    {
+      "area" : "card.Stroke",
+      "height" : 16,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "card.Stroke.title",
+      "width" : 43,
+      "x" : 228,
+      "y" : 512
+    },
+    {
+      "area" : "page",
+      "edge" : "lead",
+      "height" : 32,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "page.title",
+      "width" : 86,
+      "x" : 228,
+      "y" : 48
+    },
+    {
+      "area" : "card.Ink",
+      "height" : 16,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "card.Ink.title",
+      "width" : 22,
+      "x" : 228,
+      "y" : 706
+    },
+    {
+      "area" : "drawingPreview",
+      "height" : 268,
+      "inset" : 16,
+      "kind" : "area",
+      "name" : "drawingPreview",
+      "width" : 536,
+      "x" : 228,
+      "y" : 220
+    },
+    {
+      "area" : "card.Tools",
+      "height" : 68,
+      "inset" : 0,
+      "kind" : "area",
+      "name" : "card.Tools",
+      "width" : 536,
+      "x" : 228,
+      "y" : 104
+    },
+    {
+      "area" : "card.Stroke",
+      "height" : 146,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "card.Stroke.body",
+      "width" : 536,
+      "x" : 228,
+      "y" : 536
+    },
+    {
+      "area" : "page",
+      "edge" : "lead",
+      "height" : 780,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "page.content",
+      "width" : 536,
+      "x" : 228,
+      "y" : 104
+    },
+    {
+      "area" : "drawingPreview",
+      "edge" : "lead",
+      "height" : 15,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "drawingPreview.help",
+      "width" : 245,
+      "x" : 244,
+      "y" : 457
+    },
+    {
+      "area" : "drawingPreview",
+      "edge" : "lead",
+      "height" : 15,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "drawingPreview.lifetime",
+      "width" : 200,
+      "x" : 244,
+      "y" : 430
+    },
+    {
+      "area" : "card.Ink",
+      "height" : 154,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "card.Ink.body",
+      "width" : 536,
+      "x" : 228,
+      "y" : 730
+    },
+    {
+      "area" : "drawingPreview",
+      "edge" : "lead",
+      "height" : 22,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "drawingPreview.controls",
+      "width" : 504,
+      "x" : 244,
+      "y" : 236
+    },
+    {
+      "area" : "page",
+      "height" : 904,
+      "inset" : 20,
+      "kind" : "area",
+      "name" : "page",
+      "width" : 576,
+      "x" : 208,
+      "y" : 0
+    },
+    {
+      "area" : "card.Stroke",
+      "height" : 170,
+      "inset" : 0,
+      "kind" : "area",
+      "name" : "card.Stroke",
+      "width" : 536,
+      "x" : 228,
+      "y" : 512
+    }
+  ],
+  "window" : {
+    "height" : 904,
+    "width" : 784
+  }
+}

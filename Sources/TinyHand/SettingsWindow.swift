@@ -1,5 +1,6 @@
 import AppKit
 import Carbon.HIToolbox
+import ApplicationServices
 import SwiftUI
 
 final class SettingsWindow: NSObject, NSWindowDelegate {
@@ -27,18 +28,26 @@ final class SettingsWindow: NSObject, NSWindowDelegate {
         didSet { model.applyMode = applyMode }
     }
     var onVisibilityChanged: ((Bool) -> Void)?
+    var editQuickControlFavorites: (() -> Void)? {
+        didSet { model.editQuickControlFavorites = editQuickControlFavorites }
+    }
     var openPractice: ((PracticeLesson) -> Void)? {
         didSet { model.openPractice = openPractice }
     }
     private var permissionTimer: Timer?
+    private var permissionState: (Bool, Bool)?
     var updater: Updater? {
         didSet { model.updater = updater }
     }
 
-    private var window: NSWindow?
+    private(set) var window: NSWindow?
+    private let focusDriver: QuickControlsFocus
+    private var focusRestoration: QuickControlsFocusRestoration?
     private let model = SettingsModel()
+    func chooseCaptureFolder() { model.chooseCaptureFolder() }
 
-    override init() {
+    init(focus: QuickControlsFocus = .system) {
+        focusDriver = focus
         super.init()
         model.onContentHeightChanged = { [weak self] height in
             DispatchQueue.main.async { self?.fitHeight(height) }
@@ -52,13 +61,14 @@ final class SettingsWindow: NSObject, NSWindowDelegate {
         let target = min(maximum - 64, max(440, (height / 4).rounded(.up) * 4))
         guard abs((w.contentView?.bounds.height ?? 0) - target) > 2 else { return }
         let top = w.frame.maxY
-        w.setContentSize(CGSize(width: 784, height: target))
+        w.setContentSize(CGSize(width: max(784, w.contentView?.bounds.width ?? 784), height: target))
         let x = min(max(w.frame.minX, visible.minX + 8), max(visible.minX + 8, visible.maxX - w.frame.width - 8))
         let y = min(max(top - w.frame.height, visible.minY + 8), max(visible.minY + 8, visible.maxY - w.frame.height - 8))
         w.setFrameOrigin(CGPoint(x: x, y: y))
     }
 
-    func show(_ section: SettingsSection? = nil) {
+    func show(_ section: SettingsSection? = nil, restoration: QuickControlsFocusRestoration? = nil) {
+        if focusRestoration == nil { focusRestoration = restoration }
         if window == nil {
             build()
         }
@@ -66,17 +76,27 @@ final class SettingsWindow: NSObject, NSWindowDelegate {
         if let section = section {
             model.section = section
         }
+        if let window, model.section == .pointers, window.contentView!.bounds.width < 1040 {
+            window.setContentSize(CGSize(width: 1040, height: max(720, window.contentView!.bounds.height)))
+        }
+        window?.minSize = CGSize(width: model.section == .pointers ? 1040 : 784, height: 440)
+        if model.section == .shortcuts { model.resetShortcutSections() }
         model.shortcutError = nil
         model.pinMessage = nil
-        NSApp.activate(ignoringOtherApps: true)
         if window?.isVisible != true {
             window?.center()
         }
-        window?.makeKeyAndOrderFront(nil)
-        window?.makeFirstResponder(nil)
+        if let window, !focusDriver.focus(window, nil, true) { restoreFocus() }
         onVisibilityChanged?(true)
         permissionTimer?.invalidate()
-        let timer = Timer(timeInterval: 1, repeats: true) { [weak self] _ in self?.model.refresh() }
+        let timer = Timer(timeInterval: 1, repeats: true) { [weak self] _ in
+            guard let self else { return }
+            let current = (AXIsProcessTrusted(), ScreenCapture.hasPermission)
+            if self.permissionState?.0 != current.0 || self.permissionState?.1 != current.1 {
+                self.permissionState = current
+                self.model.refresh()
+            }
+        }
         RunLoop.main.add(timer, forMode: .common)
         permissionTimer = timer
     }
@@ -84,6 +104,12 @@ final class SettingsWindow: NSObject, NSWindowDelegate {
     func showHandCreator() {
         show(.pointers)
         model.startMakingHand()
+    }
+
+    func showRoute(_ name: String?) {
+        let route = name.flatMap(SettingsRoute.parse)
+        show(route?.section)
+        if let route { model.navigate(route) }
     }
 
     func showShortcut(_ target: PracticeShortcutTarget) {
@@ -126,13 +152,118 @@ final class SettingsWindow: NSObject, NSWindowDelegate {
 
     var snapshotSize: CGSize { window?.frame.size ?? .zero }
 
+    /// Local model/control actions guarded by the bridge's disposable Settings
+    /// suite. No native events, desktop capture or real preferences.
+    func verify(_ request: [String: Any]) throws -> [String: Any] {
+        switch request["action"] as? String ?? "status" {
+        case "status": break
+        case "about": model.showingAbout = request["expanded"] as? Bool ?? false
+        case "scroll": model.scrollToBottom = request["bottom"] as? Bool ?? false
+        case "collapse": show(.shortcuts)
+        case "expand":
+            guard let raw = request["groups"] as? [String], raw.allSatisfy({ ShortcutSettingsGroup(rawValue: $0) != nil }) else {
+                throw ControlBridge.Problem(code: "invalid-request", message: "Choose valid shortcut groups")
+            }
+            show(.shortcuts)
+            for value in raw { model.shortcutDisclosure.set(ShortcutSettingsGroup(rawValue: value)!, expanded: true) }
+        case "focus":
+            guard let command = request["command"] as? String,
+                  ["toggle", "clear", "radial"].contains(command) || PresentationAction(rawValue: command) != nil else {
+                throw ControlBridge.Problem(code: "invalid-request", message: "Choose a known shortcut command")
+            }
+            show(.shortcuts); model.focusShortcut(command: command)
+        case "record", "cancel-recording":
+            guard let command = request["command"] as? String, let root = window?.contentView,
+                  let recorder = ShortcutNavigation.control(identifier: "settings.shortcut.\(command)", in: root) as? ShortcutRecorder else {
+                throw ControlBridge.Problem(code: "invalid-request", message: "Reveal and focus a mounted recorder first")
+            }
+            if request["action"] as? String == "record" { recorder.performClick(nil) }
+            else { recorder.cancelRecording() }
+        case "suggest-add": model.addSuggestedShortcuts()
+        case "suggest-undo": model.undoSuggestedShortcuts()
+        case "drawing-options": model.drawingAdvanced = request["advanced"] as? Bool ?? false
+        case "replay-drawing":
+            func replay(_ view: NSView) {
+                if let canvas = view as? DrawingPracticeView { canvas.replaySample() }
+                view.subviews.forEach(replay)
+            }
+            if let root = window?.contentView { replay(root) }
+        case "gesture-preview":
+            guard let raw = request["slot"] as? String, let slot = HandGestureSlot(rawValue: raw) else {
+                throw ControlBridge.Problem(code: "invalid-request", message: "Choose first or second gesture")
+            }
+            func preview(_ view: NSView) {
+                if let canvas = view as? PointerPreviewView { _ = canvas.arm.setGesture(slot); canvas.needsLayout = true }
+                view.subviews.forEach(preview)
+            }
+            if let root = window?.contentView { preview(root) }
+        case "preset-view":
+            model.presetsModel.refresh()
+            model.presetsModel.included = request["included"] as? Bool ?? false
+            model.presetsModel.showingRecovery = request["recovery"] as? Bool ?? false
+        case "import-review":
+            let store = PresentationStore(directory: CustomHands.directory, storage: Preferences.storage)
+            var archive = try store.captureArchive(); archive.setup.settings["strokeWidth"] = .number(10)
+            model.presetsModel.importDetails = request["details"] as? Bool ?? false
+            model.presetsModel.importFilename = "Workshop Backup.json"
+            model.presetsModel.importPlan = try store.preview(archive)
+        case "restore-review":
+            if let copy = model.presetsModel.recoveryCopies.first { model.presetsModel.reviewRestore(copy) }
+        case "dismiss-review": model.presetsModel.importPlan = nil; model.presetsModel.restorePlan = nil
+        case "customize":
+            guard let id = request["pointer"] as? String, let style = PointerStyle(rawValue: id) else {
+                throw ControlBridge.Problem(code: "invalid-request", message: "Choose an available pointer")
+            }
+            show(.pointers); model.inspectPointer(style)
+        case "inspector":
+            show(.pointers)
+            if let id = request["pointer"] as? String, let style = PointerStyle(rawValue: id) { model.inspectPointer(style) }
+            if let scope = request["scope"] as? String, let value = PointerInspectorState.Scope(rawValue: scope) { model.pointerInspector.scope = value }
+            if let filter = request["filter"] as? String, let value = PointerLibraryFilter.Category(rawValue: filter) { model.libraryFilter.category = value }
+            if let query = request["query"] as? String { model.libraryFilter.query = query }
+        case "new-hand": showHandCreator()
+        case "save-preset":
+            guard let name = request["name"] as? String, !name.isEmpty else {
+                throw ControlBridge.Problem(code: "invalid-request", message: "Choose a preset name")
+            }
+            let presets = PresetsSettingsModel(); presets.name = name; presets.save()
+            guard presets.presets.contains(where: { $0.name == name }) else {
+                throw ControlBridge.Problem(code: "invalid-request", message: presets.message ?? "Unable to save test preset")
+            }
+        case "dismiss": model.makingHand = false
+        default: throw ControlBridge.Problem(code: "invalid-request", message: "Unknown Settings test action")
+        }
+        window?.contentView?.layoutSubtreeIfNeeded()
+        func controls(_ root: NSView) -> [String] {
+            let own = (root as? NSControl)?.identifier?.rawValue
+            return (own?.hasPrefix("settings.shortcut.") == true ? [own!] : []) + root.subviews.flatMap(controls)
+        }
+        return ["section": model.section.rawValue, "toolPane": model.toolsPane.rawValue,
+                "expanded": model.shortcutDisclosure.expanded.map(\.rawValue).sorted(),
+                "shortcutControls": window?.contentView.map(controls) ?? [],
+                "windowID": (window?.attachedSheet ?? window).map { Int($0.windowNumber) } ?? 0,
+                "inspectorScope": model.pointerInspector.scope.rawValue,
+                "inspectorPointer": model.pointerInspector.style.rawValue,
+                "inspectorHandControls": model.pointerInspector.handControls,
+                "suggestedResult": model.suggestedResult?.summary ?? "",
+                "suggestedAddCount": model.suggestedRows.filter { $0.status == .willAdd }.count,
+                "presetNowCount": model.presetsModel.presets.filter { model.presetsModel.isCurrent($0) }.count,
+                "recoveryCount": model.presetsModel.recoveryCopies.count,
+                "sheet": model.makingHand ? "new-hand" : model.presetsModel.importPlan != nil ? "import" : model.presetsModel.restorePlan != nil ? "restore" : "none"]
+    }
+
     func exportVerificationSnapshot(to path: String) -> Bool {
-        guard let w = window, w.isVisible, w.isKeyWindow, NSApp.isActive,
+        guard let parent = window, let w = parent.attachedSheet ?? window, w.isVisible, w.isKeyWindow, NSApp.isActive,
               let image = CGWindowListCreateImage(.null, .optionIncludingWindow, CGWindowID(w.windowNumber), [.boundsIgnoreFraming, .bestResolution]),
               let png = NSBitmapImageRep(cgImage: image).representation(using: .png, properties: [:]) else { return false }
         do {
             try png.write(to: URL(fileURLWithPath: path), options: .atomic)
+            let all = GridProbes.shared.probes
+            if w !== parent {
+                GridProbes.shared.probes = all.filter { $0.value.area.hasPrefix("pointer.customize") || $0.value.area.hasPrefix("pointer.newHand") || $0.value.area.hasPrefix("presets.import") }
+            }
             GridProbes.shared.write(to: path.replacingOccurrences(of: ".png", with: "-layout.json"), window: w.frame.size)
+            GridProbes.shared.probes = all
             return true
         } catch { Log.write("verification snapshot failed: \(error)"); return false }
     }
@@ -155,14 +286,27 @@ final class SettingsWindow: NSObject, NSWindowDelegate {
     }
 
     func windowWillClose(_ notification: Notification) {
+        func stopRecorders(_ view: NSView) {
+            if let recorder = view as? ShortcutRecorder, recorder.isRecording { recorder.cancelRecording() }
+            view.subviews.forEach(stopRecorders)
+        }
+        if let content = window?.contentView { stopRecorders(content) }
         model.cancelShortcutNavigation()
         permissionTimer?.invalidate()
         permissionTimer = nil
         onRecording?(false)
         onVisibilityChanged?(false)
+        restoreFocus()
+    }
+
+    private func restoreFocus() {
+        let restoration = focusRestoration; focusRestoration = nil
+        restoration?.restore()
     }
 
     func windowDidResignKey(_ notification: Notification) { model.cancelShortcutNavigation() }
+
+    func windowDidBecomeKey(_ notification: Notification) { model.refresh() }
 
     func windowDidResize(_ notification: Notification) {
         (window?.contentView as? SettingsHostingView)?.scheduleShortcutNavigation(revealFocused: true)
@@ -221,6 +365,12 @@ final class ShortcutRecorder: NSButton {
     }
 
     var isRecording: Bool { monitor != nil }
+    func cancelRecording() { stopRecording() }
+
+    deinit {
+        if let monitor { NSEvent.removeMonitor(monitor) }
+        if let clickMonitor { NSEvent.removeMonitor(clickMonitor) }
+    }
 
     func show(_ s: Shortcut?) {
         guard monitor == nil, s != shortcut else {
@@ -243,7 +393,7 @@ final class ShortcutRecorder: NSButton {
         }
         let tail = String(rest)
         if dim || (caps.isEmpty && tail.count > 4) {
-            keys.addArrangedSubview(ShortcutRecorder.text(text))
+            keys.addArrangedSubview(ShortcutRecorder.text(text, size: dim ? 11 : 12))
             return
         }
         if !tail.isEmpty {
@@ -254,9 +404,9 @@ final class ShortcutRecorder: NSButton {
         }
     }
 
-    private static func text(_ string: String) -> NSTextField {
+    private static func text(_ string: String, size: CGFloat = 12) -> NSTextField {
         let label = NSTextField(labelWithString: string)
-        label.font = .systemFont(ofSize: 12, weight: .medium)
+        label.font = .systemFont(ofSize: size, weight: .medium)
         label.textColor = .secondaryLabelColor
         return label
     }
@@ -333,7 +483,7 @@ final class ShortcutRecorder: NSButton {
         guard monitor == nil else {
             return
         }
-        setLabel("Press keys", dim: true)
+        setLabel("Press keys; Esc cancels", dim: true)
         setRecordingLook(true)
         onRecording?(true)
         monitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown, .flagsChanged]) { [weak self] event in
@@ -343,7 +493,7 @@ final class ShortcutRecorder: NSButton {
             if event.type == .flagsChanged {
                 let flags = event.modifierFlags.intersection([.control, .option, .command, .shift])
                 if flags.isEmpty {
-                    self.setLabel("Press keys", dim: true)
+                    self.setLabel("Press keys; Esc cancels", dim: true)
                 } else {
                     self.setLabel(ShortcutRecorder.symbols(flags))
                 }

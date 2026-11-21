@@ -145,6 +145,17 @@ enum Preferences {
         saveShortcut(shortcut, "shortcut.\(action.rawValue)")
     }
 
+    static var quickControlFavorites: [String] {
+        get { RadialFavorites.load(from: defaults, materializeDefaults: true) }
+        set { if RadialFavorites.valid(newValue) { set(newValue, RadialFavorites.storageKey) } }
+    }
+
+    @discardableResult static func assignQuickControlFavorite(_ id: String, to slot: Int) -> Bool {
+        guard let updated = RadialFavorites.assigning(id, to: slot, in: quickControlFavorites) else { return false }
+        quickControlFavorites = updated
+        return true
+    }
+
     static var radialTrigger: RadialTrigger? {
         get { defaults.string(forKey: "radialTrigger").flatMap(RadialTrigger.init(rawValue:)) }
         set {
@@ -277,9 +288,7 @@ enum Preferences {
 
     static var pinnedStyles: [PointerStyle] {
         get {
-            guard let raw = defaults.stringArray(forKey: "pinnedStyles") else {
-                return PointerStyle.defaultPinned
-            }
+            let raw = FavoriteLibraryConfiguration.migrated(from: defaults).toolbarIDs
             var seen = Set<PointerStyle>()
             let pinned = raw.compactMap(PointerStyle.init(rawValue:)).filter { seen.insert($0).inserted }
             return pinned.isEmpty ? PointerStyle.defaultPinned : pinned
@@ -304,7 +313,7 @@ enum Preferences {
     }
 
     static func resetAll() {
-        for key in ["radialTrigger", "shortcut.toggle", "shortcut.clear", "pointerSize", "showShadow", "shadowStyle", "fadeSeconds",
+        for key in [RadialFavorites.storageKey, "radialTrigger", "shortcut.toggle", "shortcut.clear", "pointerSize", "showShadow", "shadowStyle", "fadeSeconds",
                     "sound.hands", "sound.laser", "sound.volume", "sound.muted", "interactKey", "interactKeepsHand", "pinnedStyles", "pointerStyle", "disabledPointerIDs",
                     "inkChoice", "showInkButton", "tapSound", "pointerMode", "drawingTool", "strokeWidth", "inkOpacity",
                     "strokeSmoothing", "pointerMotion", "theme", "showToolbar", "toolbarPosition", "capture.copy", "capture.save", "capture.folder",

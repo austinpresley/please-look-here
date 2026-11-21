@@ -1,0 +1,17 @@
+[
+  {
+    "variant": "white-coral",
+    "source": "assets/hand_glove.png",
+    "sha256": "c93b7af4dbc72b690f55681d81655e4f81d1c7de3200b91d0f2b92a872d8461b"
+  },
+  {
+    "variant": "purple-coral",
+    "source": "assets/hand_lavender.png",
+    "sha256": "8a89c255677abad9aeafb9baeb90f01c467479ff8e0c650c401087d6d6324cd1"
+  },
+  {
+    "variant": "purple-cream",
+    "source": "assets/hand_lavender.png",
+    "sha256": "8a89c255677abad9aeafb9baeb90f01c467479ff8e0c650c401087d6d6324cd1"
+  }
+]

@@ -1,0 +1,755 @@
+[
+  {
+    "id": "astro",
+    "pose": "ok",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Edit target Image 1 is assets/hand_astro.png. Pose reference Image 2 is gesture_ok.png. Make one OK version of the exact same white astronaut glove pointer. Change ONLY the finger pose: thumb and index meet in a clearly readable closed circle on viewer-left, middle ring and pinky extend upward, exactly five digits. Preserve the visible BACK of the glove, the blue rectangular display on its back, white padded stitching, blue wrist trim, the exact cuff shape and black cylindrical rod. Match camera angle, material, colors, highlights, hand scale, cuff and rod placement. Full portrait 1024x1536 canvas; cuff at original coordinates around x=529 y=650, rod from y=690 to1465. Do not zoom, crop, tilt or recenter the object. This is a complete same-canvas replacement, not a hand-only icon. Genuine transparent background with clean alpha; remove the gray background and any glow. No text, no shadow, no floor, no checkerboard.",
+    "raw": "raw/astro-ok-1.png",
+    "reference": "assets/hand_astro.png",
+    "pose_reference": "assets/gesture_ok.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "astro",
+    "pose": "shaka",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the finger pose reference. Change only the fingers of Image 1 to Shaka: thumb extends toward viewer-left, pinky extends upward toward viewer-right; index, middle and ring curled into exactly three knuckles. Only thumb and pinky extended. Exactly five digits total. Keep the back of the hand facing the viewer, same camera angle, orientation, perspective and lighting. Character/material: white padded astronaut glove with stitched seams, blue wrist trim and blue rectangular electronic display on the back. Preserve exact colors, texture, cuff design and black stick from Image 1. Retain cuff and stick in their original pixel coordinates, width and scale. Full 1024x1536 portrait canvas. Keep wrist fixed, keep the complete rod visible down to its original endpoint, retain empty margins. Do not zoom, crop, recenter, rotate or change style. Real transparent background with clean alpha, no solid background, no checkerboard, no floor, no shadow, no outer halo, no text. One hand and one stick only.",
+    "raw": "raw/astro-shaka-1.png",
+    "reference": "assets/hand_astro.png",
+    "pose_reference": "assets/gesture_shaka.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "black",
+    "pose": "ok",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the finger pose reference. Change only the fingers of Image 1 to OK: thumb and index touching to form one clearly open circular hole on viewer-left; middle, ring and pinky extended upward, separated and readable. Exactly five digits total. Keep the back of the hand facing the viewer, same camera angle, orientation, perspective and lighting. Character/material: black glossy vinyl toy hand with white specular highlights, black rounded cuff. Preserve exact colors, texture, cuff design and black stick from Image 1. Retain cuff and stick in their original pixel coordinates, width and scale. Full 1024x1536 portrait canvas. Keep wrist fixed, keep the complete rod visible down to its original endpoint, retain empty margins. Do not zoom, crop, recenter, rotate or change style. Real transparent background with clean alpha, no solid background, no checkerboard, no floor, no shadow, no outer halo, no text. One hand and one stick only.",
+    "raw": "raw/black-ok-1.png",
+    "reference": "assets/hand_black.png",
+    "pose_reference": "assets/gesture_ok.png",
+    "outcome": "rejected",
+    "reason": "Generated stacked collars above the original cuff. Replaced by attempt 2."
+  },
+  {
+    "id": "blue",
+    "pose": "ok",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the finger pose reference. Change only the fingers of Image 1 to OK: thumb and index touching to form one clearly open circular hole on viewer-left; middle, ring and pinky extended upward, separated and readable. Exactly five digits total. Keep the back of the hand facing the viewer, same camera angle, orientation, perspective and lighting. Character/material: sky-blue smooth glossy vinyl toy hand and matching rounded cuff. Preserve exact colors, texture, cuff design and black stick from Image 1. Retain cuff and stick in their original pixel coordinates, width and scale. Full 1024x1536 portrait canvas. Keep wrist fixed, keep the complete rod visible down to its original endpoint, retain empty margins. Do not zoom, crop, recenter, rotate or change style. Real transparent background with clean alpha, no solid background, no checkerboard, no floor, no shadow, no outer halo, no text. One hand and one stick only.",
+    "raw": "raw/blue-ok-1.png",
+    "reference": "assets/hand_blue.png",
+    "pose_reference": "assets/gesture_ok.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "black",
+    "pose": "shaka",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the finger pose reference. Change only the fingers of Image 1 to Shaka: thumb extends toward viewer-left, pinky extends upward toward viewer-right; index, middle and ring curled into exactly three knuckles. Only thumb and pinky extended. Exactly five digits total. Keep the back of the hand facing the viewer, same camera angle, orientation, perspective and lighting. Character/material: black glossy vinyl toy hand with white specular highlights, black rounded cuff. Preserve exact colors, texture, cuff design and black stick from Image 1. Retain cuff and stick in their original pixel coordinates, width and scale. Full 1024x1536 portrait canvas. Keep wrist fixed, keep the complete rod visible down to its original endpoint, retain empty margins. Do not zoom, crop, recenter, rotate or change style. Real transparent background with clean alpha, no solid background, no checkerboard, no floor, no shadow, no outer halo, no text. One hand and one stick only.",
+    "raw": "raw/black-shaka-1.png",
+    "reference": "assets/hand_black.png",
+    "pose_reference": "assets/gesture_shaka.png",
+    "outcome": "rejected",
+    "reason": "Generated stacked collars above the original cuff. Replaced by attempt 2."
+  },
+  {
+    "id": "cactus",
+    "pose": "shaka",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to Shaka: thumb extends toward viewer-left, pinky extends upward toward viewer-right; index middle ring curl into exactly three knuckles. Only thumb and pinky extended. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: green ribbed living cactus hand with tiny pale spines and a small pink flower at the thumb, matching cactus cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. ",
+    "raw": "raw/cactus-shaka-1.png",
+    "reference": "assets/hand_cactus.png",
+    "pose_reference": "assets/gesture_shaka.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "cactus",
+    "pose": "ok",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to OK: thumb and index meet in a closed circle on viewer-left with a clearly open transparent circular hole; exactly three other fingers, middle ring pinky, extend upward. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: green ribbed living cactus hand with tiny pale spines and a small pink flower at the thumb, matching cactus cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. ",
+    "raw": "raw/cactus-ok-1.png",
+    "reference": "assets/hand_cactus.png",
+    "pose_reference": "assets/gesture_ok.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "blue",
+    "pose": "shaka",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to Shaka: thumb extends toward viewer-left, pinky extends upward toward viewer-right; index middle ring curl into exactly three knuckles. Only thumb and pinky extended. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: sky-blue smooth glossy vinyl toy hand and matching rounded cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. ",
+    "raw": "raw/blue-shaka-1.png",
+    "reference": "assets/hand_blue.png",
+    "pose_reference": "assets/gesture_shaka.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "choco",
+    "pose": "ok",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to OK: thumb and index meet in a closed circle on viewer-left with a clearly open transparent circular hole; exactly three other fingers, middle ring pinky, extend upward. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: milk chocolate hand with glossy melted-chocolate finish and tiny rainbow sprinkles, chocolate cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. ",
+    "raw": "raw/choco-ok-1.png",
+    "reference": "assets/hand_choco.png",
+    "pose_reference": "assets/gesture_ok.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "choco",
+    "pose": "shaka",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to Shaka: thumb extends toward viewer-left, pinky extends upward toward viewer-right; index middle ring curl into exactly three knuckles. Only thumb and pinky extended. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: milk chocolate hand with glossy melted-chocolate finish and tiny rainbow sprinkles, chocolate cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. ",
+    "raw": "raw/choco-shaka-1.png",
+    "reference": "assets/hand_choco.png",
+    "pose_reference": "assets/gesture_shaka.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "chrome",
+    "pose": "ok",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to OK: thumb and index meet in a closed circle on viewer-left with a clearly open transparent circular hole; exactly three other fingers, middle ring pinky, extend upward. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: mirror-polished silver chrome metal hand, distorted reflections and silver rounded cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. ",
+    "raw": "raw/chrome-ok-1.png",
+    "reference": "assets/hand_chrome.png",
+    "pose_reference": "assets/gesture_ok.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "chrome",
+    "pose": "shaka",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to Shaka: thumb extends toward viewer-left, pinky extends upward toward viewer-right; index middle ring curl into exactly three knuckles. Only thumb and pinky extended. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: mirror-polished silver chrome metal hand, distorted reflections and silver rounded cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. ",
+    "raw": "raw/chrome-shaka-1.png",
+    "reference": "assets/hand_chrome.png",
+    "pose_reference": "assets/gesture_shaka.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "cloud",
+    "pose": "ok",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to OK: thumb and index meet in a closed circle on viewer-left with a clearly open transparent circular hole; exactly three other fingers, middle ring pinky, extend upward. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: white soft cumulus-cloud hand, puffy cloud texture and cloud cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. ",
+    "raw": "raw/cloud-ok-1.png",
+    "reference": "assets/hand_cloud.png",
+    "pose_reference": "assets/gesture_ok.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "cloud",
+    "pose": "shaka",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to Shaka: thumb extends toward viewer-left, pinky extends upward toward viewer-right; index middle ring curl into exactly three knuckles. Only thumb and pinky extended. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: white soft cumulus-cloud hand, puffy cloud texture and cloud cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. ",
+    "raw": "raw/cloud-shaka-1.png",
+    "reference": "assets/hand_cloud.png",
+    "pose_reference": "assets/gesture_shaka.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "cookie",
+    "pose": "ok",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to OK: thumb and index meet in a closed circle on viewer-left with a clearly open transparent circular hole; exactly three other fingers, middle ring pinky, extend upward. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: golden baked gingerbread cookie hand with white piped icing border and white scalloped icing cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. ",
+    "raw": "raw/cookie-ok-1.png",
+    "reference": "assets/hand_cookie.png",
+    "pose_reference": "assets/gesture_ok.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "cookie",
+    "pose": "shaka",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to Shaka: thumb extends toward viewer-left, pinky extends upward toward viewer-right; index middle ring curl into exactly three knuckles. Only thumb and pinky extended. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: golden baked gingerbread cookie hand with white piped icing border and white scalloped icing cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. ",
+    "raw": "raw/cookie-shaka-1.png",
+    "reference": "assets/hand_cookie.png",
+    "pose_reference": "assets/gesture_shaka.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "coral",
+    "pose": "ok",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to OK: thumb and index meet in a closed circle on viewer-left with a clearly open transparent circular hole; exactly three other fingers, middle ring pinky, extend upward. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: glossy translucent coral-red plastic hand and matching rounded cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. ",
+    "raw": "raw/coral-ok-1.png",
+    "reference": "assets/hand_coral.png",
+    "pose_reference": "assets/gesture_ok.png",
+    "outcome": "rejected",
+    "reason": "Angular lower palm and extra collar shape. Attempt 2 plus revised lower-palm normalization selected."
+  },
+  {
+    "id": "coral",
+    "pose": "shaka",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to Shaka: thumb extends toward viewer-left, pinky extends upward toward viewer-right; index middle ring curl into exactly three knuckles. Only thumb and pinky extended. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: glossy translucent coral-red plastic hand and matching rounded cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. ",
+    "raw": "raw/coral-shaka-1.png",
+    "reference": "assets/hand_coral.png",
+    "pose_reference": "assets/gesture_shaka.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "fuzzy",
+    "pose": "ok",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to OK: thumb and index meet in a closed circle on viewer-left with a clearly open transparent circular hole; exactly three other fingers, middle ring pinky, extend upward. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: lavender purple short fuzzy plush fur and fuzzy rounded cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. ",
+    "raw": "raw/fuzzy-ok-1.png",
+    "reference": "assets/hand_fuzzy.png",
+    "pose_reference": "assets/gesture_ok.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "fuzzy",
+    "pose": "shaka",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to Shaka: thumb extends toward viewer-left, pinky extends upward toward viewer-right; index middle ring curl into exactly three knuckles. Only thumb and pinky extended. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: lavender purple short fuzzy plush fur and fuzzy rounded cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. ",
+    "raw": "raw/fuzzy-shaka-1.png",
+    "reference": "assets/hand_fuzzy.png",
+    "pose_reference": "assets/gesture_shaka.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "glass",
+    "pose": "ok",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to OK: thumb and index meet in a closed circle on viewer-left with a clearly open transparent circular hole; exactly three other fingers, middle ring pinky, extend upward. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: colorless clear bubbly glass hand, glass refraction and translucent glass cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. ",
+    "raw": "raw/glass-ok-1.png",
+    "reference": "assets/hand_glass.png",
+    "pose_reference": "assets/gesture_ok.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "glass",
+    "pose": "shaka",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to Shaka: thumb extends toward viewer-left, pinky extends upward toward viewer-right; index middle ring curl into exactly three knuckles. Only thumb and pinky extended. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: colorless clear bubbly glass hand, glass refraction and translucent glass cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. ",
+    "raw": "raw/glass-shaka-1.png",
+    "reference": "assets/hand_glass.png",
+    "pose_reference": "assets/gesture_shaka.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "glove",
+    "pose": "ok",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to OK: thumb and index meet in a closed circle on viewer-left with a clearly open transparent circular hole; exactly three other fingers, middle ring pinky, extend upward. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: soft pearly white smooth toy glove and matching cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. ",
+    "raw": "raw/glove-ok-1.png",
+    "reference": "assets/hand_glove.png",
+    "pose_reference": "assets/gesture_ok.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "glove",
+    "pose": "shaka",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to Shaka: thumb extends toward viewer-left, pinky extends upward toward viewer-right; index middle ring curl into exactly three knuckles. Only thumb and pinky extended. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: soft pearly white smooth toy glove and matching cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. ",
+    "raw": "raw/glove-shaka-1.png",
+    "reference": "assets/hand_glove.png",
+    "pose_reference": "assets/gesture_shaka.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "grass",
+    "pose": "ok",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to OK: thumb and index meet in a closed circle on viewer-left with a clearly open transparent circular hole; exactly three other fingers, middle ring pinky, extend upward. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: green mossy grass hand dotted with tiny white daisies, matching moss cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. ",
+    "raw": "raw/grass-ok-1.png",
+    "reference": "assets/hand_grass.png",
+    "pose_reference": "assets/gesture_ok.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "jelly",
+    "pose": "ok",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to OK: thumb and index meet in a closed circle on viewer-left with a clearly open transparent circular hole; exactly three other fingers, middle ring pinky, extend upward. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: translucent vivid purple jelly hand with tiny suspended white sparkles and purple jelly cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Keep the original single cuff assembly exactly. No extra rings, bands, collars or stacked cuffs above the original cuff. Keep all fingertips below the original pointing fingertip's top margin.",
+    "raw": "raw/jelly-ok-1.png",
+    "reference": "assets/hand_jelly.png",
+    "pose_reference": "assets/gesture_ok.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "grass",
+    "pose": "shaka",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to Shaka: thumb extends toward viewer-left, pinky extends upward toward viewer-right; index middle ring curl into exactly three knuckles. Only thumb and pinky extended. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: green mossy grass hand dotted with tiny white daisies, matching moss cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Keep the original single cuff assembly exactly. No extra rings, bands, collars or stacked cuffs above the original cuff. Keep all fingertips below the original pointing fingertip's top margin.",
+    "raw": "raw/grass-shaka-1.png",
+    "reference": "assets/hand_grass.png",
+    "pose_reference": "assets/gesture_shaka.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "lava",
+    "pose": "shaka",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to Shaka: thumb extends toward viewer-left, pinky extends upward toward viewer-right; index middle ring curl into exactly three knuckles. Only thumb and pinky extended. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: black volcanic stone with red-orange glowing lava cracks and matching lava cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Keep the original single cuff assembly exactly. No extra rings, bands, collars or stacked cuffs above the original cuff. Keep all fingertips below the original pointing fingertip's top margin.",
+    "raw": "raw/lava-shaka-1.png",
+    "reference": "assets/hand_lava.png",
+    "pose_reference": "assets/gesture_shaka.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "lava",
+    "pose": "ok",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to OK: thumb and index meet in a closed circle on viewer-left with a clearly open transparent circular hole; exactly three other fingers, middle ring pinky, extend upward. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: black volcanic stone with red-orange glowing lava cracks and matching lava cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Keep the original single cuff assembly exactly. No extra rings, bands, collars or stacked cuffs above the original cuff. Keep all fingertips below the original pointing fingertip's top margin.",
+    "raw": "raw/lava-ok-1.png",
+    "reference": "assets/hand_lava.png",
+    "pose_reference": "assets/gesture_ok.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "holo",
+    "pose": "ok",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to OK: thumb and index meet in a closed circle on viewer-left with a clearly open transparent circular hole; exactly three other fingers, middle ring pinky, extend upward. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: pearlescent holographic pastel pink blue iridescent chrome hand and matching cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Keep the original single cuff assembly exactly. No extra rings, bands, collars or stacked cuffs above the original cuff. Keep all fingertips below the original pointing fingertip's top margin.",
+    "raw": "raw/holo-ok-1.png",
+    "reference": "assets/hand_holo.png",
+    "pose_reference": "assets/gesture_ok.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "lavender",
+    "pose": "ok",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to OK: thumb and index meet in a closed circle on viewer-left with a clearly open transparent circular hole; exactly three other fingers, middle ring pinky, extend upward. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: pale lavender smooth glossy vinyl toy hand and rounded cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Keep the original single cuff assembly exactly. No extra rings, bands, collars or stacked cuffs above the original cuff. Keep all fingertips below the original pointing fingertip's top margin.",
+    "raw": "raw/lavender-ok-1.png",
+    "reference": "assets/hand_lavender.png",
+    "pose_reference": "assets/gesture_ok.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "holo",
+    "pose": "shaka",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to Shaka: thumb extends toward viewer-left, pinky extends upward toward viewer-right; index middle ring curl into exactly three knuckles. Only thumb and pinky extended. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: pearlescent holographic pastel pink blue iridescent chrome hand and matching cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Keep the original single cuff assembly exactly. No extra rings, bands, collars or stacked cuffs above the original cuff. Keep all fingertips below the original pointing fingertip's top margin.",
+    "raw": "raw/holo-shaka-1.png",
+    "reference": "assets/hand_holo.png",
+    "pose_reference": "assets/gesture_shaka.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "jelly",
+    "pose": "shaka",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to Shaka: thumb extends toward viewer-left, pinky extends upward toward viewer-right; index middle ring curl into exactly three knuckles. Only thumb and pinky extended. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: translucent vivid purple jelly hand with tiny suspended white sparkles and purple jelly cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Keep the original single cuff assembly exactly. No extra rings, bands, collars or stacked cuffs above the original cuff. Keep all fingertips below the original pointing fingertip's top margin.",
+    "raw": "raw/jelly-shaka-1.png",
+    "reference": "assets/hand_jelly.png",
+    "pose_reference": "assets/gesture_shaka.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "knit",
+    "pose": "ok",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to OK: thumb and index meet in a closed circle on viewer-left with a clearly open transparent circular hole; exactly three other fingers, middle ring pinky, extend upward. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: lavender cable-knitted yarn hand, visible interlocking V knit stitches, ribbed knitted cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Keep the original single cuff assembly exactly. No extra rings, bands, collars or stacked cuffs above the original cuff. Keep all fingertips below the original pointing fingertip's top margin.",
+    "raw": "raw/knit-ok-1.png",
+    "reference": "assets/hand_knit.png",
+    "pose_reference": "assets/gesture_ok.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "knit",
+    "pose": "shaka",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to Shaka: thumb extends toward viewer-left, pinky extends upward toward viewer-right; index middle ring curl into exactly three knuckles. Only thumb and pinky extended. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: lavender cable-knitted yarn hand, visible interlocking V knit stitches, ribbed knitted cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Keep the original single cuff assembly exactly. No extra rings, bands, collars or stacked cuffs above the original cuff. Keep all fingertips below the original pointing fingertip's top margin.",
+    "raw": "raw/knit-shaka-1.png",
+    "reference": "assets/hand_knit.png",
+    "pose_reference": "assets/gesture_shaka.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "black",
+    "pose": "shaka",
+    "attempt": 2,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to Shaka: thumb extends toward viewer-left, pinky extends upward toward viewer-right; index middle ring curl into exactly three knuckles. Only thumb and pinky extended. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: black glossy vinyl toy hand with white specular highlights, black rounded cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Keep the original single cuff assembly exactly. No extra rings, bands, collars or stacked cuffs above the original cuff. Keep all fingertips below the original pointing fingertip's top margin.The prior attempt added multiple black collars. The base has only one small neck ridge above ONE large rounded black cuff. Copy that exact arrangement, no other wrist rings.",
+    "raw": "raw/black-shaka-2.png",
+    "reference": "assets/hand_black.png",
+    "pose_reference": "assets/gesture_shaka.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "black",
+    "pose": "ok",
+    "attempt": 2,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to OK: thumb and index meet in a closed circle on viewer-left with a clearly open transparent circular hole; exactly three other fingers, middle ring pinky, extend upward. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: black glossy vinyl toy hand with white specular highlights, black rounded cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Keep the original single cuff assembly exactly. No extra rings, bands, collars or stacked cuffs above the original cuff. Keep all fingertips below the original pointing fingertip's top margin.The prior attempt added multiple black collars. The base has only one small neck ridge above ONE large rounded black cuff. Copy that exact arrangement, no other wrist rings.",
+    "raw": "raw/black-ok-2.png",
+    "reference": "assets/hand_black.png",
+    "pose_reference": "assets/gesture_ok.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "leaf",
+    "pose": "ok",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to OK: thumb and index meet in a closed circle on viewer-left with a clearly open transparent circular hole; exactly three other fingers, middle ring pinky, extend upward. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: hand woven from layered green leaves with detailed veins and tan vine bands at knuckles and wrist. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Keep the original single cuff assembly exactly. No extra rings, bands, collars or stacked cuffs above the original cuff. Keep fingertips below the original pointing fingertip's top margin. Only finger pose changes, not the hand's material or rendering.",
+    "raw": "raw/leaf-ok-1.png",
+    "reference": "assets/hand_leaf.png",
+    "pose_reference": "assets/gesture_ok.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "lavender",
+    "pose": "shaka",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to Shaka: thumb extends toward viewer-left, pinky extends upward toward viewer-right; index middle ring curl into exactly three knuckles. Only thumb and pinky extended. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: pale lavender smooth glossy vinyl toy hand and rounded cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Keep the original single cuff assembly exactly. No extra rings, bands, collars or stacked cuffs above the original cuff. Keep fingertips below the original pointing fingertip's top margin. Only finger pose changes, not the hand's material or rendering.",
+    "raw": "raw/lavender-shaka-1.png",
+    "reference": "assets/hand_lavender.png",
+    "pose_reference": "assets/gesture_shaka.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "leaf",
+    "pose": "shaka",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to Shaka: thumb extends toward viewer-left, pinky extends upward toward viewer-right; index middle ring curl into exactly three knuckles. Only thumb and pinky extended. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: hand woven from layered green leaves with detailed veins and tan vine bands at knuckles and wrist. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Keep the original single cuff assembly exactly. No extra rings, bands, collars or stacked cuffs above the original cuff. Keep fingertips below the original pointing fingertip's top margin. Only finger pose changes, not the hand's material or rendering.",
+    "raw": "raw/leaf-shaka-1.png",
+    "reference": "assets/hand_leaf.png",
+    "pose_reference": "assets/gesture_shaka.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "lemon",
+    "pose": "ok",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to OK: thumb and index meet in a closed circle on viewer-left with a clearly open transparent circular hole; exactly three other fingers, middle ring pinky, extend upward. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: bright lemon-yellow glossy vinyl toy hand and matching rounded cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Keep the original single cuff assembly exactly. No extra rings, bands, collars or stacked cuffs above the original cuff. Keep fingertips below the original pointing fingertip's top margin. Only finger pose changes, not the hand's material or rendering.",
+    "raw": "raw/lemon-ok-1.png",
+    "reference": "assets/hand_lemon.png",
+    "pose_reference": "assets/gesture_ok.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "lemon",
+    "pose": "shaka",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to Shaka: thumb extends toward viewer-left, pinky extends upward toward viewer-right; index middle ring curl into exactly three knuckles. Only thumb and pinky extended. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: bright lemon-yellow glossy vinyl toy hand and matching rounded cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Keep the original single cuff assembly exactly. No extra rings, bands, collars or stacked cuffs above the original cuff. Keep fingertips below the original pointing fingertip's top margin. Only finger pose changes, not the hand's material or rendering.",
+    "raw": "raw/lemon-shaka-1.png",
+    "reference": "assets/hand_lemon.png",
+    "pose_reference": "assets/gesture_shaka.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "lowpoly",
+    "pose": "ok",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to OK: thumb and index meet in a closed circle on viewer-left with a clearly open transparent circular hole; exactly three other fingers, middle ring pinky, extend upward. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: faceted lavender low-poly polygonal hand, hard triangular flat shaded facets and polygonal cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Keep the original single cuff assembly exactly. No extra rings, bands, collars or stacked cuffs above the original cuff. Keep fingertips below the original pointing fingertip's top margin. Only finger pose changes, not the hand's material or rendering.",
+    "raw": "raw/lowpoly-ok-1.png",
+    "reference": "assets/hand_lowpoly.png",
+    "pose_reference": "assets/gesture_ok.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "lowpoly",
+    "pose": "shaka",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to Shaka: thumb extends toward viewer-left, pinky extends upward toward viewer-right; index middle ring curl into exactly three knuckles. Only thumb and pinky extended. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: faceted lavender low-poly polygonal hand, hard triangular flat shaded facets and polygonal cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Keep the original single cuff assembly exactly. No extra rings, bands, collars or stacked cuffs above the original cuff. Keep fingertips below the original pointing fingertip's top margin. Only finger pose changes, not the hand's material or rendering.",
+    "raw": "raw/lowpoly-shaka-1.png",
+    "reference": "assets/hand_lowpoly.png",
+    "pose_reference": "assets/gesture_shaka.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "marble",
+    "pose": "ok",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to OK: thumb and index meet in a closed circle on viewer-left with a clearly open transparent circular hole; exactly three other fingers, middle ring pinky, extend upward. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: polished white marble hand with fine light-gray veining, matching marble cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Keep the original single cuff assembly exactly. No extra rings, bands, collars or stacked cuffs above the original cuff. Keep fingertips below the original pointing fingertip's top margin. Only finger pose changes, not the hand's material or rendering.",
+    "raw": "raw/marble-ok-1.png",
+    "reference": "assets/hand_marble.png",
+    "pose_reference": "assets/gesture_ok.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "marble",
+    "pose": "shaka",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to Shaka: thumb extends toward viewer-left, pinky extends upward toward viewer-right; index middle ring curl into exactly three knuckles. Only thumb and pinky extended. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: polished white marble hand with fine light-gray veining, matching marble cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Keep the original single cuff assembly exactly. No extra rings, bands, collars or stacked cuffs above the original cuff. Keep fingertips below the original pointing fingertip's top margin. Only finger pose changes, not the hand's material or rendering.",
+    "raw": "raw/marble-shaka-1.png",
+    "reference": "assets/hand_marble.png",
+    "pose_reference": "assets/gesture_shaka.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "mech",
+    "pose": "ok",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to OK: thumb and index meet in a closed circle on viewer-left with a clearly open transparent circular hole; exactly three other fingers, middle ring pinky, extend upward. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: white futuristic segmented armored robot glove with dark gray mechanical seams and orange wrist cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Keep the original single cuff assembly exactly. No extra rings, bands, collars or stacked cuffs above the original cuff. Keep fingertips below the original pointing fingertip's top margin. Only finger pose changes, not the hand's material or rendering.",
+    "raw": "raw/mech-ok-1.png",
+    "reference": "assets/hand_mech.png",
+    "pose_reference": "assets/gesture_ok.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "mech",
+    "pose": "shaka",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to Shaka: thumb extends toward viewer-left, pinky extends upward toward viewer-right; index middle ring curl into exactly three knuckles. Only thumb and pinky extended. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: white futuristic segmented armored robot glove with dark gray mechanical seams and orange wrist cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Keep the original single cuff assembly exactly. No extra rings, bands, collars or stacked cuffs above the original cuff. Keep fingertips below the original pointing fingertip's top margin. Only finger pose changes, not the hand's material or rendering.",
+    "raw": "raw/mech-shaka-1.png",
+    "reference": "assets/hand_mech.png",
+    "pose_reference": "assets/gesture_shaka.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "mint",
+    "pose": "ok",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to OK: thumb and index meet in a closed circle on viewer-left with a clearly open transparent circular hole; exactly three other fingers, middle ring pinky, extend upward. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: pale mint-green smooth glossy vinyl toy hand and matching rounded cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Keep the original single cuff assembly exactly. No extra rings, bands, collars or stacked cuffs above the original cuff. Keep fingertips below the original pointing fingertip's top margin. Only finger pose changes, not the hand's material or rendering.",
+    "raw": "raw/mint-ok-1.png",
+    "reference": "assets/hand_mint.png",
+    "pose_reference": "assets/gesture_ok.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "mint",
+    "pose": "shaka",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to Shaka: thumb extends toward viewer-left, pinky extends upward toward viewer-right; index middle ring curl into exactly three knuckles. Only thumb and pinky extended. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: pale mint-green smooth glossy vinyl toy hand and matching rounded cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Keep the original single cuff assembly exactly. No extra rings, bands, collars or stacked cuffs above it. Keep all fingertips below the original pointing fingertip's top margin. Preserve the original rendering medium; do not make a textured hand into smooth vinyl. No glow outside alpha silhouette.",
+    "raw": "raw/mint-shaka-1.png",
+    "reference": "assets/hand_mint.png",
+    "pose_reference": "assets/gesture_shaka.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "monster",
+    "pose": "ok",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to OK: thumb and index meet in a closed circle on viewer-left with a clearly open transparent circular hole; exactly three other fingers, middle ring pinky, extend upward. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: bright lime-green long shaggy fur with small orange claws, furry green cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Keep the original single cuff assembly exactly. No extra rings, bands, collars or stacked cuffs above it. Keep all fingertips below the original pointing fingertip's top margin. Preserve the original rendering medium; do not make a textured hand into smooth vinyl. No glow outside alpha silhouette.",
+    "raw": "raw/monster-ok-1.png",
+    "reference": "assets/hand_monster.png",
+    "pose_reference": "assets/gesture_ok.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "monster",
+    "pose": "shaka",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to Shaka: thumb extends toward viewer-left, pinky extends upward toward viewer-right; index middle ring curl into exactly three knuckles. Only thumb and pinky extended. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: bright lime-green long shaggy fur with small orange claws, furry green cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Keep the original single cuff assembly exactly. No extra rings, bands, collars or stacked cuffs above it. Keep all fingertips below the original pointing fingertip's top margin. Preserve the original rendering medium; do not make a textured hand into smooth vinyl. No glow outside alpha silhouette.",
+    "raw": "raw/monster-shaka-1.png",
+    "reference": "assets/hand_monster.png",
+    "pose_reference": "assets/gesture_shaka.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "neon",
+    "pose": "ok",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to OK: thumb and index meet in a closed circle on viewer-left with a clearly open transparent circular hole; exactly three other fingers, middle ring pinky, extend upward. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: hot magenta translucent toy hand edged by bright white neon tubes, matching neon magenta rectangular cuff; keep tube illumination inside the silhouette, no external glow. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Keep the original single cuff assembly exactly. No extra rings, bands, collars or stacked cuffs above it. Keep all fingertips below the original pointing fingertip's top margin. Preserve the original rendering medium; do not make a textured hand into smooth vinyl. No glow outside alpha silhouette.",
+    "raw": "raw/neon-ok-1.png",
+    "reference": "assets/hand_neon.png",
+    "pose_reference": "assets/gesture_ok.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "neon",
+    "pose": "shaka",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to Shaka: thumb extends toward viewer-left, pinky extends upward toward viewer-right; index middle ring curl into exactly three knuckles. Only thumb and pinky extended. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: hot magenta translucent toy hand edged by bright white neon tubes, matching neon magenta rectangular cuff; keep tube illumination inside the silhouette, no external glow. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Keep the original single cuff assembly exactly. No extra rings, bands, collars or stacked cuffs above it. Keep all fingertips below the original pointing fingertip's top margin. Preserve the original rendering medium; do not make a textured hand into smooth vinyl. No glow outside alpha silhouette.",
+    "raw": "raw/neon-shaka-1.png",
+    "reference": "assets/hand_neon.png",
+    "pose_reference": "assets/gesture_shaka.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "pastel",
+    "pose": "ok",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to OK: thumb and index meet in a closed circle on viewer-left with a clearly open transparent circular hole; exactly three other fingers, middle ring pinky, extend upward. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: smooth toy hand with pastel pink upper fingers blending through lilac into powder-blue at the wrist and blue rounded cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Keep the original single cuff assembly exactly. No extra rings, bands, collars or stacked cuffs above it. Keep all fingertips below the original pointing fingertip's top margin. Preserve the original rendering medium; do not make a textured hand into smooth vinyl. No glow outside alpha silhouette.",
+    "raw": "raw/pastel-ok-1.png",
+    "reference": "assets/hand_pastel.png",
+    "pose_reference": "assets/gesture_ok.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "pastel",
+    "pose": "shaka",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to Shaka: thumb extends toward viewer-left, pinky extends upward toward viewer-right; index middle ring curl into exactly three knuckles. Only thumb and pinky extended. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: smooth toy hand with pastel pink upper fingers blending through lilac into powder-blue at the wrist and blue rounded cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Keep the original single cuff assembly exactly. No extra rings, bands, collars or stacked cuffs above it. Keep all fingertips below the original pointing fingertip's top margin. Preserve the original rendering medium; do not make a textured hand into smooth vinyl. No glow outside alpha silhouette.",
+    "raw": "raw/pastel-shaka-1.png",
+    "reference": "assets/hand_pastel.png",
+    "pose_reference": "assets/gesture_shaka.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "pink",
+    "pose": "ok",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to OK: thumb and index meet in a closed circle on viewer-left with a clearly open transparent circular hole; exactly three other fingers, middle ring pinky, extend upward. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: bubblegum pink glossy vinyl toy hand and matching rounded cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Keep the original single cuff assembly exactly. No extra rings, bands, collars or stacked cuffs above it. Keep all fingertips below the original pointing fingertip's top margin. Preserve the original rendering medium; do not make a textured hand into smooth vinyl. No glow outside alpha silhouette.",
+    "raw": "raw/pink-ok-1.png",
+    "reference": "assets/hand_pink.png",
+    "pose_reference": "assets/gesture_ok.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "pink",
+    "pose": "shaka",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to Shaka: thumb extends toward viewer-left, pinky extends upward toward viewer-right; index middle ring curl into exactly three knuckles. Only thumb and pinky extended. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: bubblegum pink glossy vinyl toy hand and matching rounded cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Keep the original single cuff assembly exactly. No extra rings, bands, collars or stacked cuffs above it. Keep all fingertips below the original pointing fingertip's top margin. Preserve the original rendering medium; do not make a textured hand into smooth vinyl. No glow outside alpha silhouette.",
+    "raw": "raw/pink-shaka-1.png",
+    "reference": "assets/hand_pink.png",
+    "pose_reference": "assets/gesture_shaka.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "pixel",
+    "pose": "ok",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to OK: thumb and index meet in a closed circle on viewer-left with a clearly open transparent circular hole; exactly three other fingers, middle ring pinky, extend upward. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: white block-built voxel pixel-art cursor hand, black stepped square outline, visible tiny cubic tile grid and stepped block fingers, blocky white cuff. Preserve exact voxel/pixel style, NO smooth anatomical rendering. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Keep the original single cuff assembly exactly. No extra rings, bands, collars or stacked cuffs above it. Keep all fingertips below the original pointing fingertip's top margin. Preserve the original rendering medium; do not make a textured hand into smooth vinyl. No glow outside alpha silhouette.",
+    "raw": "raw/pixel-ok-1.png",
+    "reference": "assets/hand_pixel.png",
+    "pose_reference": "assets/gesture_ok.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "pixel",
+    "pose": "shaka",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to Shaka: thumb extends toward viewer-left, pinky extends upward toward viewer-right; index middle ring curl into exactly three knuckles. Only thumb and pinky extended. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: white block-built voxel pixel-art cursor hand, black stepped square outline, visible tiny cubic tile grid and stepped block fingers, blocky white cuff. Preserve exact voxel/pixel style, NO smooth anatomical rendering. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Keep the original single cuff assembly exactly. No extra rings, bands, collars or stacked cuffs above it. Keep all fingertips below the original pointing fingertip's top margin. Preserve the original rendering medium; do not make a textured hand into smooth vinyl. No glow outside alpha silhouette.",
+    "raw": "raw/pixel-shaka-1.png",
+    "reference": "assets/hand_pixel.png",
+    "pose_reference": "assets/gesture_shaka.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "plush",
+    "pose": "ok",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to OK: thumb and index meet in a closed circle on viewer-left with a clearly open transparent circular hole; exactly three other fingers, middle ring pinky, extend upward. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: bright cyan felt plush hand with white blanket stitching on edges, blue sewn felt cuff and tan wooden stick. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Keep the original single cuff assembly exactly. No extra rings, bands, collars or stacked cuffs above it. Keep all fingertips below the original pointing fingertip's top margin. Preserve the original rendering medium; do not make a textured hand into smooth vinyl. No glow outside alpha silhouette.",
+    "raw": "raw/plush-ok-1.png",
+    "reference": "assets/hand_plush.png",
+    "pose_reference": "assets/gesture_ok.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "robot",
+    "pose": "shaka",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to Shaka: thumb extends toward viewer-left, pinky extends upward toward viewer-right; index middle ring curl into exactly three knuckles. Only thumb and pinky extended. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: mint-green articulated robot hand with exposed metallic ball joints, pale green screwed backplate, steel wrist ring and black stick. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Keep the original single cuff assembly exactly. No extra rings, bands, collars or stacked cuffs above it. Keep all fingertips below the original pointing fingertip's top margin. Preserve the original rendering medium; a bony skeleton must retain the original ivory phalange joint design, an articulated robot must retain its original green armor and exposed metal joints. No glow outside alpha silhouette.",
+    "raw": "raw/robot-shaka-1.png",
+    "reference": "assets/hand_robot.png",
+    "pose_reference": "assets/gesture_shaka.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "robot",
+    "pose": "ok",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to OK: thumb and index meet in a closed circle on viewer-left with a clearly open transparent circular hole; exactly three other fingers, middle ring pinky, extend upward. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: mint-green articulated robot hand with exposed metallic ball joints, pale green screwed backplate, steel wrist ring and black stick. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Keep the original single cuff assembly exactly. No extra rings, bands, collars or stacked cuffs above it. Keep all fingertips below the original pointing fingertip's top margin. Preserve the original rendering medium; a bony skeleton must retain the original ivory phalange joint design, an articulated robot must retain its original green armor and exposed metal joints. No glow outside alpha silhouette.",
+    "raw": "raw/robot-ok-1.png",
+    "reference": "assets/hand_robot.png",
+    "pose_reference": "assets/gesture_ok.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "plush",
+    "pose": "shaka",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to Shaka: thumb extends toward viewer-left, pinky extends upward toward viewer-right; index middle ring curl into exactly three knuckles. Only thumb and pinky extended. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: bright cyan felt plush hand with white blanket stitching on edges, blue sewn felt cuff and tan wooden stick. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Keep the original single cuff assembly exactly. No extra rings, bands, collars or stacked cuffs above it. Keep all fingertips below the original pointing fingertip's top margin. Preserve the original rendering medium; a bony skeleton must retain the original ivory phalange joint design, an articulated robot must retain its original green armor and exposed metal joints. No glow outside alpha silhouette.",
+    "raw": "raw/plush-shaka-1.png",
+    "reference": "assets/hand_plush.png",
+    "pose_reference": "assets/gesture_shaka.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "skeleton",
+    "pose": "ok",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to OK: thumb and index meet in a closed circle on viewer-left with a clearly open transparent circular hole; exactly three other fingers, middle ring pinky, extend upward. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: ivory bone skeleton toy hand, visible articulated phalange bones and knuckles, ivory flat wrist collar and black rod. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Keep the original single cuff assembly exactly. No extra rings, bands, collars or stacked cuffs above it. Keep all fingertips below the original pointing fingertip's top margin. Preserve the original rendering medium; a bony skeleton must retain the original ivory phalange joint design, an articulated robot must retain its original green armor and exposed metal joints. No glow outside alpha silhouette.",
+    "raw": "raw/skeleton-ok-1.png",
+    "reference": "assets/hand_skeleton.png",
+    "pose_reference": "assets/gesture_ok.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "skeleton",
+    "pose": "shaka",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to Shaka: thumb extends toward viewer-left, pinky extends upward toward viewer-right; index middle ring curl into exactly three knuckles. Only thumb and pinky extended. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: ivory bone skeleton toy hand, visible articulated phalange bones and knuckles, ivory flat wrist collar and black rod. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Keep the original single cuff assembly exactly. No extra rings, bands, collars or stacked cuffs above it. Keep all fingertips below the original pointing fingertip's top margin. Preserve the original rendering medium; a bony skeleton must retain the original ivory phalange joint design, an articulated robot must retain its original green armor and exposed metal joints. No glow outside alpha silhouette.",
+    "raw": "raw/skeleton-shaka-1.png",
+    "reference": "assets/hand_skeleton.png",
+    "pose_reference": "assets/gesture_shaka.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "space",
+    "pose": "ok",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to OK: thumb and index meet in a closed circle on viewer-left with a clearly open transparent circular hole; exactly three other fingers, middle ring pinky, extend upward. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: white soft astronaut glove with orange Saturn planet emblem on back and a white cuff with red horizontal stripe. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Keep the original single cuff assembly exactly. No extra rings, bands, collars or stacked cuffs above it. Keep all fingertips below the original pointing fingertip's top margin. Preserve the original rendering medium; a bony skeleton must retain the original ivory phalange joint design, an articulated robot must retain its original green armor and exposed metal joints. No glow outside alpha silhouette.",
+    "raw": "raw/space-ok-1.png",
+    "reference": "assets/hand_space.png",
+    "pose_reference": "assets/gesture_ok.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "space",
+    "pose": "shaka",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to Shaka: thumb extends toward viewer-left, pinky extends upward toward viewer-right; index middle ring curl into exactly three knuckles. Only thumb and pinky extended. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: white soft astronaut glove with orange Saturn planet emblem on back and a white cuff with red horizontal stripe. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Keep the original single cuff assembly exactly. No extra rings, bands, collars or stacked cuffs above it. Keep all fingertips below the original pointing fingertip's top margin. Preserve the original rendering medium; a bony skeleton must retain the original ivory phalange joint design, an articulated robot must retain its original green armor and exposed metal joints. No glow outside alpha silhouette.",
+    "raw": "raw/space-shaka-1.png",
+    "reference": "assets/hand_space.png",
+    "pose_reference": "assets/gesture_shaka.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "terrazzo",
+    "pose": "ok",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to OK: thumb and index meet in a closed circle on viewer-left with a clearly open transparent circular hole; exactly three other fingers, middle ring pinky, extend upward. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: cream terrazzo stone hand with tiny orange gold and gray chips, matching terrazzo cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Keep the original single cuff assembly exactly. No extra rings, bands, collars or stacked cuffs above it. Keep all fingertips below the original pointing fingertip's top margin. Preserve the original rendering medium; a bony skeleton must retain the original ivory phalange joint design, an articulated robot must retain its original green armor and exposed metal joints. No glow outside alpha silhouette.",
+    "raw": "raw/terrazzo-ok-1.png",
+    "reference": "assets/hand_terrazzo.png",
+    "pose_reference": "assets/gesture_ok.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "terrazzo",
+    "pose": "shaka",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to Shaka: thumb extends toward viewer-left, pinky extends upward toward viewer-right; index middle ring curl into exactly three knuckles. Only thumb and pinky extended. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: cream terrazzo stone hand with tiny orange gold and gray chips, matching terrazzo cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Keep the original single cuff assembly exactly. No extra rings, bands, collars or stacked cuffs above it. Keep all fingertips below the original pointing fingertip's top margin. Preserve the original rendering medium; a bony skeleton must retain the original ivory phalange joint design, an articulated robot must retain its original green armor and exposed metal joints. No glow outside alpha silhouette.",
+    "raw": "raw/terrazzo-shaka-1.png",
+    "reference": "assets/hand_terrazzo.png",
+    "pose_reference": "assets/gesture_shaka.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "water",
+    "pose": "ok",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to OK: thumb and index meet in a closed circle on viewer-left with a clearly open transparent circular hole; exactly three other fingers, middle ring pinky, extend upward. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: translucent clear blue water hand with bubbles, glossy blue fluid refraction and blue water cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Keep the original single cuff assembly exactly. No extra rings, bands, collars or stacked cuffs above it. Keep all fingertips below the original pointing fingertip's top margin. Preserve the original rendering medium; a bony skeleton must retain the original ivory phalange joint design, an articulated robot must retain its original green armor and exposed metal joints. No glow outside alpha silhouette.",
+    "raw": "raw/water-ok-1.png",
+    "reference": "assets/hand_water.png",
+    "pose_reference": "assets/gesture_ok.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "water",
+    "pose": "shaka",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to Shaka: thumb extends toward viewer-left, pinky extends upward toward viewer-right; index middle ring curl into exactly three knuckles. Only thumb and pinky extended. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: translucent clear blue water hand with bubbles, glossy blue fluid refraction and blue water cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Keep the original single cuff assembly exactly. No extra rings, bands, collars or stacked cuffs above it. Keep all fingertips below the original pointing fingertip's top margin. Preserve the original rendering medium; a bony skeleton must retain the original ivory phalange joint design, an articulated robot must retain its original green armor and exposed metal joints. No glow outside alpha silhouette.",
+    "raw": "raw/water-shaka-1.png",
+    "reference": "assets/hand_water.png",
+    "pose_reference": "assets/gesture_shaka.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "wood",
+    "pose": "ok",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to OK: thumb and index meet in a closed circle on viewer-left with a clearly open transparent circular hole; exactly three other fingers, middle ring pinky, extend upward. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: light honey-colored carved wood hand with distinct long flowing woodgrain and turned wood cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Keep the original single cuff assembly exactly. No extra rings, bands, collars or stacked cuffs above it. Keep all fingertips below the original pointing fingertip's top margin. Preserve the original rendering medium; a bony skeleton must retain the original ivory phalange joint design, an articulated robot must retain its original green armor and exposed metal joints. No glow outside alpha silhouette.",
+    "raw": "raw/wood-ok-1.png",
+    "reference": "assets/hand_wood.png",
+    "pose_reference": "assets/gesture_ok.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "wood",
+    "pose": "shaka",
+    "attempt": 1,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to Shaka: thumb extends toward viewer-left, pinky extends upward toward viewer-right; index middle ring curl into exactly three knuckles. Only thumb and pinky extended. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: light honey-colored carved wood hand with distinct long flowing woodgrain and turned wood cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Keep the original single cuff assembly exactly. No extra rings, bands, collars or stacked cuffs above it. Keep all fingertips below the original pointing fingertip's top margin. Preserve the original rendering medium; a bony skeleton must retain the original ivory phalange joint design, an articulated robot must retain its original green armor and exposed metal joints. No glow outside alpha silhouette.",
+    "raw": "raw/wood-shaka-1.png",
+    "reference": "assets/hand_wood.png",
+    "pose_reference": "assets/gesture_shaka.png",
+    "outcome": "selected"
+  },
+  {
+    "id": "coral",
+    "pose": "ok",
+    "attempt": 2,
+    "prompt": "Use case: precise-object-edit. Asset: complete full-canvas pointer gesture sprite. Image 1 is the edit target and sole identity/material reference. Image 2 is ONLY the pose reference. Change ONLY the fingers of Image 1 to OK: thumb and index meet in a closed circle on viewer-left with a clearly open transparent circular hole; exactly three other fingers, middle ring pinky, extend upward. Exactly five digits total. Keep back of hand facing viewer, original camera angle, perspective and lighting. Character/material: glossy translucent coral-red plastic hand and matching rounded cuff. Match exact palette, texture, rendering style and cuff design. Preserve cuff and stick at original pixel coordinates, scale and width. Full 1024x1536 portrait canvas. Wrist stays fixed. Entire stick visible to original endpoint. Keep empty margins, no zoom, crop, rotation or recentering. Genuine transparent background and clean alpha; no solid backdrop, checkerboard, floor, shadow, outer halo, or text. One hand and one stick. Targeted correction: preserve the broad softly rounded lower palm of the coral reference, without angular protrusions, a sharp side kink or an additional cuff. Exactly ONE original rounded coral cuff; keep its contour and width. Only finger pose changes. Keep hand scale the same as the reference. Keep the upper fingers within the original top margin.",
+    "raw": "raw/coral-ok-2.png",
+    "reference": "assets/hand_coral.png",
+    "pose_reference": "assets/gesture_ok.png",
+    "outcome": "selected"
+  }
+]

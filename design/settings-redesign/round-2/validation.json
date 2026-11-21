@@ -1,0 +1,43 @@
+{
+  "verifiedAt": "2026-11-17T14:15:11.105982-05:00",
+  "artifact": "settings-refinement-before-and-after.html",
+  "sha256": "5cd1ed9e3caa2284b2b31248cc3b7321f23a6ea3907f02efc4bc17b81249afe8",
+  "reviewer": {
+    "provider": "claudeAgent",
+    "model": "claude-opus-5-5",
+    "effort": "high",
+    "taskId": "node:delegated-task:command%3Amcp%3A0eff6528-cb00-4ca0-932e-40003049ad64%3Adelegate-task%3Asettings-redesign-opus55-high-r2-20261117"
+  },
+  "reviewedVersion": "version one",
+  "overallGrade": "66/100 D+",
+  "proposedPages": 7,
+  "nestedGrades": 8,
+  "htmlChecks": {
+    "desktop": {
+      "width": 728,
+      "passed": 65,
+      "failed": 0
+    },
+    "mobile": {
+      "width": 390,
+      "passed": 65,
+      "failed": 0
+    },
+    "consoleErrors": 0
+  },
+  "visualChecks": [
+    "General",
+    "Pointers",
+    "Pointer defaults",
+    "Tools in dark",
+    "Shortcuts conflict state",
+    "Presets & Backup",
+    "About",
+    "Customize sheet",
+    "New Hand sheet",
+    "all main pages at mobile width"
+  ],
+  "imageReferences": 49,
+  "versionOneUnchanged": true,
+  "appSourceChanged": false
+}

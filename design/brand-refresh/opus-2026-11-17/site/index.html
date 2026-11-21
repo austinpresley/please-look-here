@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Look Here Please · Austin Presley</title>
+<meta name="description" content="Look Here Please, Austin Presley's playful native Mac pointer for presenting. Local review project.">
+<!-- Proposal mockup (Opus 2026-11-17). Hand images are referenced from docs/assets/hands. -->
+<link rel="icon" type="image/svg+xml" href="../mark/mark.svg">
+<style>
+:root{
+  --coral:#E8452B; --coral-deep:#C9321F; --cream:#FFF4DF; --paper:#FFF9EF;
+  --plum:#3D2134; --plum-soft:#7A5A6C; --amber:#FFC94D; --line:#EAD8C4;
+  --bg:var(--cream); --ink:var(--plum); --muted:var(--plum-soft); --card:var(--paper);
+  color-scheme:light dark;
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif;
+  color:var(--ink); background:var(--bg);
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#24151F; --ink:#FFF4DF; --muted:#C8AEBB; --card:#30202B; --line:#4A3343}
+}
+*{box-sizing:border-box} body{margin:0}
+.wrap{max-width:1040px;margin:auto;padding:0 28px}
+.round{font-family:ui-rounded,"SF Pro Rounded",system-ui,sans-serif}
+header{display:flex;align-items:center;gap:12px;padding:28px 0}
+header img{width:40px;height:40px}
+.word{font-weight:800;font-size:20px;letter-spacing:-.01em}
+.word b{color:var(--coral);font-weight:800}
+.hero{display:grid;grid-template-columns:1.15fr .85fr;gap:40px;align-items:center;padding:48px 0 64px}
+h1{font-size:clamp(56px,9vw,104px);line-height:.98;letter-spacing:-.03em;margin:0 0 24px;font-weight:800}
+h1 .dot{display:inline-block;width:.2em;height:.2em;border-radius:50%;background:var(--amber);margin-left:.04em;
+  box-shadow:0 0 0 .055em var(--bg),0 0 0 .09em color-mix(in srgb,var(--amber) 70%,transparent)}
+.lede{font-size:21px;line-height:1.5;max-width:520px;margin:0 0 20px}
+.by{font-size:15px;color:var(--muted);margin:0}
+.chip{display:inline-flex;align-items:center;gap:8px;margin-top:28px;padding:7px 14px;border-radius:999px;
+  border:1px solid var(--line);font-size:13px;color:var(--muted)}
+.chip::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--amber)}
+.art{aspect-ratio:1;max-width:400px;justify-self:end;width:100%;filter:drop-shadow(0 24px 40px rgb(120 30 10 / .25))}
+.hands{background:var(--card);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:44px 0}
+.hands h2,.features h2{font-size:28px;letter-spacing:-.02em;margin:0 0 6px}
+.hands p{margin:0 0 24px;color:var(--muted)}
+.row{display:flex;gap:18px;overflow-x:auto;padding-bottom:8px;scroll-snap-type:x mandatory}
+.row figure{margin:0;flex:0 0 96px;text-align:center;scroll-snap-align:start}
+.row img{height:136px;width:auto;display:block;margin:auto;transition:transform .25s}
+.row figure:hover img{transform:rotate(-8deg) translateY(-4px)}
+.row figcaption{font-size:12px;color:var(--muted);margin-top:6px;text-transform:capitalize}
+.features{padding:56px 0}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:20px}
+.grid div{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px}
+.grid h3{margin:0 0 6px;font-size:17px}
+.grid p{margin:0;font-size:14px;line-height:1.5;color:var(--muted)}
+.status{border-top:1px solid var(--line);padding:28px 0;font-size:15px;line-height:1.7;color:var(--muted)}
+a{color:inherit;text-underline-offset:4px} a:focus-visible{outline:3px solid var(--coral);outline-offset:4px}
+footer{padding:0 0 48px;font-size:14px;color:var(--muted)}
+@media (max-width:760px){.hero{grid-template-columns:1fr}.art{justify-self:start;max-width:260px}.grid{grid-template-columns:1fr 1fr}}
+@media (prefers-reduced-motion:reduce){.row img{transition:none}}
+</style></head>
+<body>
+<div class="wrap">
+  <header><img src="../mark/mark.svg" alt=""><span class="word round">Look <b>Here</b> Please</span></header>
+  <section class="hero">
+    <div>
+      <h1 class="round">Point it out<span class="dot" aria-hidden="true"></span></h1>
+      <p class="lede">A playful pointer for presenting on a Mac. Pick a hand or a laser, draw on the screen, and reach every control from the cursor, the menu bar or a Stream Deck.</p>
+      <p class="by">By Austin Presley</p>
+      <span class="chip">In local review on Austin's Mac. No public release yet.</span>
+    </div>
+    <img class="art" src="../mark/mark.svg" alt="App icon: a cream glove on a stick pointing at an amber target">
+  </section>
+</div>
+<section class="hands"><div class="wrap">
+  <h2 class="round">Pick a hand</h2>
+  <p>Every pointer is a toy hand. Swap them mid-talk, or switch to a laser dot.</p>
+  <div class="row" id="row"></div>
+</div></section>
+<div class="wrap">
+  <section class="features">
+    <h2 class="round">Made for talking over a screen</h2>
+    <div class="grid">
+      <div><h3>Hands and laser</h3><p>A big friendly pointer people can follow from the back row.</p></div>
+      <div><h3>Draw on screen</h3><p>Pens, shapes and arrows that clear with one undo.</p></div>
+      <div><h3>Quick controls</h3><p>A radial menu at the cursor and a compact menu bar panel.</p></div>
+      <div><h3>Stream Deck</h3><p>Switch hands, tools and modes from a button.</p></div>
+    </div>
+  </section>
+  <section class="status" aria-label="Project status">
+    <p>The expanded app is in local review. This repository publishes branding and presentation only; the default branch does not yet contain the expanded functional code.</p>
+    <p><a href="https://github.com/austinpresley/please-look-here">Repository</a> · <a href="https://github.com/austinpresley/please-look-here/blob/main/docs/project-status.md">Project status</a></p>
+  </section>
+  <footer>Based on <a href="https://github.com/nilbuild/tinyhand">TinyHand by Kamran Ahmed</a>. <a href="https://github.com/austinpresley/please-look-here/blob/main/LICENSE">MIT license</a>. macOS 13 or later.</footer>
+</div>
+<script>
+const names=["glove","plush","jelly","chrome","knit","neon","robot","cactus","cookie","holo","pixel","monster","wood","space"];
+const row=document.getElementById("row");
+for(const n of names){const f=document.createElement("figure");f.innerHTML=`<img src="../../../../docs/assets/hands/${n}.png" alt="${n} hand" loading="lazy"><figcaption>${n}</figcaption>`;row.append(f)}
+</script>
+</body></html>

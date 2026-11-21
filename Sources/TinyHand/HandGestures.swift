@@ -6,6 +6,7 @@ enum HandGestureSlot: String, CaseIterable {
     var title: String { self == .first ? "Gesture 1" : "Gesture 2" }
     var stockTitle: String { self == .first ? "OK" : "Shaka" }
     var assetName: String { self == .first ? "gesture_ok" : "gesture_shaka" }
+    var poseName: String { self == .first ? "ok" : "shaka" }
     var action: PresentationAction { self == .first ? .gesture1 : .gesture2 }
 }
 
@@ -21,11 +22,16 @@ enum HandGestureCatalog {
     static func hasCustom(_ slot: HandGestureSlot, style: PointerStyle) -> Bool {
         FileManager.default.fileExists(atPath: url(for: slot, style: style).path)
     }
+    static func bundledName(_ slot: HandGestureSlot, style: PointerStyle) -> String? {
+        guard PointerStyle.builtInHands.contains(style) else { return nil }
+        return "gesture_\(style.rawValue)_\(slot.poseName)"
+    }
     static func signature(for style: PointerStyle) -> String {
         guard let name = style.assetName else { return "no-hand" }
         return HandAsset.imageSignature(name) + HandGestureSlot.allCases.map { slot in
             let path = url(for: slot, style: style)
-            guard let attrs = try? FileManager.default.attributesOfItem(atPath: path.path) else { return HandAsset.imageSignature(slot.assetName) }
+            let bundled = bundledName(slot, style: style).map(HandAsset.bundledImageSignature) ?? "generic"
+            guard let attrs = try? FileManager.default.attributesOfItem(atPath: path.path) else { return bundled + "|" + HandAsset.imageSignature(slot.assetName) }
             return "\(path.path):\((attrs[.modificationDate] as? Date)?.timeIntervalSince1970.bitPattern ?? 0):\(attrs[.size] ?? 0)"
         }.joined(separator: "|")
     }
@@ -34,18 +40,24 @@ enum HandGestureCatalog {
         let key = "\(style.rawValue).\(slot.rawValue)", signature = signature(for: style)
         if let hit = cache[key], hit.signature == signature { return hit.image }
         guard let base = HandAsset.load(name) else { return nil }
-        let image: CGImage?
-        if hasCustom(slot, style: style) {
-            let url = url(for: slot, style: style)
-            image = CGImageSourceCreateWithURL(url as CFURL, nil).flatMap { CGImageSourceCreateImageAtIndex($0, 0, nil) }
-                .flatMap { $0.width == base.image.width && $0.height == base.image.height ? $0 : nil }
-        } else {
-            image = HandAsset.load(slot.assetName).flatMap { HandMaker.composeGesture($0, reference: base) }
-        }
-        guard let image else { return nil }
-        if cache.count >= 4 { cache.removeAll() }
+        guard let image = resolve(slot, style: style, reference: base) else { return nil }
+        if cache.count >= 8 { cache.removeAll() }
         cache[key] = Cached(signature: signature, image: image)
         return image
+    }
+    /// The injected bundle loader proves fallback order without editing any
+    /// shipped resource. Custom files retain their existing validation policy.
+    static func resolve(_ slot: HandGestureSlot, style: PointerStyle, reference base: HandAsset,
+                        bundledImage: (String) -> CGImage? = HandAsset.loadBundledImage) -> CGImage? {
+        guard style.assetName != nil else { return nil }
+        if hasCustom(slot, style: style) {
+            let url = url(for: slot, style: style)
+            return CGImageSourceCreateWithURL(url as CFURL, nil).flatMap { CGImageSourceCreateImageAtIndex($0, 0, nil) }
+                .flatMap { $0.width == base.image.width && $0.height == base.image.height ? $0 : nil }
+        }
+        if let name = bundledName(slot, style: style), let image = bundledImage(name),
+           image.width == base.image.width, image.height == base.image.height { return image }
+        return HandAsset.load(slot.assetName).flatMap { HandMaker.composeGesture($0, reference: base) }
     }
     static func add(from source: URL, slot: HandGestureSlot, style: PointerStyle) throws {
         guard let name = style.assetName, let reference = HandAsset.load(name) else {

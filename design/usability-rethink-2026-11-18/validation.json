@@ -1,0 +1,187 @@
+{
+  "checks": [
+    {
+      "passed": true,
+      "label": "Four comparison views"
+    },
+    {
+      "passed": true,
+      "label": "Use apps hides irrelevant drawing tools"
+    },
+    {
+      "passed": true,
+      "label": "Draw reveals all seven tools"
+    },
+    {
+      "passed": true,
+      "label": "Pointer off disables click behavior without losing the mode"
+    },
+    {
+      "passed": true,
+      "label": "Mute has an explicit pressed state"
+    },
+    {
+      "passed": true,
+      "label": "Pointer search filters the library"
+    },
+    {
+      "passed": true,
+      "label": "Selection updates the adjacent inspector"
+    },
+    {
+      "passed": true,
+      "label": "No-results state has a way back"
+    },
+    {
+      "passed": true,
+      "label": "Show all restores the concept sample"
+    },
+    {
+      "passed": true,
+      "label": "Star adds a shared favorite without selecting it"
+    },
+    {
+      "passed": true,
+      "label": "Starring does not change the selected pointer"
+    },
+    {
+      "passed": true,
+      "label": "A pointer override gets a Use default action"
+    },
+    {
+      "passed": true,
+      "label": "Shared defaults remain separate from a pointer override"
+    },
+    {
+      "passed": true,
+      "label": "Pointer override survives editing the defaults"
+    },
+    {
+      "passed": true,
+      "label": "Use default inherits the current shared value"
+    },
+    {
+      "passed": true,
+      "label": "Hand gestures remain discoverable"
+    },
+    {
+      "passed": true,
+      "label": "Practice click gives immediate feedback"
+    },
+    {
+      "passed": true,
+      "label": "Practice drawing creates visible local ink"
+    },
+    {
+      "passed": true,
+      "label": "Desktop drawing explains permission only when requested"
+    },
+    {
+      "passed": true,
+      "label": "Escape dismisses first-use permission explanation"
+    },
+    {
+      "passed": true,
+      "label": "No page overflow at 360 on controls"
+    },
+    {
+      "passed": true,
+      "label": "No proposed UI overflow at 360 on controls"
+    },
+    {
+      "passed": true,
+      "label": "No page overflow at 360 on library"
+    },
+    {
+      "passed": true,
+      "label": "No proposed UI overflow at 360 on library"
+    },
+    {
+      "passed": true,
+      "label": "No page overflow at 360 on adjust"
+    },
+    {
+      "passed": true,
+      "label": "No proposed UI overflow at 360 on adjust"
+    },
+    {
+      "passed": true,
+      "label": "No page overflow at 360 on practice"
+    },
+    {
+      "passed": true,
+      "label": "No proposed UI overflow at 360 on practice"
+    },
+    {
+      "passed": true,
+      "label": "No page overflow at 728 on controls"
+    },
+    {
+      "passed": true,
+      "label": "No proposed UI overflow at 728 on controls"
+    },
+    {
+      "passed": true,
+      "label": "No page overflow at 728 on library"
+    },
+    {
+      "passed": true,
+      "label": "No proposed UI overflow at 728 on library"
+    },
+    {
+      "passed": true,
+      "label": "No page overflow at 728 on adjust"
+    },
+    {
+      "passed": true,
+      "label": "No proposed UI overflow at 728 on adjust"
+    },
+    {
+      "passed": true,
+      "label": "No page overflow at 728 on practice"
+    },
+    {
+      "passed": true,
+      "label": "No proposed UI overflow at 728 on practice"
+    },
+    {
+      "passed": true,
+      "label": "No page overflow at 1440 on controls"
+    },
+    {
+      "passed": true,
+      "label": "No proposed UI overflow at 1440 on controls"
+    },
+    {
+      "passed": true,
+      "label": "No page overflow at 1440 on library"
+    },
+    {
+      "passed": true,
+      "label": "No proposed UI overflow at 1440 on library"
+    },
+    {
+      "passed": true,
+      "label": "No page overflow at 1440 on adjust"
+    },
+    {
+      "passed": true,
+      "label": "No proposed UI overflow at 1440 on adjust"
+    },
+    {
+      "passed": true,
+      "label": "No page overflow at 1440 on practice"
+    },
+    {
+      "passed": true,
+      "label": "No proposed UI overflow at 1440 on practice"
+    },
+    {
+      "passed": true,
+      "label": "No browser JavaScript errors"
+    }
+  ],
+  "errors": [],
+  "browser": "Local Chrome via Playwright",
+  "date": "2026-11-18T15:56:12.305Z"
+}

@@ -130,10 +130,11 @@ struct StreamDeckPackage: Codable, Sendable {
 }
 
 struct StreamDeckSettings: View {
+    var title: String? = "Stream Deck"
     @StateObject private var installer = StreamDeckInstaller()
 
     var body: some View {
-        Card(title: "Stream Deck") {
+        Card(title: title) {
             VStack(alignment: .leading, spacing: Space.sm) {
                 Text(installer.version.map { "Bundled plugin \($0)" } ?? "Install the Look Here Please actions")
                     .font(.body)

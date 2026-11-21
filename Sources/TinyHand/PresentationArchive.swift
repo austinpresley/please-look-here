@@ -76,7 +76,9 @@ struct PresentationSettingsSchema {
         "magnifierZoom": "Magnification", "magnifierDiameter": "Magnifier diameter", "tapSwing": "Tap swing",
         "sound.hands": "Default pointer sound", "sound.laser": "Legacy laser sound",
         "tapSound": "Default tap sound", "sound.volume": "App volume", "sound.muted": "Mute all sounds",
-        "capture.copy": "Copy screenshots", "capture.save": "Save screenshots"
+        "capture.copy": "Copy screenshots", "capture.save": "Save screenshots",
+        "pointerStyle": "Selected pointer", "pinnedStyles": "Toolbar favorites", "disabledPointerIDs": "Hidden pointers",
+        RadialFavorites.storageKey: "Quick controls favorites", PointerConfigurationDocument.storageKey: "Per-pointer appearance and sound"
     ]
     static func display(_ value: PresentationValue) -> String {
         switch value {
@@ -118,20 +120,44 @@ struct PresentationSetup: Codable, Equatable {
     var settings: [String: PresentationValue]
     /// Encoded through the validated public override API, including absent IDs.
     var pointerOverrides: Data
+    var quickControlFavorites: [String] = RadialFavorites.defaults
 
     static func capture(_ storage: UserDefaults) throws -> Self {
         let value = Self(selectedID: storage.string(forKey: "pointerStyle") ?? "lavender",
             pinnedIDs: storage.stringArray(forKey: "pinnedStyles") ?? PointerStyle.defaultPinned.map(\.rawValue),
             disabledIDs: storage.stringArray(forKey: "disabledPointerIDs") ?? [],
             settings: try PresentationSettingsSchema.capture(storage),
-            pointerOverrides: try PointerConfigurationDocument.load(from: storage).encoded())
+            pointerOverrides: try PointerConfigurationDocument.load(from: storage).encoded(),
+            quickControlFavorites: RadialFavorites.load(from: storage))
         try value.validate()
         return value
+    }
+    func matches(_ other: Self) -> Bool {
+        selectedID == other.selectedID && pinnedIDs == other.pinnedIDs && Set(disabledIDs) == Set(other.disabledIDs) &&
+        settings == other.settings && quickControlFavorites == other.quickControlFavorites &&
+        (try? PointerConfigurationDocument.decode(pointerOverrides)) == (try? PointerConfigurationDocument.decode(other.pointerOverrides))
+    }
+    private enum CodingKeys: String, CodingKey {
+        case selectedID, pinnedIDs, disabledIDs, settings, pointerOverrides, quickControlFavorites
+    }
+    init(selectedID: String, pinnedIDs: [String], disabledIDs: [String], settings: [String: PresentationValue], pointerOverrides: Data, quickControlFavorites: [String] = RadialFavorites.defaults) {
+        self.selectedID = selectedID; self.pinnedIDs = pinnedIDs; self.disabledIDs = disabledIDs
+        self.settings = settings; self.pointerOverrides = pointerOverrides; self.quickControlFavorites = quickControlFavorites
+    }
+    init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        selectedID = try values.decode(String.self, forKey: .selectedID)
+        pinnedIDs = try values.decode([String].self, forKey: .pinnedIDs)
+        disabledIDs = try values.decode([String].self, forKey: .disabledIDs)
+        settings = try values.decode([String: PresentationValue].self, forKey: .settings)
+        pointerOverrides = try values.decode(Data.self, forKey: .pointerOverrides)
+        // Absent is the legacy schema. Null and malformed fields still fail.
+        quickControlFavorites = values.contains(.quickControlFavorites) ? try values.decode([String].self, forKey: .quickControlFavorites) : RadialFavorites.defaults
     }
     func validate() throws {
         try PresentationSettingsSchema.validate(settings)
         let all = pinnedIDs + disabledIDs + [selectedID]
-        guard all.allSatisfy(PointerConfigurationDocument.validID), pinnedIDs.count <= Preferences.maxPinned,
+        guard RadialFavorites.valid(quickControlFavorites), all.allSatisfy(PointerConfigurationDocument.validID), pinnedIDs.count <= Preferences.maxPinned,
               !pinnedIDs.isEmpty, disabledIDs.count <= 4096,
               Set(pinnedIDs).count == pinnedIDs.count, Set(disabledIDs).count == disabledIDs.count,
               !disabledIDs.contains(selectedID) else {
@@ -144,11 +170,12 @@ struct PresentationSetup: Codable, Equatable {
         values["pointerStyle"] = selectedID
         values["pinnedStyles"] = pinnedIDs
         values["disabledPointerIDs"] = disabledIDs
+        values[RadialFavorites.storageKey] = quickControlFavorites
         values[PointerConfigurationDocument.storageKey] = pointerOverrides
         return values
     }
     static var preferenceKeys: Set<String> {
-        Set(PresentationSettingsSchema.rules.keys).union(["pointerStyle", "pinnedStyles", "disabledPointerIDs", PointerConfigurationDocument.storageKey])
+        Set(PresentationSettingsSchema.rules.keys).union(["pointerStyle", "pinnedStyles", "disabledPointerIDs", RadialFavorites.storageKey, PointerConfigurationDocument.storageKey])
     }
 }
 
@@ -176,7 +203,12 @@ struct PortablePresentationArchive: Codable, Equatable {
     var artwork: [String: Data]
 
     static var builtInHandIDs: Set<String> { Set(PointerStyle.builtInHands.map(\.rawValue)) }
+    /// Exact asset names used by HandAsset's local replacement lookup.
+    static var builtInBaseArtworkPaths: Set<String> {
+        Set(PointerStyle.builtInHands.compactMap { $0.assetName.map { "\($0).png" } })
+    }
     static func validArtworkPath(_ path: String, customIDs: Set<String>) -> Bool {
+        if builtInBaseArtworkPaths.contains(path) { return true }
         if path.hasSuffix(".png"), customIDs.contains(String(path.dropLast(4))) { return true }
         for id in customIDs.union(builtInHandIDs) {
             for slot in ["first", "second"] where path == "Gestures/\(id)-\(slot).png" { return true }
@@ -205,7 +237,7 @@ struct PortablePresentationArchive: Codable, Equatable {
             }
         }
         let ids = Set(hands.map(\.id))
-        guard artwork.count <= 840, Set(artwork.keys.map { $0.lowercased() }).count == artwork.count, artwork.values.reduce(0, { $0 + $1.count }) <= 64_000_000,
+        guard artwork.count <= 876, Set(artwork.keys.map { $0.lowercased() }).count == artwork.count, artwork.values.reduce(0, { $0 + $1.count }) <= 64_000_000,
               hands.allSatisfy({ artwork["\($0.id).png"] != nil }) else {
             throw PresentationArchiveError(message: "The backup is too large or is missing custom hand artwork.")
         }
@@ -265,7 +297,9 @@ struct PortablePresentationArchive: Codable, Equatable {
         try checkSetup((value as? [String: Any])?["setup"] as Any)
     }
     private static func checkSetup(_ object: Any) throws {
-        try exact(object, keys: ["selectedID", "pinnedIDs", "disabledIDs", "settings", "pointerOverrides"])
+        let legacy: Set<String> = ["selectedID", "pinnedIDs", "disabledIDs", "settings", "pointerOverrides"]
+        let keys = (object as? [String: Any]).map { Set($0.keys) } ?? []
+        try exact(object, keys: keys.contains("quickControlFavorites") ? legacy.union(["quickControlFavorites"]) : legacy)
     }
     private static func exact(_ value: Any, keys: Set<String>) throws {
         guard let object = value as? [String: Any], Set(object.keys) == keys else {

@@ -30,13 +30,16 @@ final class ScreenshotResult: NSObject {
     private let detail = NSTextField(labelWithString: "")
     private let reveal = NSButton(title: "Reveal in Finder", target: nil, action: nil)
     private let copy = NSButton(title: "Copy", target: nil, action: nil)
+    private var retryAction: (() -> Void)?
     var window: NSWindow? { panel }
 
     func show(png: Data, destination: URL?, copied: Bool, on screen: NSScreen?) {
         if panel == nil { build() }
+        retryAction = nil; reveal.title = "Reveal in Finder"; reveal.action = #selector(revealFile)
+        copy.isHidden = false
         self.png = png
         self.destination = destination
-        title.stringValue = destination == nil ? "Screenshot copied to clipboard" : "Screenshot saved"
+        title.stringValue = destination == nil ? "Screenshot copied to clipboard" : copied ? "Screenshot saved and copied" : "Screenshot saved"
         detail.stringValue = destination?.lastPathComponent ?? "Copy it again whenever you need it."
         detail.toolTip = destination?.path
         reveal.isHidden = destination == nil
@@ -56,6 +59,19 @@ final class ScreenshotResult: NSObject {
                              userInfo: [.announcement: title.stringValue,
                                         .priority: NSAccessibilityPriorityLevel.medium.rawValue])
     }
+
+    func show(error: Error, on screen: NSScreen?, action: @escaping () -> Void) {
+        if panel == nil { build() }
+        png = nil; destination = nil; retryAction = action
+        title.stringValue = "Screenshot could not be taken"
+        detail.stringValue = error.localizedDescription; detail.toolTip = error.localizedDescription
+        reveal.title = ScreenshotRecovery.action(for: error).title; reveal.action = #selector(retryCapture)
+        reveal.isHidden = false; reveal.isEnabled = true; copy.isHidden = true
+        let bounds = (screen ?? NSScreen.main)?.visibleFrame ?? .zero
+        if let panel { panel.setFrameOrigin(CGPoint(x: bounds.midX - panel.frame.width / 2, y: bounds.minY + 96)); panel.orderFrontRegardless() }
+        NSAccessibility.post(element: NSApplication.shared, notification: .announcementRequested, userInfo: [.announcement: title.stringValue + ". " + detail.stringValue, .priority: NSAccessibilityPriorityLevel.medium.rawValue])
+    }
+    @objc private func retryCapture() { retryAction?() }
 
     func close() { panel?.orderOut(nil) }
 

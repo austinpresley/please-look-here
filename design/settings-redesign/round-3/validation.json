@@ -1,0 +1,48 @@
+{
+  "verifiedAt": "2026-11-17T14:55:41.973564-05:00",
+  "artifact": "settings-ui-pass-three.html",
+  "sha256": "10cfc0e465fdf25c06e63b05f8a5a33f918e2f1c2b45bd133737677fce95d221",
+  "previousPassUnchanged": true,
+  "appSourceChanged": false,
+  "pages": 7,
+  "toolPanes": [
+    "Drawing",
+    "Magnification",
+    "Screenshots"
+  ],
+  "htmlChecks": {
+    "desktop": {
+      "width": 728,
+      "passed": 73,
+      "failed": 0
+    },
+    "mobile": {
+      "width": 390,
+      "passed": 73,
+      "failed": 0
+    },
+    "consoleErrors": 0
+  },
+  "visualChecks": [
+    "All seven pages at 784px",
+    "Drawing, Magnification and Screenshots panes",
+    "Shortcuts and Pointer defaults in dark mode",
+    "Customize at desktop and 390px"
+  ],
+  "layoutMeasurements": {
+    "desktop728": {
+      "libraryBefore": 499,
+      "libraryAfter": 345,
+      "searchBefore": 539,
+      "searchAfter": 139
+    },
+    "mobile390": {
+      "libraryBefore": 517,
+      "libraryAfter": 381,
+      "searchBefore": 594,
+      "searchAfter": 174
+    }
+  },
+  "embeddedPngReferences": 48,
+  "reviewer": "No new independent grading; builds on previous Opus review"
+}

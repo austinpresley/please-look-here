@@ -1,0 +1,100 @@
+{
+  "probes" : [
+    {
+      "area" : "page",
+      "edge" : "lead",
+      "height" : 32,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "page.title",
+      "width" : 79,
+      "x" : 228,
+      "y" : 48.5
+    },
+    {
+      "area" : "card.Saved presets",
+      "height" : 16,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "card.Saved presets.title",
+      "width" : 88,
+      "x" : 228,
+      "y" : 158.5
+    },
+    {
+      "area" : "card.Portable backup",
+      "height" : 16,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "card.Portable backup.title",
+      "width" : 101,
+      "x" : 228,
+      "y" : 298.5
+    },
+    {
+      "area" : "card.Saved presets",
+      "height" : 116,
+      "inset" : 0,
+      "kind" : "area",
+      "name" : "card.Saved presets",
+      "width" : 536,
+      "x" : 228,
+      "y" : 158.5
+    },
+    {
+      "area" : "page",
+      "height" : 476,
+      "inset" : 20,
+      "kind" : "area",
+      "name" : "page",
+      "width" : 576,
+      "x" : 208,
+      "y" : 0
+    },
+    {
+      "area" : "card.Portable backup",
+      "height" : 157,
+      "inset" : 0,
+      "kind" : "area",
+      "name" : "card.Portable backup",
+      "width" : 536,
+      "x" : 228,
+      "y" : 298.5
+    },
+    {
+      "area" : "card.Saved presets",
+      "height" : 92,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "card.Saved presets.body",
+      "width" : 536,
+      "x" : 228,
+      "y" : 182.5
+    },
+    {
+      "area" : "page",
+      "edge" : "lead",
+      "height" : 351,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "page.content",
+      "width" : 536,
+      "x" : 228,
+      "y" : 104.5
+    },
+    {
+      "area" : "card.Portable backup",
+      "height" : 133,
+      "inset" : 0,
+      "kind" : "probe",
+      "name" : "card.Portable backup.body",
+      "width" : 536,
+      "x" : 228,
+      "y" : 322.5
+    }
+  ],
+  "window" : {
+    "height" : 476,
+    "width" : 784
+  }
+}

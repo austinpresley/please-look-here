@@ -22,10 +22,12 @@ final class MenuBarCommands: NSObject {
         menu.autoenablesItems = false
         let show = NSMenuItem(title: "Open Controls", action: #selector(showControls), keyEquivalent: "")
         show.target = self; menu.addItem(show)
+        add("quick-controls", "Open Quick controls", "radial-open", to: menu)
         menu.addItem(.separator())
         let pointer = group("Pointer")
         add("toggle", "Turn Pointer On", "toggle", to: pointer)
-        add("interact", "Interact", "interact", ["enabled": true], to: pointer)
+        add("interact", "Cursor", "interact", ["enabled": true], to: pointer)
+        add("mode", "Cursor ↔ last tool", "interact", ["enabled": false], to: pointer)
         submenu("Choose Pointer", pointers, to: pointer)
         let gestures = NSMenu(title: "Hand Gestures")
         submenu("Hand Gestures", gestures, to: pointer)
@@ -116,8 +118,10 @@ final class MenuBarCommands: NSObject {
         for item in colors.items { item.state = item.representedObject as? String == Preferences.inkChoice.rawValue ? .on : .off }
         items["toggle"]?.title = overlay.isActive ? "Turn Pointer Off" : "Turn Pointer On"
         items["interact"]?.state = overlay.mode.isInteractive ? .on : .off
-        items["interact"]?.isEnabled = !overlay.isCapturing && (overlay.mode == .draw || overlay.drawingAllowed)
-        if let item = items["interact"] { requests[item] = ["version": 1, "operation": "interact", "enabled": !overlay.mode.isInteractive] }
+        items["interact"]?.isEnabled = !overlay.isCapturing
+        items["mode"]?.isEnabled = !overlay.isCapturing && (overlay.mode == .draw || overlay.drawingAllowed)
+        if let item = items["mode"] { requests[item] = ["version": 1, "operation": "interact", "enabled": !overlay.mode.isInteractive] }
+        if let item = items["interact"] { requests[item] = ["version": 1, "operation": "interact", "enabled": true] }
         items["sound"]?.state = overlay.soundOn ? .on : .off
         items["sound"]?.toolTip = "\(overlay.soundStatus). Toggle this pointer's saved tap sound setting."
         items["masterMute"]?.state = Preferences.soundMuted ? .on : .off
@@ -128,6 +132,7 @@ final class MenuBarCommands: NSObject {
         items["redo"]?.isEnabled = overlay.canRedo && !overlay.isCapturing
         items["clear"]?.isEnabled = overlay.inkStrokes > 0 && !overlay.isCapturing
         items["capture"]?.isEnabled = !overlay.isCapturing
+        items["quick-controls"]?.isEnabled = overlay.isActive && overlay.drawingAllowed && !overlay.isCapturing
         items["capture-region"]?.isEnabled = !overlay.isCapturing && !overlay.isSelectingScreenshotRegion
         items["capture"]?.title = overlay.isCapturing ? "Taking Screenshot…" : "Take Screenshot"
         items["magnifier"]?.state = overlay.isMagnifying ? .on : .off
@@ -138,12 +143,12 @@ final class MenuBarCommands: NSObject {
         items["toolbar"]?.title = Preferences.showToolbar ? "Hide Toolbar" : "Show Toolbar"
         if let item = items["toolbar"] { requests[item] = ["version": 1, "operation": "configure", "settings": ["showToolbar": !Preferences.showToolbar]] }
         for tool in DrawingTool.allCases {
-            items[tool.rawValue]?.state = Preferences.drawingTool == tool ? .on : .off
+            items[tool.rawValue]?.state = overlay.controlsState.selection == .drawing(tool) ? .on : .off
             items[tool.rawValue]?.isEnabled = overlay.drawingAllowed && !overlay.isCapturing
         }
         Self.shortcut(Preferences.toggleShortcut, on: items["toggle"])
         Self.shortcut(Preferences.clearShortcut, on: items["clear"])
-        for action in PresentationAction.allCases { Self.shortcut(Preferences.shortcut(for: action), on: items[action.rawValue == "mode" ? "interact" : action.rawValue]) }
+        for action in PresentationAction.allCases { Self.shortcut(Preferences.shortcut(for: action), on: items[action.rawValue]) }
     }
     var diagnostics: [[String: Any]] {
         func walk(_ menu: NSMenu) -> [[String: Any]] { menu.items.filter { !$0.isSeparatorItem }.map { item in
@@ -156,7 +161,14 @@ final class MenuBarCommands: NSObject {
         func walk(_ menu: NSMenu) -> [NSMenu] { [menu] + menu.items.compactMap(\.submenu).flatMap(walk) }
         return walk(menu)
     }
-    @objc private func invoke(_ item: NSMenuItem) { if let request = requests[item] { perform?(request) }; refresh() }
+    @objc private func invoke(_ item: NSMenuItem) {
+        if let request = requests[item] {
+            if request["operation"] as? String == "radial-open" {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in self?.perform?(request) }
+            } else { perform?(request) }
+        }
+        refresh()
+    }
     @objc private func showControls() { openControls?() }
     @objc private func showPractice() { openPractice?() }
     @objc private func update() { checkForUpdates?() }

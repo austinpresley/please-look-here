@@ -1,0 +1,65 @@
+{
+  "groups": [
+    {
+      "name": "Original hand",
+      "layers": [
+        {
+          "name": "Original hand PNG",
+          "image-name": "hand_glove-x-marks.png",
+          "glass": false
+        }
+      ],
+      "position": {
+        "scale": 1.06,
+        "translation-in-points": [
+          -31.46,
+          -522.38
+        ]
+      },
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.28
+      },
+      "translucency": {
+        "enabled": false,
+        "value": 0.5
+      }
+    },
+    {
+      "name": "Island and X",
+      "layers": [
+        {
+          "name": "map",
+          "image-name": "map.svg",
+          "glass": false
+        }
+      ],
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.18
+      },
+      "translucency": {
+        "enabled": false,
+        "value": 0.5
+      }
+    }
+  ],
+  "fill-specializations": [
+    {
+      "value": {
+        "automatic-gradient": "srgb:0.12941,0.58824,0.90980,1.00000"
+      }
+    },
+    {
+      "appearance": "dark",
+      "value": {
+        "automatic-gradient": "srgb:0.05098,0.16471,0.29020,1.00000"
+      }
+    }
+  ],
+  "supported-platforms": {
+    "squares": [
+      "macOS"
+    ]
+  }
+}

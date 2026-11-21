@@ -1,0 +1,78 @@
+[
+  {
+    "concept": "1-ta-da",
+    "title": "Ta-da!",
+    "idea": "The white glove is a magician’s glove: it rises out of an upside-down top hat.",
+    "document": "concepts/1-ta-da/AppIcon.icon",
+    "source": "assets/hand_glove.png",
+    "source_sha256": "c93b7af4dbc72b690f55681d81655e4f81d1c7de3200b91d0f2b92a872d8461b",
+    "layer_png": "hand_glove.png",
+    "layer_sha256": "c93b7af4dbc72b690f55681d81655e4f81d1c7de3200b91d0f2b92a872d8461b",
+    "transform": "none (byte-identical original)",
+    "verified": "byte-identical copy",
+    "icon_composer_position": {
+      "scale": 1.08,
+      "translation-in-points": [
+        -14.04,
+        279.44
+      ]
+    }
+  },
+  {
+    "concept": "2-boop",
+    "title": "Boop",
+    "idea": "A manicule (☞, the old “look here” mark): the purple hand enters from the edge and boops a pop-art burst.",
+    "document": "concepts/2-boop/AppIcon.icon",
+    "source": "assets/hand_lavender.png",
+    "source_sha256": "8a89c255677abad9aeafb9baeb90f01c467479ff8e0c650c401087d6d6324cd1",
+    "layer_png": "hand_lavender-boop.png",
+    "layer_sha256": "dedf2f0dedb95046ba164cf4fe30e8ead6e22cdd41a02360503854c3916e056f",
+    "transform": "exact 90° clockwise pixel remap (lossless)",
+    "verified": "decoded output rotated back is byte-identical to the original pixel data",
+    "icon_composer_position": {
+      "scale": 1.1,
+      "translation-in-points": [
+        -569.9,
+        32.9
+      ]
+    }
+  },
+  {
+    "concept": "3-x-marks",
+    "title": "X marks the spot",
+    "idea": "Treasure-map joke: the white glove drops in from the top and points straight down at the red X.",
+    "document": "concepts/3-x-marks/AppIcon.icon",
+    "source": "assets/hand_glove.png",
+    "source_sha256": "c93b7af4dbc72b690f55681d81655e4f81d1c7de3200b91d0f2b92a872d8461b",
+    "layer_png": "hand_glove-x-marks.png",
+    "layer_sha256": "26c15ef6fc8ca36fe05e7977a8bcfc34cab0ef2abdc052e52efcd87bd4ba9aed",
+    "transform": "exact 180° pixel remap (lossless)",
+    "verified": "decoded output rotated back is byte-identical to the original pixel data",
+    "icon_composer_position": {
+      "scale": 1.06,
+      "translation-in-points": [
+        -31.46,
+        -522.38
+      ]
+    }
+  },
+  {
+    "concept": "4-puppet",
+    "title": "Puppet show",
+    "idea": "The hand already lives on a stick, so make it a puppet: it pops up on stage, leaning in to point.",
+    "document": "concepts/4-puppet/AppIcon.icon",
+    "source": "assets/hand_lavender.png",
+    "source_sha256": "8a89c255677abad9aeafb9baeb90f01c467479ff8e0c650c401087d6d6324cd1",
+    "layer_png": "hand_lavender-puppet.png",
+    "layer_sha256": "851be2666a0d166fc06fb3d642034762a2a242603d67ea4b12ce655a35ce0d48",
+    "transform": "rotated -12° with CoreGraphics high-quality resampling (only resampled hand)",
+    "verified": "resampled derivative; not pixel-identical by design",
+    "icon_composer_position": {
+      "scale": 1.08,
+      "translation-in-points": [
+        25.36,
+        331.7
+      ]
+    }
+  }
+]

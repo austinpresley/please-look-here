@@ -1,0 +1,420 @@
+{
+  "title": "Settings, revised after a harsh review.",
+  "intro": "The first pass hid too much and blurred several scopes. This revision keeps common settings visible and restores the behavior that the cleaner layouts had lost.",
+  "overall": {
+    "score": 66,
+    "verdict": "Opus graded version one D+. Pointer defaults, pointer state and shortcut setup received the largest revisions."
+  },
+  "pages": [
+    {
+      "id": "general",
+      "title": "General",
+      "score": 74,
+      "letter": "C",
+      "headline": "Put access and updates where people can see them.",
+      "mapping": "General → General. Screenshots move to Tools.",
+      "critique": "Opus marked down permissions at the bottom, everyday update controls behind Details, and reviewer-only links presented as app controls.",
+      "fixes": [
+        "Permissions come first, with inline Allowed, Not allowed and Not requested yet states. Recovery actions sit beside the missing access.",
+        "Automatic checks, Check Now and last-checked status are visible together. A build without an update feed shows a plain unavailable state.",
+        "Screenshots move to Tools. General keeps permissions, startup, app appearance and one practice entry. Reviewer state controls stay outside the app mock."
+      ],
+      "issues": [
+        "Permissions placed last",
+        "Updates hidden behind Details… sheet",
+        "No Not-requested state; prototype toggle styled as app link"
+      ],
+      "ledger": [
+        [
+          "Accessibility and Screen Recording",
+          "General → Permissions, including recovery actions"
+        ],
+        [
+          "Startup, auto-check, manual check, last checked",
+          "General → Startup and updates"
+        ],
+        [
+          "System / Light / Dark",
+          "General → App appearance"
+        ],
+        [
+          "Copy, save and folder",
+          "Tools → Screenshots"
+        ],
+        [
+          "Practice",
+          "General footer; dedicated Quick controls practice in Shortcuts"
+        ]
+      ],
+      "risk": "Keep permission prompts contextual, retain the existing Allow Drawing route, and avoid re-requesting an already granted permission."
+    },
+    {
+      "id": "pointers",
+      "title": "Pointers",
+      "score": 63,
+      "letter": "D",
+      "headline": "Pin it, then see exactly where it went.",
+      "mapping": "Pointers → Pointers. Favorites return above the library.",
+      "critique": "Opus found that tiles hid enabled, pinned and missing-artwork state. Opening their actions also changed the current pointer, and pinning had no result on the same page.",
+      "fixes": [
+        "Toolbar favorites and a small Quick controls direction map are visible above the full library. Their lists remain independent. Toolbar capacity stays at eight.",
+        "Every tile reports selected, pinned, off, custom and missing-artwork states. The actions menu has no selection side effect.",
+        "New Hand stays beside search. Combined filters, a hidden-current-pointer message and a persistent-in-the-demo Undo Remove banner are restored. The chooser searches all built-in and native choices.",
+        "Customize is one sheet with effective values, independent Shadow and Shadow style controls, per-field reset, and real OK/Shaka thumbnails. New Hand uses one sheet with Cancel, validation, name and Add Hand."
+      ],
+      "issues": [
+        "Tiles drop enabled/pinned/custom/missing state",
+        "··· opens a sheet and changes live selected pointer; Pin/Unpin stateless",
+        "New Hand and Edit Favorites below a 39-item grid"
+      ],
+      "ledger": [
+        [
+          "Current selection, enabled state and availability",
+          "Pointers → Current pointer and tile status"
+        ],
+        [
+          "Toolbar pins, add, reorder, unpin, capacity eight",
+          "Pointers → Toolbar favorites; drag and menu commands"
+        ],
+        [
+          "Six Quick controls slots and swapping",
+          "Pointers → Direction map; searchable slot chooser"
+        ],
+        [
+          "Search and combined Enabled / Pinned / Custom filters",
+          "Pointers → Show menu and search"
+        ],
+        [
+          "Missing artwork; custom remove and Undo Remove",
+          "Pointers → Tile actions and transaction banner"
+        ],
+        [
+          "Size, shadow, shadow style, tap enable, sound choice",
+          "Customize sheet → effective controls with independent resets"
+        ],
+        [
+          "Gesture artwork, import, restore, shortcut link",
+          "Customize sheet → Hand gestures"
+        ],
+        [
+          "Make image, import, inline preview, name and add",
+          "New Hand sheet"
+        ]
+      ],
+      "risk": "An actions menu must never select its subject. Resetting shadow must leave shadow style intact. Disabled or missing favorites retain their positions."
+    },
+    {
+      "id": "effects",
+      "title": "Pointer defaults",
+      "score": 56,
+      "letter": "F",
+      "headline": "Say which values can be overridden.",
+      "mapping": "Effects → Pointer defaults. Magnification moves to Tools.",
+      "critique": "At 56/100, Effects was the weakest page. Its Shared defaults label covered global behavior, output mute and a separate tool, and hid everyday tap-sound choices.",
+      "fixes": [
+        "The page is renamed Pointer defaults. Look and Tap sound clearly identify independently overridable values; Motion and App sound explicitly apply across the app.",
+        "Size, shadow, tap sound, sound choice, volume/mute, follow, tap swing and hand visibility are visible without disclosures.",
+        "A fixed default-hand sample previews only shared values. A separate note says when the current pointer has custom values, instead of pretending the sample is its live result.",
+        "Magnification is next to drawing and screenshots in Tools. Turning the shared shadow off preserves its style; Customize still edits the two fields independently."
+      ],
+      "issues": [
+        "Subtitle claims shared defaults for global settings",
+        "Default tap sound hidden while master mute visible",
+        "Shared preview uses selected pointer and ignores its overrides"
+      ],
+      "ledger": [
+        [
+          "Shared size, shadow on/off and shadow style",
+          "Pointer defaults → Look"
+        ],
+        [
+          "Shared tap sound enabled and sound choice",
+          "Pointer defaults → Tap sound"
+        ],
+        [
+          "Master mute and app volume",
+          "Pointer defaults → App sound, explicitly global"
+        ],
+        [
+          "Follow, tap swing, keep hand visible",
+          "Pointer defaults → Motion, explicitly global"
+        ],
+        [
+          "Background, tap and motion preview",
+          "Fixed default-hand sample"
+        ],
+        [
+          "Selected pointer overrides and independent resets",
+          "Pointers → Customize"
+        ],
+        [
+          "Zoom and lens size",
+          "Tools → Magnification"
+        ]
+      ],
+      "risk": "The sample deliberately uses a fixed reference hand. It does not claim to show a customized pointer. Sound previews remain silent in the document and respect simulated mute."
+    },
+    {
+      "id": "drawing",
+      "title": "Tools",
+      "score": 73,
+      "letter": "C",
+      "headline": "Restore practice, then keep tool settings together.",
+      "mapping": "Drawing → Tools. Adds Magnification and Screenshots.",
+      "critique": "Opus found a contradictory Match switch, missing Replay Sample and Undo, and an unexplained Trail mode behind a vague Advanced label.",
+      "fixes": [
+        "Match pointer returns as one of the nine mutually exclusive ink choices, with larger hit areas.",
+        "Practice gets local Interact/Draw, a local tool selector, Replay Sample, Undo and Clear. It uses the settings without changing the desktop tool.",
+        "Keep / Fade / Trail retain a visible explanation and relevant delay. Smoothing and trail timing has a concrete label and value summary.",
+        "Magnification and screenshot destinations join the tool page. Their two-row groups stay visible below drawing, with jump links and one scrolling detail pane."
+      ],
+      "issues": [
+        "Match-ink switch duplicates an InkChoice value",
+        "Replay Sample, Undo and local Interact/Draw dropped",
+        "Trail explanation lost; vague Advanced"
+      ],
+      "ledger": [
+        [
+          "Local practice modes, all seven tools and text",
+          "Tools → Practice drawing"
+        ],
+        [
+          "Replay Sample, local Undo and Clear",
+          "Practice header, keyboard accessible"
+        ],
+        [
+          "Match pointer and eight fixed ink colors",
+          "Tools → Ink, one mutually exclusive choice"
+        ],
+        [
+          "Width and opacity",
+          "Tools → Ink"
+        ],
+        [
+          "Keep / Fade / Trail and fade delay",
+          "Tools → Fading; hidden values retained"
+        ],
+        [
+          "Smoothing, trail delay and speed",
+          "Smoothing and trail timing"
+        ],
+        [
+          "Magnification zoom, diameter and permission recovery",
+          "Tools → Magnification"
+        ],
+        [
+          "Save/copy outcome and retained folder",
+          "Tools → Screenshots"
+        ]
+      ],
+      "risk": "The document demonstrates replay, annotations and fading locally. Full native text editing and annotation geometry remain app implementation work. Keep hidden trail settings and the capture folder."
+    },
+    {
+      "id": "controls",
+      "title": "Shortcuts",
+      "score": 59,
+      "letter": "F",
+      "headline": "Flatten setup and make assignments inspectable.",
+      "mapping": "Controls → Shortcuts & controls. Four tabs become one page.",
+      "critique": "Opus gave the container 59/100. The extra tabs hid tiny sections, tool keys rejected valid plain letters, and Clear, conflicts and availability were missing.",
+      "fixes": [
+        "The sidebar says Shortcuts. Toolbar, Quick controls, keyboard assignments and Stream Deck share one detail pane, with direct jump links.",
+        "Pointer and Presenting assignments are visible. Tool keys use a named disclosure, accept single letters, and preserve their drawing-only scope.",
+        "Assigned fields have explicit Clear actions. Conflicts identify both commands; Show Conflicts filters them. Standard Mac command combinations are rejected.",
+        "Favorites are edited in Pointers. Stream Deck restores its bundled version, conditional download link, opening state and status."
+      ],
+      "issues": [
+        "Vague name plus four tabs",
+        "Subtitle does not name contents",
+        "Related items split across tabs"
+      ],
+      "ledger": [
+        [
+          "Toolbar visibility and reset position",
+          "Shortcuts → Toolbar"
+        ],
+        [
+          "Hold modifier, Open Quick controls, Clear, practice",
+          "Shortcuts → Quick controls"
+        ],
+        [
+          "Pointer, gesture and presentation keys",
+          "Keyboard shortcuts, visible groups"
+        ],
+        [
+          "Drawing, undo/redo, clear and match-ink keys",
+          "Drawing assignments; tool keys allow plain letters"
+        ],
+        [
+          "Conflict summary, assigned status, explicit Clear",
+          "Top banner and assignment rows"
+        ],
+        [
+          "Gesture availability and artwork link",
+          "Gesture key scope; Pointers → Customize"
+        ],
+        [
+          "Bundled plugin version, installation and host availability",
+          "Stream Deck card and status"
+        ],
+        [
+          "Toolbar and Quick controls favorite editing",
+          "Pointers, direct link from Shortcuts"
+        ]
+      ],
+      "risk": "The conflict example detects duplicate assignments in this document; native cross-app conflict detection stays with the app. Old shortcuts/practice routes must reveal the matching row."
+    },
+    {
+      "id": "presets",
+      "title": "Presets & Backup",
+      "score": 72,
+      "letter": "C",
+      "headline": "Make undo a real state, not a permanent button.",
+      "mapping": "Presets → Presets & Backup.",
+      "critique": "Opus marked down always-enabled Undo, vague modal row actions, lost disabled-pointer counts and an import review that described what it should contain.",
+      "fixes": [
+        "Preset selection exposes Apply, Update from Current Setup and Remove inline. Summaries restore pointer names, toolbar count and pointers-off count.",
+        "Undo appears only after a named transaction, and restores the affected demo state. Removing a preset asks first.",
+        "Import shows concrete changed values, pointer/favorite details and a conflict state that disables Import Backup.",
+        "Backup exclusions stay visible. Reset has its own confirmation and Export Backup First. Recovery folder details stay secondary."
+      ],
+      "issues": [
+        "Undo always enabled and unnamed",
+        "Preset Actions… vague modal; Remove unconfirmed",
+        "Disabled count and fallback note dropped"
+      ],
+      "ledger": [
+        [
+          "Save, apply, update and remove",
+          "Saved presets with inline selected-row actions"
+        ],
+        [
+          "Disabled count and missing-pointer fallback",
+          "Preset summary and rule caption"
+        ],
+        [
+          "Export/import, supported settings and artwork",
+          "Backup and import review"
+        ],
+        [
+          "Preview changed fields, reject conflicts",
+          "Import Backup sheet; commit disabled on conflict"
+        ],
+        [
+          "Persistent native recovery; named demo Undo",
+          "Transaction banner only when a recovery exists"
+        ],
+        [
+          "Recovery folder",
+          "Recovery copies disclosure"
+        ],
+        [
+          "Reset and backup first",
+          "Reset confirmation"
+        ]
+      ],
+      "risk": "Source check resolved one review uncertainty: PresentationStore.removePreset returns a Recovery transaction. The native app must keep its existing disk-backed recovery. Demo recovery is session-local."
+    },
+    {
+      "id": "about",
+      "title": "About",
+      "score": 81,
+      "letter": "B-",
+      "headline": "Use the real identity and direct links.",
+      "mapping": "About → About.",
+      "critique": "The best page still used a hand instead of the app icon, retained Build shown here, and repeated four Open… buttons.",
+      "fixes": [
+        "Use the selected app icon, exact product name and a concrete version/build.",
+        "Source, TinyHand attribution and MIT license are direct link rows. Open-source notices has a clear Show action.",
+        "Remove placeholder copy and the detour to update settings. Updates keep their home in General and the existing app menu."
+      ],
+      "issues": [
+        "Placeholder 'Build shown here'",
+        "Open… buttons instead of link rows",
+        "Hand art instead of app icon; updates link"
+      ],
+      "ledger": [
+        [
+          "Identity, author, version and build",
+          "About header using the actual app icon"
+        ],
+        [
+          "GitHub, TinyHand origin and MIT license",
+          "Direct links"
+        ],
+        [
+          "Bundled third-party notices",
+          "Show Open-source Notices"
+        ],
+        [
+          "Updates and reset",
+          "General and Presets & Backup"
+        ]
+      ],
+      "risk": "The version/build displayed is the reviewed local release example, not a new app release."
+    }
+  ],
+  "nested": [
+    {
+      "title": "Controls / keyboard",
+      "score": 62,
+      "issue": "Recorder rejects plain tool keys"
+    },
+    {
+      "title": "Controls / quick",
+      "score": 74,
+      "issue": "Slot direction labels unverified"
+    },
+    {
+      "title": "Controls / toolbar",
+      "score": 66,
+      "issue": "Pin in Pointers, order here"
+    },
+    {
+      "title": "Controls / streamdeck",
+      "score": 64,
+      "issue": "Designer caption shown as UI; Download always shown"
+    },
+    {
+      "title": "Customize / look",
+      "score": 58,
+      "issue": "Shadow popup merges independent shadow and shadowStyle overrides; ignores policy"
+    },
+    {
+      "title": "Customize / sound",
+      "score": 67,
+      "issue": "'Use shared default' hides effective value"
+    },
+    {
+      "title": "Customize / gestures",
+      "score": 62,
+      "issue": "Thumbnails show base hand"
+    },
+    {
+      "title": "newHand",
+      "score": 65,
+      "issue": "Done vs Add Hand; preview sheet replaces sheet"
+    }
+  ],
+  "goals": [
+    "One clear task per page",
+    "Related defaults have one home; shared and per-pointer scope are explicit",
+    "Common settings stay discoverable",
+    "Preserve existing behavior, independent overrides, permissions, shortcut scopes, import validation and persistent recovery",
+    "Native Mac hierarchy, density, keyboard access and light/dark contrast",
+    "Practice is local and does not change desktop modes",
+    "Concise labels and honest state; simplification must reduce decisions, not just hide them"
+  ],
+  "decisions": [
+    "Adopted the seven-page recommendation, with explicit sidebar labels Pointer defaults and Shortcuts. Tools contains drawing, magnification and screenshots.",
+    "Reversed our favorites decision. Both editors return to Pointers, beside the pin action and its result. Toolbar capacity is eight, not six.",
+    "Kept Customize as a sheet, as Opus recommended. Removed its tabs; five independently inherited values and the gesture artwork section stay in one flow.",
+    "Used a fixed default-hand sample instead of an effective preview of the selected pointer. The default and custom scopes cannot be mistaken for each other.",
+    "Resolved the two unverified review claims against source. Quick slots are N / NE / E / SE / SW / W. The layout follows RadialCatalog pointer order plus the 180-degree child origin in RadialSession. Removing a preset creates a Recovery transaction.",
+    "Kept one scrolling detail pane on long pages. No nested library scroll. Reviewer scenarios stay outside product controls.",
+    "Version two has not been independently regraded. The displayed grades belong to version one."
+  ],
+  "demoScope": "Artwork, presets, permissions and values are sample data. Settings persist between pages within this document. OS dialogs, audio and native file validation remain app behaviors.",
+  "reviewMethod": "All seven pages and nested views were inspected in screenshots; Effects and Keyboard were also checked in dark mode. Source was checked for scope and capabilities.",
+  "implementationScope": "This is a proposal refinement. No app source, installed build or personal preferences were changed."
+}

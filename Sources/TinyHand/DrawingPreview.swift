@@ -5,47 +5,52 @@ struct DrawingPreview: View {
     let configuration: DrawingPracticeConfiguration
     @StateObject private var session: DrawingPracticeSession
     @State private var replay = 0
+    @State private var practiceTool: DrawingTool = .pen
+    @State private var darkBackground: Bool?
+    @Environment(\.colorScheme) private var colorScheme
+    private var usesDarkBackground: Bool { darkBackground ?? (colorScheme == .dark) }
+
+    private var sampleConfiguration: DrawingPracticeConfiguration {
+        var value = configuration; value.tool = practiceTool; return value
+    }
     init(configuration: DrawingPracticeConfiguration) {
         self.configuration = configuration
         _session = StateObject(wrappedValue: DrawingPracticeSession(configuration: configuration))
     }
     var body: some View {
-        Card(title: "Practice drawing") {
-            VStack(alignment: .leading, spacing: Space.md) {
-                HStack(spacing: Space.sm) {
-                    Picker("Practice mode", selection: $session.mode) {
-                        ForEach(DrawingPracticeSession.Mode.allCases, id: \.self) { Text($0.rawValue).tag($0) }
-                    }.labelsHidden().pickerStyle(.segmented).frame(width: 172)
-                    Spacer(minLength: Space.sm)
-                    Button("Replay Sample") { replay += 1 }
-                    Button("Undo") { session.undo() }.disabled(!session.ink.canUndo).help("Undo the last practice annotation")
-                    Button("Clear") { session.clear() }.disabled(session.ink.count == 0).help("Clear only this practice canvas")
-                }
-                .gridProbe("drawingPreview.controls", area: "drawingPreview")
-                DrawingPracticeCanvas(session: session, configuration: configuration, replay: replay)
-                    .frame(height: 148)
-                    .background(Color(nsColor: .textBackgroundColor))
-                    .clipShape(RoundedRectangle(cornerRadius: Space.sm))
-                    .overlay(RoundedRectangle(cornerRadius: Space.sm).strokeBorder(Color.primary.opacity(0.16)))
-                    .gridProbe("drawingPreview.canvas", area: "drawingPreview")
-                if configuration.tool == .text {
-                    TextField("Practice text", text: $session.text)
-                        .textFieldStyle(.roundedBorder)
-                        .gridProbe("drawingPreview.text", area: "drawingPreview")
-                }
-                Text(configuration.lifetimeDescription)
-                    .font(.callout).foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .gridProbe("drawingPreview.lifetime", area: "drawingPreview")
-                Text(session.mode == .draw ? "Try \(configuration.tool.title.lowercased()) here. This canvas stays in Settings." : "Interact passes over the canvas without drawing. Choose Draw to practice.")
-                    .font(.callout).foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .gridProbe("drawingPreview.help", area: "drawingPreview")
-            }
-            .padding(Space.lg)
-            .gridArea("drawingPreview", inset: Space.lg)
+        VStack(alignment: .leading, spacing: Space.sm) {
+            HStack(spacing: Space.sm) {
+                Picker("Practice tool", selection: $practiceTool) {
+                    Label("Pen", systemImage: "pencil.tip").tag(DrawingTool.pen)
+                    Label("Arrow", systemImage: "arrow.up.right").tag(DrawingTool.arrow)
+                }.labelsHidden().pickerStyle(.segmented).frame(width: 144)
+                Spacer(minLength: Space.sm)
+                practiceButton("Undo", symbol: "arrow.uturn.backward", enabled: session.ink.canUndo) { session.undo() }
+                practiceButton("Replay sample", symbol: "arrow.clockwise") { replay += 1 }
+                Toggle(isOn: Binding(get: { usesDarkBackground }, set: { darkBackground = $0 })) { Image(systemName: usesDarkBackground ? "moon.fill" : "moon") }
+                    .toggleStyle(.button).help("Use a dark practice background").accessibilityLabel("Dark practice background")
+                practiceButton("Clear practice canvas", symbol: "trash", enabled: session.ink.canUndo || session.ink.isDrawing) { session.clear() }
+            }.gridProbe("drawingPreview.controls", area: "drawingPreview")
+            DrawingPracticeCanvas(session: session, configuration: sampleConfiguration, replay: replay)
+                .frame(height: 128)
+                // These are sample paper colors, independent of the app's theme.
+                .background(usesDarkBackground ? Color(white: 0.10) : .white)
+                .clipShape(RoundedRectangle(cornerRadius: Space.sm))
+                .overlay(RoundedRectangle(cornerRadius: Space.sm).strokeBorder(Color.primary.opacity(0.16)))
+                .gridProbe("drawingPreview.canvas", area: "drawingPreview")
+            Text(configuration.lifetimeDescription)
+                .font(.system(size: 11)).foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+                .gridProbe("drawingPreview.lifetime", area: "drawingPreview")
         }
+        .padding(Space.md)
+        .background(RoundedRectangle(cornerRadius: Space.md).fill(Color.primary.opacity(0.045)))
+        .gridArea("drawingPreview", inset: Space.md)
         .onExitCommand { session.cancel() }
+    }
+    private func practiceButton(_ title: String, symbol: String, enabled: Bool = true, action: @escaping () -> Void) -> some View {
+        Button(action: action) { Image(systemName: symbol) }
+            .disabled(!enabled).help(title).accessibilityLabel(title)
     }
 }
 

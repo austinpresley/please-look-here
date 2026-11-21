@@ -8,13 +8,21 @@ struct PointerPreviewConfiguration: Equatable {
     var shadowStyle: PointerShadowStyle
     var motion: PointerMotion
     var tapSwing: Double
+    var referenceHeight: CGFloat? = nil
+    var artworkSignature = ""
+
+    static var sharedDefaults: Self {
+        Self(style: .lavender, size: Preferences.pointerSize, shadow: Preferences.showShadow,
+             shadowStyle: Preferences.shadowStyle, motion: Preferences.pointerMotion, tapSwing: Preferences.tapSwing, artworkSignature: HandAsset.imageSignature("hand_lavender"))
+    }
 
     /// Read-only Settings adapter, sharing the live renderer's inheritance policy.
     static var current: Self {
         let style = PointerStyle.saved
         let effective = Preferences.pointerConfiguration(for: style.rawValue)
         return Self(style: style, size: CGFloat(effective.size), shadow: effective.shadow,
-                    shadowStyle: effective.shadowStyle, motion: Preferences.pointerMotion, tapSwing: Preferences.tapSwing)
+                    shadowStyle: effective.shadowStyle, motion: Preferences.pointerMotion, tapSwing: Preferences.tapSwing,
+                    artworkSignature: style.assetName.map(HandAsset.imageSignature) ?? "")
     }
 }
 

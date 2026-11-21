@@ -388,3 +388,203 @@ narrow native layout without changing system displays. Normal app capabilities
 omit this operation. `scripts/menu-bar-smoke.py` requires an exact-suite
 LaunchServices instance, the guarded public fixture, MenuBarProbe and an isolated
 environment.json. Failures retain state and fixture counters before cleanup.
+
+## Quick controls v9
+
+`radial-open` opens persistent Quick controls at the real cursor through the
+existing InputTap session owner. It has no extra fields. Pointer must be on,
+Accessibility available, and other app controls closed. The action is also
+available as **Open Quick controls** in the menu bar and Shortcuts settings;
+its shortcut starts unassigned and uses the usual conflict rollback.
+
+The existing `test-radial` operation accepts a `request` object in test mode
+with a disposable defaults suite prefixed
+`com.austinpresley.tinyhand.radial-v9.` or the legacy `s013.` prefix. It posts
+no native input and changes no system accessibility preferences or grants.
+
+```json
+{"version":1,"operation":"test-radial","request":{"event":"open","mode":"persistent","point":[700,500],"bounds":[200,200,1000,700],"level":"color","highlighted":"match","keyboard":true,"appearance":"dark","opaque":true,"increaseContrast":false,"reduceMotion":true}}
+```
+
+Coordinates use AppKit screen points, origin at the lower left. `point` is a
+finite `[x,y]`; optional `bounds` is a finite `[x,y,width,height]` owning usable
+rectangle with both dimensions greater than 24. Omitting bounds uses the
+invocation display. Either dimension below 384 selects the native scrolling
+list. Never change the real display configuration for a snapshot.
+
+Supported request fields:
+
+- `event`: `open`, `state`, `move`, `press`, `release`, `cancel`, `key`, `close`.
+  Default is `state`. `open` starts a fresh session, with `mode` equal to
+  `held` or `persistent`. `move`, `press`, and persistent `release` require
+  `point`. These call the session's native-event methods directly.
+- `level`: `root`, `pointer`, `color`, `draw`, `more`. Child entry uses the
+  session's keyboard navigation origin. `highlighted` is an exact item ID
+  from diagnostics, including `back`. `keyboard` controls the focus outline
+  on explicit inspection. It never makes an unavailable command executable.
+- `key`: `tab`, `left`, `right`, `up`, `down`, `enter`, `space`, `escape`,
+  `backspace`. Used with `event: key`. Normal modified native chords,
+  including VoiceOver Control-Option chords, pass unchanged.
+- `appearance`: `light` or `dark`. `opaque`, `increaseContrast`, and
+  `reduceMotion` are boolean panel overrides. They never write system settings.
+- `canUndo`, `canRedo`, `hasInk`: optional boolean catalog fixtures on open.
+  They do not modify drawing history. `releaseSelects` retains the old
+  comparison seam. Optional `sessionID` rejects a stale caller.
+- `snapshot`: an absolute `.png` path. Capture in a separate `state` request
+  after at least 120 ms to let opening and hub transitions settle. It captures
+  only the owned Quick controls window and writes a sibling `-layout.json`
+  with window coordinates, scale, exact visible content frames, sector axes,
+  current/enabled flags, origin reserve and session diagnostics.
+
+```json
+{"version":1,"operation":"test-radial","request":{"event":"state","snapshot":"/absolute/path/color-dark.png"}}
+```
+
+The response's `radial` object includes `sessionID`, mode, group, real point,
+center, owning bounds, list status, armed/neutral/outside flags, inspected and
+eligible candidate IDs, keyboard/focus ownership, pending copy, current and
+disabled item states, window number/frame, and accommodation flags. A closed
+session reports `visible: false` and its last command result.
+
+Run `scripts/build-review.sh --package-only`, then
+`scripts/snapshot-radial.py`. The script verifies the review bundle ID
+`com.austinpresley.pleaselookhere.review`, refuses an existing Review process,
+starts its own disposable test instance with Accessibility denied, and quits
+only that process afterward. It never launches or controls the normal app.
+`TINYHAND_REVIEW_APP` may select another locally assembled bundle with that
+same review ID. Output is `dist/verification/radial-v9/`: 96 PNGs with layout
+JSON covering root, every child, disabled inspection, keyboard focus,
+edge-unarmed held mode, held marker, list and short scrolling child lists at top and bottom,
+each in light/dark and material/opaque/contrast/reduced-motion variants.
+`manifest.json` records the state asserted for every image.
+
+
+## Quick controls Phase C verification
+
+Protocol remains version 1. Normal status additionally includes `browser`,
+`clearRecovery` and `captureExclusion`. Browser status reports candidate, editing,
+model focus, actual columns, saved favourites, cell frames, slot frames/names and
+scroll geometry. Capture status reports exclusion phase, window IDs and visibility.
+Recovery reports its exact opaque annotation revision, visibility and AX hiding.
+
+`test-quick-controls` is available only with `TINYHAND_TEST_MODE=1` and a disposable
+`com.austinpresley.tinyhand.radial-v9.*` defaults suite. Like `test-radial`, it calls
+app/model methods and never posts native input. Request fields are strictly
+validated before use:
+
+- `surface`: `browser`, `recovery`, `exclusion`, `error`; `event` defaults to `state`.
+- Browser `open`: optional `size:[width,height]`, minimum 320×180 and maximum
+  1200×1000, optional boolean `editing`. Optional `query`, `scope:0|1` and selectable
+  `candidate` update the browser model. `assign` uses integer `slot:0…5`;
+  `finish` uses the shared finish-editing routine; `close` closes the window.
+- Recovery `open` seeds one local text annotation and runs the real Clear path.
+  `edit` adds a later annotation, `undo` invokes revision-checked recovery,
+  `dismiss`/`close` removes the snackbar and its AX controls.
+  `focus` invokes the production Command-Shift-U equivalent handler, and `undo-key`
+  invokes the focused panel's Command-Z equivalent directly without posting input.
+- Error `open` presents a deterministic read-only-folder failure. `dismiss`/`close`
+  removes it. The error persists without taking the browser's key focus.
+- Exclusion `open` invokes production closure/hiding without capturing the
+  desktop. `restore`/`close` restores only valid recovery. Its snapshot is an explicitly
+  labelled diagnostic witness of real visibility flags, not screen pixels.
+- Optional `appearance:light|dark` affects only verification windows. Optional
+  absolute `.png` `snapshot` must resolve under `APP_SNAPSHOT`; state/layout JSON
+  is written beside it. No preferences, permission grants or capture access change.
+
+The production browser opens from All pointers after radial input ownership drains,
+or from Settings Pointers through Edit Quick controls favorites. Production capture
+closes wheel/marker/cue/list and browser, hides recovery and excludes all retained
+window IDs while owned input pairs drain. Controls stay closed after capture.
+A completed image reports saved/copied output. Quick-controls command failures
+persist with their reason, a Settings/Choose Folder action and Dismiss, without
+taking focus or repeating the same visible announcement. Recovery returns only
+for a valid revision. Command-Z/Shift-Command-Z use annotation history while
+controls or recovery own focus and in Draw. Search fields keep text undo and
+external Interact applications keep their own shortcuts. Command-Shift-U, also
+listed under Edit > Focus Clear Recovery, focuses valid recovery explicitly;
+Undo/Dismiss return to the prior visible key window and responder.
+
+
+### Native Settings routes, 18 November 2026
+
+The original section IDs remain accepted. `appearance` opens Pointer defaults;
+`sound` opens its sound settings; `drawing` opens Tools with Drawing selected.
+`tools` opens the remembered tool pane, while `magnification` and `screenshots`
+open their named panes. `defaults`, `pointer-defaults` and `effects` are aliases
+for Pointer defaults. The seven sidebar pages omit the old standalone Sound page.
+A normal Shortcuts visit starts with every section closed. Practice and conflict
+links reveal a specific group and focus the native control without recording.
+
+`test-settings` is available only with TINYHAND_TEST_MODE=1 and an isolated
+`com.austinpresley.tinyhand.settings-ui.*` preferences suite. It supports local
+readback and disposable UI setup for scripts/verify-settings-redesign.py and is
+absent from normal capabilities.
+
+### Phase A usability verification
+
+Visible UI calls `interact: true` **Cursor**. Selecting Cursor is idempotent;
+`mode` remains the separate Cursor ↔ last tool shortcut/action. The v1 request
+names, AppleScript terms, preference keys, and historical cycle order are unchanged.
+
+In the S-023 disposable suite, `test-menu-bar.request` additionally accepts
+`surface: "toolbar" | "welcome" | "practice"`, `appearance: "light" | "dark"`,
+`open`, and an absolute `snapshot` path beneath `APP_SNAPSHOT`. Omitting `surface`
+still targets the menu popover. Popover fixtures accept `selection: "cursor"` or
+a drawing-tool raw value, `pointer`, and `permission`. Toolbar fixtures accept
+`selection`, `permission`, `picker`, and `pickerSnapshot`. Practice accepts a
+zero-based `lesson` in the order Click, Draw, Cursor, Quick controls. These are
+view fixtures, not permission overrides for desktop actions. The popover's minimum
+width is 320 points so all nine color controls retain 28-point hit targets.
+
+The existing `test-radial.request` accepts boolean `interact` to depict Cursor or
+Draw without enabling desktop input. `scripts/snapshot-usability.py` runs the Phase
+A own-window matrix in fresh S-023 and radial-v9 suites and refuses to adopt an
+existing Review endpoint. Run it after local tests finish, since AppKit test windows
+can change key focus. Use the temporary build Python environment with Pillow to
+inspect the resulting PNGs; no native input is posted.
+
+
+### Phase B1 Settings compatibility and verification
+
+The visible sidebar is `pointers`, `drawing` (Tools), `shortcuts`, `presets`,
+`general`. Existing `appearance`, `defaults`, `pointer-defaults`, `effects` and
+`sound` identifiers open Pointers with Defaults scope. `about` opens General.
+`drawing`, `magnification`, `screenshots` still select their existing Tools pane.
+No v1 operation, AppleScript term or saved preference key was renamed.
+
+The disposable `test-settings.request` accepts `action: "inspector"` with optional
+`pointer`, `scope: "this" | "defaults"`, `filter: "all" | "favorites" | "hidden"`,
+and `query`. It reports `inspectorScope`, `inspectorPointer`,
+`inspectorHandControls`, and the existing fields. The old `action: "customize"`
+selects This inline; it no longer opens a sheet. The new-hand sheet is unchanged.
+`scripts/snapshot-pointers-b1.py` starts only its own Review process with an isolated
+Settings suite and temporary hand directories, calls `snapshot-settings.py`, and
+captures the B1 inspector matrix without posting native input.
+
+`scripts/snapshot-usability.py` accepts `TINYHAND_USABILITY_VERIFICATION_DIR` for
+its output directory. Its default remains the Phase A folder and all existing
+suite and window-capture guards remain in force.
+
+### Phase B2/C disposable Settings fixtures
+
+The existing test-settings operation and settings-ui suite guard remain intact.
+Additional request actions invoke only local model/control methods:
+
+- `drawing-options` with `advanced: true|false`, and `replay-drawing`.
+- `suggest-add` and `suggest-undo`, invoking the same opt-in shortcut transaction
+  as the visible card. Status adds suggestedResult and suggestedAddCount.
+- `record` / `cancel-recording` with a mounted command, after `focus` has revealed
+  its group. These call the native recorder action/cancel method directly and
+  never post a key or mouse event.
+- `preset-view` with optional included/recovery booleans, `import-review`,
+  `restore-review`, and `dismiss-review`. The reviews use real archive/journal
+  models in the disposable directory. Status adds presetNowCount/recoveryCount.
+- `scroll` with bottom boolean moves the Settings document locally.
+- `gesture-preview` with slot first/second changes only the mounted inspector's
+  local ArmView. It does not activate a desktop overlay or write preferences.
+
+scripts/snapshot-usability-b2c.py refuses an existing Review endpoint, uses its
+own generated suite and temporary Hands/Thumbnails, captures only Settings or its
+attached review sheet, verifies all 72 bundle resources, and terminates only its
+own process. Its standard matrix also runs snapshot-settings.py. No normal v1
+operation, AppleScript term, stored key or old test action was removed.

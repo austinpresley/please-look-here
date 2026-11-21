@@ -454,6 +454,17 @@ enum CustomHands {
         return style
     }
 
+    static func rename(_ style: PointerStyle, name: String) throws {
+        var list = try mutationLibrary()
+        let original = list
+        let trimmed = String(name.trimmingCharacters(in: .whitespacesAndNewlines).prefix(16))
+        guard style.isCustom, !trimmed.isEmpty, let index = list.firstIndex(where: { $0.id == style.rawValue }) else {
+            throw HandRecoveryStore.Problem(message: "Choose a custom hand and a nonempty name.")
+        }
+        list[index].name = trimmed
+        try save(list, replacing: original)
+    }
+
     @discardableResult
     static func remove(_ style: PointerStyle, extensions: [String: Data] = [:]) throws -> HandRecoveryStore.Receipt {
         _ = try mutationLibrary()

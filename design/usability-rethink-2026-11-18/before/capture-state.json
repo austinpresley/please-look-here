@@ -1,0 +1,1475 @@
+{
+  "controls": {
+    "actionCounts": {},
+    "appearance": "NSAppearanceNameAqua",
+    "buttons": {
+      "capture": {
+        "enabled": true,
+        "label": "Take Screenshot",
+        "value": ""
+      },
+      "clear": {
+        "enabled": false,
+        "label": "Clear Drawing",
+        "value": ""
+      },
+      "close": {
+        "enabled": true,
+        "label": "Close Controls",
+        "value": ""
+      },
+      "magnifier": {
+        "enabled": true,
+        "label": "Magnification",
+        "value": "Off"
+      },
+      "more": {
+        "enabled": true,
+        "label": "More Commands",
+        "value": ""
+      },
+      "redo": {
+        "enabled": false,
+        "label": "Redo Annotation",
+        "value": ""
+      },
+      "settings": {
+        "enabled": true,
+        "label": "Settings\u2026",
+        "value": ""
+      },
+      "sound": {
+        "enabled": true,
+        "label": "Tap Sound",
+        "value": "Disabled. Tap sound off"
+      },
+      "undo": {
+        "enabled": false,
+        "label": "Undo Annotation",
+        "value": ""
+      }
+    },
+    "choice": "lavender",
+    "choices": [
+      "lavender",
+      "glove",
+      "coral",
+      "plush",
+      "robot",
+      "pink",
+      "blue",
+      "mint",
+      "lemon",
+      "black",
+      "chrome",
+      "holo",
+      "fuzzy",
+      "wood",
+      "marble",
+      "terrazzo",
+      "glass",
+      "jelly",
+      "pastel",
+      "pixel",
+      "lowpoly",
+      "knit",
+      "skeleton",
+      "astro",
+      "space",
+      "monster",
+      "water",
+      "lava",
+      "grass",
+      "cactus",
+      "choco",
+      "cloud",
+      "mech",
+      "neon",
+      "leaf",
+      "cookie",
+      "laser",
+      "spotlight",
+      "presentation"
+    ],
+    "frame": [
+      890,
+      845,
+      346,
+      329
+    ],
+    "interact": false,
+    "key": true,
+    "menus": [
+      {
+        "children": [],
+        "enabled": true,
+        "hidden": false,
+        "key": "",
+        "modifiers": 1048576,
+        "selected": false,
+        "title": "Open Controls"
+      },
+      {
+        "children": [],
+        "enabled": true,
+        "hidden": false,
+        "key": "",
+        "modifiers": 0,
+        "selected": false,
+        "title": "Open Quick controls"
+      },
+      {
+        "children": [
+          {
+            "children": [],
+            "enabled": true,
+            "hidden": false,
+            "key": "",
+            "modifiers": 0,
+            "selected": false,
+            "title": "Turn Pointer Off"
+          },
+          {
+            "children": [],
+            "enabled": true,
+            "hidden": false,
+            "key": "",
+            "modifiers": 0,
+            "selected": false,
+            "title": "Interact"
+          },
+          {
+            "children": [
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 1048576,
+                "selected": true,
+                "title": "Lavender toy"
+              },
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 1048576,
+                "selected": false,
+                "title": "Cursor glove"
+              },
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 1048576,
+                "selected": false,
+                "title": "Coral vinyl"
+              },
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 1048576,
+                "selected": false,
+                "title": "Plush"
+              },
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 1048576,
+                "selected": false,
+                "title": "Robot"
+              },
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 1048576,
+                "selected": false,
+                "title": "Bubblegum"
+              },
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 1048576,
+                "selected": false,
+                "title": "Sky"
+              },
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 1048576,
+                "selected": false,
+                "title": "Mint"
+              },
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 1048576,
+                "selected": false,
+                "title": "Lemon"
+              },
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 1048576,
+                "selected": false,
+                "title": "Midnight"
+              },
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 1048576,
+                "selected": false,
+                "title": "Chrome"
+              },
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 1048576,
+                "selected": false,
+                "title": "Holo"
+              },
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 1048576,
+                "selected": false,
+                "title": "Fuzzy"
+              },
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 1048576,
+                "selected": false,
+                "title": "Wood"
+              },
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 1048576,
+                "selected": false,
+                "title": "Marble"
+              },
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 1048576,
+                "selected": false,
+                "title": "Terrazzo"
+              },
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 1048576,
+                "selected": false,
+                "title": "Glass"
+              },
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 1048576,
+                "selected": false,
+                "title": "Jelly"
+              },
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 1048576,
+                "selected": false,
+                "title": "Pastel"
+              },
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 1048576,
+                "selected": false,
+                "title": "Pixel"
+              },
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 1048576,
+                "selected": false,
+                "title": "Low poly"
+              },
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 1048576,
+                "selected": false,
+                "title": "Knit"
+              },
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 1048576,
+                "selected": false,
+                "title": "Skeleton"
+              },
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 1048576,
+                "selected": false,
+                "title": "Astronaut"
+              },
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 1048576,
+                "selected": false,
+                "title": "Space"
+              },
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 1048576,
+                "selected": false,
+                "title": "Monster"
+              },
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 1048576,
+                "selected": false,
+                "title": "Water"
+              },
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 1048576,
+                "selected": false,
+                "title": "Lava"
+              },
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 1048576,
+                "selected": false,
+                "title": "Grass"
+              },
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 1048576,
+                "selected": false,
+                "title": "Cactus"
+              },
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 1048576,
+                "selected": false,
+                "title": "Chocolate"
+              },
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 1048576,
+                "selected": false,
+                "title": "Cloud"
+              },
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 1048576,
+                "selected": false,
+                "title": "Mech"
+              },
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 1048576,
+                "selected": false,
+                "title": "Neon"
+              },
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 1048576,
+                "selected": false,
+                "title": "Leaf"
+              },
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 1048576,
+                "selected": false,
+                "title": "Gingerbread"
+              },
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 1048576,
+                "selected": false,
+                "title": "Laser dot"
+              },
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 1048576,
+                "selected": false,
+                "title": "Spotlight"
+              },
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 1048576,
+                "selected": false,
+                "title": "Presentation pointer"
+              }
+            ],
+            "enabled": true,
+            "hidden": false,
+            "key": "",
+            "modifiers": 1048576,
+            "selected": false,
+            "title": "Choose Pointer"
+          },
+          {
+            "children": [
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 0,
+                "selected": false,
+                "title": "Show Gesture 1 \u00b7 OK"
+              },
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 0,
+                "selected": false,
+                "title": "Show Gesture 2 \u00b7 Shaka"
+              },
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 1048576,
+                "selected": false,
+                "title": "Edit Gesture Artwork\u2026"
+              }
+            ],
+            "enabled": true,
+            "hidden": false,
+            "key": "",
+            "modifiers": 1048576,
+            "selected": false,
+            "title": "Hand Gestures"
+          },
+          {
+            "children": [],
+            "enabled": true,
+            "hidden": false,
+            "key": "",
+            "modifiers": 0,
+            "selected": false,
+            "title": "Tap Sound"
+          },
+          {
+            "children": [],
+            "enabled": true,
+            "hidden": false,
+            "key": "",
+            "modifiers": 1048576,
+            "selected": false,
+            "title": "Mute All Sounds"
+          }
+        ],
+        "enabled": true,
+        "hidden": false,
+        "key": "",
+        "modifiers": 1048576,
+        "selected": false,
+        "title": "Pointer"
+      },
+      {
+        "children": [
+          {
+            "children": [],
+            "enabled": true,
+            "hidden": false,
+            "key": "",
+            "modifiers": 0,
+            "selected": false,
+            "title": "Pen"
+          },
+          {
+            "children": [],
+            "enabled": true,
+            "hidden": false,
+            "key": "",
+            "modifiers": 0,
+            "selected": false,
+            "title": "Rectangle"
+          },
+          {
+            "children": [],
+            "enabled": true,
+            "hidden": false,
+            "key": "",
+            "modifiers": 0,
+            "selected": true,
+            "title": "Arrow"
+          },
+          {
+            "children": [],
+            "enabled": true,
+            "hidden": false,
+            "key": "",
+            "modifiers": 0,
+            "selected": false,
+            "title": "Text"
+          },
+          {
+            "children": [],
+            "enabled": true,
+            "hidden": false,
+            "key": "",
+            "modifiers": 0,
+            "selected": false,
+            "title": "Number"
+          },
+          {
+            "children": [],
+            "enabled": true,
+            "hidden": false,
+            "key": "",
+            "modifiers": 0,
+            "selected": false,
+            "title": "Eraser"
+          },
+          {
+            "children": [],
+            "enabled": true,
+            "hidden": false,
+            "key": "",
+            "modifiers": 0,
+            "selected": false,
+            "title": "Highlighter"
+          },
+          {
+            "children": [
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 1048576,
+                "selected": true,
+                "title": "Match the pointer"
+              },
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 1048576,
+                "selected": false,
+                "title": "Red"
+              },
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 1048576,
+                "selected": false,
+                "title": "Orange"
+              },
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 1048576,
+                "selected": false,
+                "title": "Yellow"
+              },
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 1048576,
+                "selected": false,
+                "title": "Green"
+              },
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 1048576,
+                "selected": false,
+                "title": "Blue"
+              },
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 1048576,
+                "selected": false,
+                "title": "Purple"
+              },
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 1048576,
+                "selected": false,
+                "title": "White"
+              },
+              {
+                "children": [],
+                "enabled": true,
+                "hidden": false,
+                "key": "",
+                "modifiers": 1048576,
+                "selected": false,
+                "title": "Black"
+              }
+            ],
+            "enabled": true,
+            "hidden": false,
+            "key": "",
+            "modifiers": 1048576,
+            "selected": false,
+            "title": "Ink Color"
+          },
+          {
+            "children": [],
+            "enabled": false,
+            "hidden": false,
+            "key": "",
+            "modifiers": 0,
+            "selected": false,
+            "title": "Undo Annotation"
+          },
+          {
+            "children": [],
+            "enabled": false,
+            "hidden": false,
+            "key": "",
+            "modifiers": 0,
+            "selected": false,
+            "title": "Redo Annotation"
+          },
+          {
+            "children": [],
+            "enabled": false,
+            "hidden": false,
+            "key": "",
+            "modifiers": 0,
+            "selected": false,
+            "title": "Clear Drawing"
+          }
+        ],
+        "enabled": true,
+        "hidden": false,
+        "key": "",
+        "modifiers": 1048576,
+        "selected": false,
+        "title": "Drawing"
+      },
+      {
+        "children": [
+          {
+            "children": [],
+            "enabled": true,
+            "hidden": false,
+            "key": "",
+            "modifiers": 0,
+            "selected": false,
+            "title": "Take Screenshot"
+          },
+          {
+            "children": [],
+            "enabled": true,
+            "hidden": false,
+            "key": "",
+            "modifiers": 0,
+            "selected": false,
+            "title": "Capture Region\u2026"
+          },
+          {
+            "children": [],
+            "enabled": true,
+            "hidden": false,
+            "key": "",
+            "modifiers": 0,
+            "selected": false,
+            "title": "Magnification"
+          },
+          {
+            "children": [],
+            "enabled": true,
+            "hidden": false,
+            "key": "",
+            "modifiers": 0,
+            "selected": false,
+            "title": "Show Toolbar"
+          }
+        ],
+        "enabled": true,
+        "hidden": false,
+        "key": "",
+        "modifiers": 1048576,
+        "selected": false,
+        "title": "Presentation"
+      },
+      {
+        "children": [],
+        "enabled": true,
+        "hidden": true,
+        "key": "",
+        "modifiers": 1048576,
+        "selected": false,
+        "title": "Allow Drawing\u2026"
+      },
+      {
+        "children": [],
+        "enabled": true,
+        "hidden": true,
+        "key": "",
+        "modifiers": 1048576,
+        "selected": false,
+        "title": "Review 0 Shortcut Conflicts\u2026"
+      },
+      {
+        "children": [],
+        "enabled": true,
+        "hidden": false,
+        "key": "",
+        "modifiers": 0,
+        "selected": false,
+        "title": "Settings\u2026"
+      },
+      {
+        "children": [],
+        "enabled": true,
+        "hidden": false,
+        "key": "",
+        "modifiers": 1048576,
+        "selected": false,
+        "title": "Getting Started Practice\u2026"
+      },
+      {
+        "children": [],
+        "enabled": true,
+        "hidden": false,
+        "key": "q",
+        "modifiers": 1048576,
+        "selected": false,
+        "title": "Quit Look Here Please"
+      }
+    ],
+    "message": "",
+    "pointer": true,
+    "reduceMotion": false,
+    "reduceTransparency": false,
+    "statusFrame": [
+      1046,
+      1174,
+      34,
+      22
+    ],
+    "summary": "Draw with Arrow",
+    "tool": 2,
+    "tracking": 0,
+    "visible": true,
+    "window": 31213
+  },
+  "ok": true,
+  "state": {
+    "accessibility": true,
+    "active": true,
+    "annotations": 0,
+    "appVersion": "1.2.0",
+    "browser": {
+      "candidate": "",
+      "candidateVisible": false,
+      "cells": [],
+      "columns": 7,
+      "contentSize": [
+        560,
+        600
+      ],
+      "count": 0,
+      "countHidden": false,
+      "currentPointer": "lavender",
+      "documentHeight": 504,
+      "editFocused": false,
+      "editFrame": [
+        387,
+        564,
+        157,
+        28
+      ],
+      "editing": false,
+      "editorDocked": false,
+      "editorDoneFrame": [
+        480,
+        562,
+        64,
+        28
+      ],
+      "editorFrame": [
+        0,
+        556,
+        560,
+        0
+      ],
+      "editorHeaderFrame": [
+        16,
+        568,
+        448,
+        20
+      ],
+      "editorHeaderVisible": false,
+      "editorScrollOffset": 0,
+      "editorViewport": [
+        0,
+        596,
+        560,
+        0
+      ],
+      "favorites": [
+        "glove",
+        "lavender",
+        "coral",
+        "plush",
+        "robot",
+        "laser"
+      ],
+      "focus": "search",
+      "focusedSlot": -1,
+      "footerFrame": [
+        16,
+        568,
+        140,
+        20
+      ],
+      "gridBottomInset": 504,
+      "ids": [],
+      "inspected": "",
+      "keyWindow": false,
+      "scopeFrame": [
+        380,
+        12,
+        164,
+        28
+      ],
+      "scopeSegment": 0,
+      "scrollOffset": 0,
+      "scrollViewport": [
+        0,
+        52,
+        560,
+        504
+      ],
+      "searchFrame": [
+        16,
+        12,
+        356,
+        28
+      ],
+      "searchText": "",
+      "shortLayout": false,
+      "slots": [
+        {
+          "artFrame": [
+            52,
+            601,
+            26,
+            26
+          ],
+          "directionFrame": [
+            16,
+            604,
+            28,
+            20
+          ],
+          "frame": [
+            484,
+            600,
+            60,
+            28
+          ],
+          "hidden": true,
+          "label": "Use candidate pointer in North Quick controls slot, replacing Cursor glove",
+          "name": "Cursor glove",
+          "nameFrame": [
+            86,
+            604,
+            390,
+            20
+          ],
+          "slot": 0,
+          "visible": false
+        },
+        {
+          "artFrame": [
+            52,
+            637,
+            26,
+            26
+          ],
+          "directionFrame": [
+            16,
+            640,
+            28,
+            20
+          ],
+          "frame": [
+            484,
+            636,
+            60,
+            28
+          ],
+          "hidden": true,
+          "label": "Use candidate pointer in Northeast Quick controls slot, replacing Lavender toy",
+          "name": "Lavender toy",
+          "nameFrame": [
+            86,
+            640,
+            390,
+            20
+          ],
+          "slot": 1,
+          "visible": false
+        },
+        {
+          "artFrame": [
+            52,
+            673,
+            26,
+            26
+          ],
+          "directionFrame": [
+            16,
+            676,
+            28,
+            20
+          ],
+          "frame": [
+            484,
+            672,
+            60,
+            28
+          ],
+          "hidden": true,
+          "label": "Use candidate pointer in East Quick controls slot, replacing Coral vinyl",
+          "name": "Coral vinyl",
+          "nameFrame": [
+            86,
+            676,
+            390,
+            20
+          ],
+          "slot": 2,
+          "visible": false
+        },
+        {
+          "artFrame": [
+            52,
+            709,
+            26,
+            26
+          ],
+          "directionFrame": [
+            16,
+            712,
+            28,
+            20
+          ],
+          "frame": [
+            484,
+            708,
+            60,
+            28
+          ],
+          "hidden": true,
+          "label": "Use candidate pointer in Southeast Quick controls slot, replacing Plush",
+          "name": "Plush",
+          "nameFrame": [
+            86,
+            712,
+            390,
+            20
+          ],
+          "slot": 3,
+          "visible": false
+        },
+        {
+          "artFrame": [
+            52,
+            745,
+            26,
+            26
+          ],
+          "directionFrame": [
+            16,
+            748,
+            28,
+            20
+          ],
+          "frame": [
+            484,
+            744,
+            60,
+            28
+          ],
+          "hidden": true,
+          "label": "Use candidate pointer in Southwest Quick controls slot, replacing Robot",
+          "name": "Robot",
+          "nameFrame": [
+            86,
+            748,
+            390,
+            20
+          ],
+          "slot": 4,
+          "visible": false
+        },
+        {
+          "artFrame": [
+            52,
+            781,
+            26,
+            26
+          ],
+          "directionFrame": [
+            16,
+            784,
+            28,
+            20
+          ],
+          "frame": [
+            484,
+            780,
+            60,
+            28
+          ],
+          "hidden": true,
+          "label": "Use candidate pointer in West Quick controls slot, replacing Laser dot",
+          "name": "Laser dot",
+          "nameFrame": [
+            86,
+            784,
+            390,
+            20
+          ],
+          "slot": 5,
+          "visible": false
+        }
+      ],
+      "visible": false,
+      "window": 31210
+    },
+    "canRedo": false,
+    "canUndo": false,
+    "capabilities": [
+      "status",
+      "styles",
+      "cycle-pointer",
+      "cycle-tool",
+      "enable-pointer",
+      "on",
+      "off",
+      "toggle",
+      "clear",
+      "undo",
+      "redo",
+      "interact",
+      "mode",
+      "tool",
+      "capture",
+      "capture-region",
+      "magnifier",
+      "gesture",
+      "style",
+      "laser",
+      "configure",
+      "toggle-sound",
+      "toggle-current-sound",
+      "pin",
+      "settings",
+      "custom-hands",
+      "radial-open",
+      "snapshot-settings",
+      "run-applescript",
+      "test-shortcuts",
+      "test-radial",
+      "test-menu-bar",
+      "test-presentation",
+      "test-quick-controls",
+      "test-settings"
+    ],
+    "captureExclusion": {
+      "browserVisible": false,
+      "excludedWindows": [],
+      "phase": "idle",
+      "recovery": {
+        "accessibilityHidden": true,
+        "captureHidden": false,
+        "dismissFocused": false,
+        "dismissLabel": "Dismiss",
+        "dismissSize": [
+          28,
+          28
+        ],
+        "keyWindow": false,
+        "revision": null,
+        "undoFocused": false,
+        "undoHeight": 28,
+        "valid": false,
+        "visible": false,
+        "window": 31211
+      },
+      "resultVisible": false,
+      "wheelVisible": false
+    },
+    "captureSize": [],
+    "capturing": false,
+    "clearRecovery": {
+      "accessibilityHidden": true,
+      "captureHidden": false,
+      "dismissFocused": false,
+      "dismissLabel": "Dismiss",
+      "dismissSize": [
+        28,
+        28
+      ],
+      "keyWindow": false,
+      "revision": null,
+      "undoFocused": false,
+      "undoHeight": 28,
+      "valid": false,
+      "visible": false,
+      "window": 31211
+    },
+    "contactSoundPending": false,
+    "disabledPointers": [],
+    "enabledPointers": [
+      "lavender",
+      "glove",
+      "coral",
+      "plush",
+      "robot",
+      "pink",
+      "blue",
+      "mint",
+      "lemon",
+      "black",
+      "chrome",
+      "holo",
+      "fuzzy",
+      "wood",
+      "marble",
+      "terrazzo",
+      "glass",
+      "jelly",
+      "pastel",
+      "pixel",
+      "lowpoly",
+      "knit",
+      "skeleton",
+      "astro",
+      "space",
+      "monster",
+      "water",
+      "lava",
+      "grass",
+      "cactus",
+      "choco",
+      "cloud",
+      "mech",
+      "neon",
+      "leaf",
+      "cookie",
+      "laser",
+      "spotlight",
+      "presentation"
+    ],
+    "gesture": "",
+    "input": {
+      "active": false,
+      "capturedButtons": [],
+      "controls": {
+        "buttons": [],
+        "keys": [],
+        "nativeMenu": false,
+        "open": true
+      },
+      "enabled": true,
+      "events": 3,
+      "installed": true,
+      "radial": {
+        "buttons": [],
+        "eligible": false,
+        "held": false,
+        "heldKeys": [],
+        "keys": [],
+        "open": false,
+        "pending": false,
+        "persistent": false,
+        "reconciledReleases": 0
+      },
+      "types": {
+        "4294967295": 3
+      }
+    },
+    "interact": false,
+    "lastCapture": "",
+    "lastCaptureError": "",
+    "lastMagnifierError": "",
+    "magnifier": {
+      "display": 0,
+      "error": "",
+      "fpsLimit": 30,
+      "frame": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "frames": 0,
+      "queueDepth": 3,
+      "sample": [],
+      "state": "off",
+      "visible": false
+    },
+    "magnifying": false,
+    "mode": "draw",
+    "motionClock": "timer",
+    "onActiveSpace": true,
+    "pinned": [
+      "lavender",
+      "glove",
+      "coral",
+      "plush",
+      "robot",
+      "laser"
+    ],
+    "pointerConfiguration": {
+      "customized": false,
+      "effective": {
+        "shadow": true,
+        "shadowStyle": "original",
+        "size": 0.13,
+        "sound": "thock",
+        "soundEnabled": false
+      },
+      "overrides": {},
+      "readable": true,
+      "sizeLabel": "Hand size",
+      "soundOutput": {
+        "audible": false,
+        "gain": 0,
+        "masterMuted": false,
+        "pointerEnabled": false,
+        "status": "Tap sound off",
+        "volume": 1
+      },
+      "supportsShadow": true,
+      "supportsShadowStyle": true
+    },
+    "pointerVisible": false,
+    "quickPointers": [
+      "lavender",
+      "glove",
+      "coral",
+      "plush",
+      "robot",
+      "laser"
+    ],
+    "radial": {
+      "lastResult": "",
+      "visible": false
+    },
+    "running": true,
+    "screenRecording": true,
+    "selectingCaptureRegion": false,
+    "settings": {
+      "captureCopies": true,
+      "captureFolder": "/Users/apresley/Desktop",
+      "captureSaves": true,
+      "fade": 3,
+      "handSound": false,
+      "ink": "match",
+      "inkFadeStyle": "wholeLine",
+      "interactKeepsHand": true,
+      "laserSound": false,
+      "lineWidth": 6,
+      "magnifierDiameter": 240,
+      "magnifierZoom": 3,
+      "motion": "original",
+      "opacity": 1,
+      "radialTrigger": "",
+      "shadow": true,
+      "shadowStyle": "original",
+      "showToolbar": false,
+      "size": 0.13,
+      "smoothing": 2,
+      "soundMuted": false,
+      "soundVolume": 1,
+      "tapSound": "thock",
+      "tapSwing": 0,
+      "theme": "light",
+      "toolbarPosition": [],
+      "trailDelay": 1,
+      "trailSpeed": 240
+    },
+    "shadowRendering": {
+      "pending": false,
+      "ready": false,
+      "renderMs": 0,
+      "renders": 0
+    },
+    "shortcuts": {
+      "arrow": null,
+      "capture": null,
+      "capture-region": null,
+      "clear": null,
+      "eraser": null,
+      "exitPointer": null,
+      "gesture1": null,
+      "gesture2": null,
+      "highlighter": null,
+      "magnifier": null,
+      "matchInk": null,
+      "mode": null,
+      "nextPointer": null,
+      "number": null,
+      "pen": null,
+      "previousPointer": null,
+      "quick-controls": null,
+      "rectangle": null,
+      "redo": null,
+      "settings": null,
+      "sound": null,
+      "text": null,
+      "toggle": null,
+      "toolbar": null,
+      "undo": null
+    },
+    "sizeRange": [
+      0.04,
+      0.2
+    ],
+    "soundOutput": {
+      "audible": false,
+      "gain": 0,
+      "masterMuted": false,
+      "pointerEnabled": false,
+      "status": "Tap sound off",
+      "volume": 1
+    },
+    "style": "lavender",
+    "tool": "arrow",
+    "toolbarFrame": [
+      691,
+      68,
+      546,
+      88
+    ],
+    "toolbarVisible": false,
+    "windows": [
+      {
+        "height": 1200,
+        "id": 31212,
+        "title": "",
+        "width": 1920
+      },
+      {
+        "height": 329,
+        "id": 31213,
+        "title": "Look Here Please Controls",
+        "width": 346
+      }
+    ]
+  },
+  "version": 1
+}

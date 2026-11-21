@@ -1,0 +1,346 @@
+[
+  {
+    "id": "general",
+    "title": "General",
+    "to": "general",
+    "destination": "General",
+    "headline": "Give General one job: app setup.",
+    "diagnosis": "Six unrelated groups compete here. A live Interact switch sits beside onboarding, Stream Deck, permissions, screenshots and startup.",
+    "changes": [
+      "Move Interact back to the controls used while presenting. Move hand visibility to Effects and Stream Deck to Controls.",
+      "Replace the two screenshot switches with one choice: Save and copy, Save to folder, or Copy to clipboard.",
+      "Use permission names and explicit status. Put automatic and manual updates together, with an honest state for builds without updates."
+    ],
+    "inventory": [
+      [
+        "Practice the controls",
+        "General footer \u2192 Practice the Controls"
+      ],
+      [
+        "Interact",
+        "Menu bar / toolbar / Quick controls; assign its key in Controls \u2192 Keyboard"
+      ],
+      [
+        "Keep hand visible while interacting",
+        "Effects \u2192 Motion"
+      ],
+      [
+        "Stream Deck installer, host requirements, install status",
+        "Controls \u2192 Stream Deck"
+      ],
+      [
+        "Accessibility and Screen Recording",
+        "General \u2192 Permissions; relevant feature shows a recovery link"
+      ],
+      [
+        "Copy, save, destination folder",
+        "General \u2192 Screenshots"
+      ],
+      [
+        "Launch at login, automatic updates",
+        "General \u2192 Startup and updates"
+      ],
+      [
+        "Theme from Appearance",
+        "General \u2192 App appearance"
+      ]
+    ]
+  },
+  {
+    "id": "shortcuts",
+    "title": "Shortcuts",
+    "to": "controls",
+    "destination": "Controls \u2192 Keyboard",
+    "headline": "Make assignments easy to find.",
+    "diagnosis": "Roughly 26 command rows repeat Unassigned. Instructions for the radial menu, gesture artwork and drawing behavior interrupt the list.",
+    "changes": [
+      "Use four focused views: Keyboard, Quick controls, Toolbar and Stream Deck.",
+      "Group keyboard commands by Pointer, Drawing and Presenting. Search all commands; keep assigned and conflicted groups open.",
+      "Put a conflict summary above the list. Keep the essential scope rule visible; move the radial tutorial into Practice."
+    ],
+    "inventory": [
+      [
+        "Pointer On/Off, Turn Pointer Off, Interact",
+        "Controls \u2192 Keyboard \u2192 Pointer"
+      ],
+      [
+        "Next / Previous Pointer, Tap Sound, Gesture 1 / 2",
+        "Controls \u2192 Keyboard \u2192 Pointer"
+      ],
+      [
+        "Clear, Undo / Redo Annotation, Match Ink to Pointer",
+        "Controls \u2192 Keyboard \u2192 Drawing"
+      ],
+      [
+        "Pen, Rectangle, Arrow, Text, Number, Eraser, Highlighter",
+        "Controls \u2192 Keyboard \u2192 Drawing \u2192 Tool keys"
+      ],
+      [
+        "Screenshot, Capture Region, Magnification, Toolbar, Settings",
+        "Controls \u2192 Keyboard \u2192 Presenting"
+      ],
+      [
+        "Hold-to-open modifier and Open Quick controls key",
+        "Controls \u2192 Quick controls"
+      ],
+      [
+        "Clear assignments, recording errors, key conflicts",
+        "Each assignment field; conflict summary at top"
+      ],
+      [
+        "Radial instructions and Try It",
+        "Controls \u2192 Quick controls \u2192 Practice / How it works"
+      ]
+    ]
+  },
+  {
+    "id": "drawing",
+    "title": "Drawing",
+    "to": "drawing",
+    "destination": "Drawing",
+    "headline": "Start with the result, then tune the ink.",
+    "diagnosis": "Selected tool is presented as a preference above the practice canvas. Color, stroke and lifetime settings are separated even though they shape the same annotation.",
+    "changes": [
+      "Put a local practice canvas first, with its own tool strip. Use it to demonstrate width, color, opacity and fading.",
+      "Keep Color, Line width, Opacity and Fading visible. Show a fade delay only when it applies.",
+      "Put smoothing and trail tuning in Advanced. The live desktop tool remains available in the menu bar, toolbar and shortcuts."
+    ],
+    "inventory": [
+      [
+        "Selected drawing tool",
+        "Live toolbar / menu / Quick controls / keys; local practice has its own selector"
+      ],
+      [
+        "Drawing preview, background, clear local sample",
+        "Drawing \u2192 Practice canvas"
+      ],
+      [
+        "Line width, opacity, ink color",
+        "Drawing \u2192 Ink"
+      ],
+      [
+        "Smoothing",
+        "Drawing \u2192 Advanced"
+      ],
+      [
+        "Keep / Whole line / Trail",
+        "Drawing \u2192 Fading: Keep / Fade / Trail"
+      ],
+      [
+        "Fade delay",
+        "Drawing \u2192 Fading, visible for Fade and Trail"
+      ],
+      [
+        "Trail delay and speed",
+        "Drawing \u2192 Advanced, visible for Trail"
+      ]
+    ]
+  },
+  {
+    "id": "pointers",
+    "title": "Pointers",
+    "to": "pointers",
+    "destination": "Pointers",
+    "headline": "Choose first. Customize when asked.",
+    "diagnosis": "Toolbar pins, a nested scrolling library, several buttons on every tile, per-pointer overrides and gesture artwork all stack on one page.",
+    "changes": [
+      "Use a current-pointer header, one search field and one Filter menu. Keep combined Enabled, Pinned and Custom filters inside that menu.",
+      "Click a tile to select it. Put enable, pin and removal commands in a visible actions menu, also available by keyboard and context menu.",
+      "Open per-pointer Look, Sound and Gestures in Customize. Show Restore Default only beside a changed value. Open New Hand as a sheet."
+    ],
+    "inventory": [
+      [
+        "Toolbar favorites, reorder, unpin, add, reset",
+        "Controls \u2192 Toolbar \u2192 Favorites; Pointers has an Edit Favorites link"
+      ],
+      [
+        "Six Quick controls favorites and slot swapping",
+        "Controls \u2192 Quick controls \u2192 Favorites"
+      ],
+      [
+        "Search; combined Enabled / Pinned / Custom filters",
+        "Pointers \u2192 Search and Filter menu"
+      ],
+      [
+        "Selection, enabled state, missing artwork, pin status",
+        "Pointers \u2192 Library tile and actions menu"
+      ],
+      [
+        "Custom-hand removal and Undo Remove",
+        "Pointers \u2192 Actions; persistent Undo banner"
+      ],
+      [
+        "Size, shadow, sound overrides and per-field Use Default",
+        "Pointers \u2192 Customize \u2192 Look / Sound"
+      ],
+      [
+        "Gesture artwork, import, restore, assign shortcuts",
+        "Pointers \u2192 Customize \u2192 Gestures"
+      ],
+      [
+        "Describe, copy prompt / open ChatGPT, import, validate, name, add",
+        "Pointers \u2192 New Hand sheet"
+      ],
+      [
+        "Separate pointer browser from Quick controls",
+        "Keep the focused chooser, reuse library content and filter behavior"
+      ]
+    ]
+  },
+  {
+    "id": "appearance",
+    "title": "Appearance",
+    "to": "effects",
+    "destination": "Effects",
+    "headline": "Put every pointer default together.",
+    "diagnosis": "Appearance mixes app theme, pointer defaults, motion, magnification and the floating toolbar. Sound contains the other half of the same defaults.",
+    "changes": [
+      "Rename the page Effects. Bring shared tap sound and app volume here. Move app theme to General and toolbar configuration to Controls.",
+      "Keep a scoped preview above the common controls. Label it Shared defaults so overrides cannot make the preview misleading.",
+      "Replace Shadow on/off plus a disabled style picker with Off / Original / Contact. Put lens settings and motion tuning in named disclosures."
+    ],
+    "inventory": [
+      [
+        "System / Light / Dark",
+        "General \u2192 App appearance"
+      ],
+      [
+        "Preview background, tap, motion",
+        "Effects \u2192 Shared defaults preview"
+      ],
+      [
+        "Shared pointer size, shadow visibility, shadow style",
+        "Effects \u2192 Look"
+      ],
+      [
+        "Follow behavior, tap swing",
+        "Effects \u2192 Motion"
+      ],
+      [
+        "Keep hand visible while interacting, from General",
+        "Effects \u2192 Motion"
+      ],
+      [
+        "Magnification zoom and lens size",
+        "Effects \u2192 Magnification"
+      ],
+      [
+        "Toolbar visibility and reset position",
+        "Controls \u2192 Toolbar"
+      ],
+      [
+        "Shared sound and master output, from Sound",
+        "Effects \u2192 Sound"
+      ]
+    ]
+  },
+  {
+    "id": "sound",
+    "title": "Sound",
+    "to": "effects",
+    "destination": "Effects \u2192 Sound",
+    "headline": "Sound belongs with the pointer defaults.",
+    "diagnosis": "A small standalone page splits default sound from default appearance. Choosing a sound, previewing it and enabling it take separate rows, followed by another status-only row.",
+    "changes": [
+      "Combine default tap sound, sound choice and preview in one compact group inside Effects.",
+      "Keep Mute all sounds and app volume distinct from per-pointer tap-sound choices. A preview respects master mute and volume.",
+      "Explain overrides beside the selected pointer. Restore one sound value without clearing unrelated custom settings."
+    ],
+    "inventory": [
+      [
+        "Master mute and app output volume",
+        "Effects \u2192 Sound \u2192 App output"
+      ],
+      [
+        "Default tap sound enabled and sound choice",
+        "Effects \u2192 Sound \u2192 Shared tap sound"
+      ],
+      [
+        "Preview without enabling / selecting",
+        "Inline Preview button, disabled with a visible reason when muted"
+      ],
+      [
+        "Current pointer sound status",
+        "Pointers \u2192 Current pointer \u2192 Customize \u2192 Sound"
+      ],
+      [
+        "Per-pointer enabled and sound choice overrides",
+        "Pointers \u2192 Customize \u2192 Sound; independent Restore Default actions"
+      ]
+    ]
+  },
+  {
+    "id": "presets",
+    "title": "Presets",
+    "to": "presets",
+    "destination": "Presets & Backup",
+    "headline": "Show the saved setup before applying it.",
+    "diagnosis": "A name field, popup and action row obscure the actual saved setups. The summary exposes a pointer ID, and recovery exposes a filesystem path.",
+    "changes": [
+      "Show named setups as a list with a pointer thumbnail and human-readable summary. Open naming only when saving a new preset.",
+      "Keep Import and Export together. Preserve the full import review, conflict checks and persistent recovery.",
+      "Move Reset All Settings here from About. Use Show Recovery Folder in place of printing the path."
+    ],
+    "inventory": [
+      [
+        "Save named setup; apply, update, remove",
+        "Presets & Backup \u2192 Saved presets and row actions"
+      ],
+      [
+        "Selected pointer ID, pin and disabled counts",
+        "Preset summary using pointer names and readable counts"
+      ],
+      [
+        "Export and import JSON archive",
+        "Presets & Backup \u2192 Backup"
+      ],
+      [
+        "Included/excluded data, import preview, conflict refusal",
+        "Backup \u2192 What is included; full Import review sheet"
+      ],
+      [
+        "Missing pointer / artwork fallback, preserved overrides",
+        "Preset detail and import review"
+      ],
+      [
+        "Persistent Undo Last Change and recovery folder",
+        "Transaction banner with Undo; Show Recovery Folder"
+      ],
+      [
+        "Reset All Settings from About",
+        "Presets & Backup \u2192 Reset, retaining current confirmation / recovery behavior"
+      ]
+    ]
+  },
+  {
+    "id": "about",
+    "title": "About",
+    "to": "about",
+    "destination": "About",
+    "headline": "Let About be about the app.",
+    "diagnosis": "Credits share a page with update actions and a destructive reset. Neither belongs to the identity of the app.",
+    "changes": [
+      "Keep the app icon, exact product name, version/build and author together.",
+      "Keep GitHub, TinyHand attribution, MIT license and open-source notices as ordinary links.",
+      "Move update controls to General and Reset All Settings to Presets & Backup."
+    ],
+    "inventory": [
+      [
+        "Product name, icon, version, author, tagline",
+        "About header"
+      ],
+      [
+        "GitHub, TinyHand, MIT license, third-party notices",
+        "About \u2192 Credits and source"
+      ],
+      [
+        "Check for Updates",
+        "General \u2192 Startup and updates; existing menu command stays"
+      ],
+      [
+        "Reset All Settings",
+        "Presets & Backup \u2192 Reset"
+      ]
+    ]
+  }
+]

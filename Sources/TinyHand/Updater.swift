@@ -24,6 +24,7 @@ final class Updater: NSObject, SPUStandardUserDriverDelegate {
         get { controller?.updater.automaticallyChecksForUpdates ?? false }
         set { controller?.updater.automaticallyChecksForUpdates = newValue }
     }
+    var lastCheckedDate: Date? { controller?.updater.lastUpdateCheckDate }
 
     var supportsGentleScheduledUpdateReminders: Bool { true }
 

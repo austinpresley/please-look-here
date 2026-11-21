@@ -9,11 +9,42 @@ final class OverlayController {
     }
     private let window: OverlayWindow
     private let armView: ArmView
-    private let inputTap = InputTap()
+    private let inputTap: InputTap
     private let toolbar = Toolbar()
+    private var pendingControlTool = false
+    var controlsState: PresentationControlsState {
+        PresentationControlsState(mode: mode, tool: Preferences.drawingTool, pointerVisible: isActive,
+                                  drawingAllowed: drawingAllowed, capturing: isCapturing, pendingDrawing: pendingControlTool)
+    }
+    func chooseToolFromControls(_ tool: DrawingTool) {
+        guard !isCapturing else { return }
+        if !drawingAllowed {
+            pendingControlTool = true; Preferences.drawingTool = tool
+            toolbar.setMode(mode, pending: true); toolbar.setNeedsPermission(true)
+            onActiveChanged?(); return
+        }
+        if !chooseTool(tool) {
+            pendingControlTool = true; Preferences.drawingTool = tool
+            toolbar.setMode(mode, pending: true); toolbar.setNeedsPermission(true); onActiveChanged?()
+        }
+    }
+    func verifyToolbar(_ request: [String: Any]) -> [String: Any] { toolbar.verify(request) }
+    func requestDrawingPermission() { onNeedsPermission?() }
+    func showAllPointersFromControls() { pointerBrowser.show(restoration: nil) }
+
     private let screenshotResult = ScreenshotResult()
     private let screenshotSelection = ScreenshotSelection()
-    let radial = RadialMenu()
+    let radial: RadialMenu
+    let pointerBrowser: PointerBrowser
+    let clearRecovery: ClearRecovery
+    let commandError = QuickCommandError()
+    private var quickCaptureRequested = false
+    private var browserHandoff: Task<Void, Never>?
+    private var browserRestoration: QuickControlsFocusRestoration?
+    private var quickClearBounds: CGRect?
+    private(set) var captureExclusion = CaptureExclusionState()
+    var captureDiagnostics: [String: Any] { ["phase": captureExclusion.phase.rawValue, "excludedWindows": captureExclusion.windowIDs, "wheelVisible": radial.visible, "browserVisible": pointerBrowser.visible, "resultVisible": screenshotResult.window?.isVisible ?? false, "recovery": clearRecovery.diagnostics] }
+
     private let accessibility: () -> Bool
     private let screenRecording: () -> Bool
     private let requestRecording: () -> Void
@@ -46,6 +77,7 @@ final class OverlayController {
     private var normalCursor = false
     private var ownMenuOpen = false
     private var menuRects: [CGRect] = []
+    private let menuWindows: () -> [CGRect]
     private var menuOpeningUntil = Date.distantPast
     private var lastMenuScan = Date.distantPast
     private var revealUntil = Date.distantPast
@@ -106,7 +138,15 @@ final class OverlayController {
          screenRecording: @escaping () -> Bool = { ScreenCapture.hasPermission },
          requestRecording: @escaping () -> Void = { ScreenCapture.requestPermission() },
          tapSound: TapSound = TapSound(),
-         magnifier: MagnifierController = MagnifierController()) {
+         magnifier: MagnifierController = MagnifierController(),
+         quickControlsFocus: QuickControlsFocus = .system,
+         menuWindows: (() -> [CGRect])? = nil,
+         inputTap: InputTap = InputTap()) {
+        self.inputTap = inputTap
+        self.menuWindows = menuWindows ?? Self.openMenus
+        radial = RadialMenu(focus: quickControlsFocus)
+        pointerBrowser = PointerBrowser(focus: quickControlsFocus)
+        clearRecovery = ClearRecovery(focus: quickControlsFocus)
         self.accessibility = accessibility
         self.screenRecording = screenRecording
         self.requestRecording = requestRecording
@@ -130,21 +170,69 @@ final class OverlayController {
         inputTap.radial.onEvent = { [weak self] sessionID, event in
             guard let self else { return }
             switch event {
-            case .open(let cg):
+            case .open(let cg), .persistentOpen(let cg):
                 guard self.inputTap.radial.currentSessionID == sessionID else { return }
                 guard self.radialEligible else { self.inputTap.radial.end(sessionID: sessionID); return }
-                self.radial.open(sessionID: sessionID, at: Self.appKitPoint(cg), style: self.style, mode: self.mode, canUndo: self.canUndo, canRedo: self.canRedo, hasInk: self.inkStrokes > 0)
+                let persistent: Bool
+                if case .persistentOpen = event { persistent = true } else { persistent = false }
+                self.radial.open(sessionID: sessionID, at: Self.appKitPoint(cg), style: self.style, mode: self.mode, canUndo: self.canUndo, canRedo: self.canRedo, hasInk: self.inkStrokes > 0, invocation: persistent ? .persistent : .held)
                 self.updateToolbarVisibility()
             case .move(let cg): self.radial.move(to: Self.appKitPoint(cg), sessionID: sessionID)
             case .release: self.radial.release(sessionID: sessionID)
             case .click(let cg): self.radial.click(at: Self.appKitPoint(cg), sessionID: sessionID)
             case .cancel: self.radial.close(sessionID: sessionID)
+            case .focusLost: self.radial.cancelForFocusLoss(sessionID: sessionID)
+            case .key(let key, let modifiers): self.radial.key(key, modifiers: modifiers, sessionID: sessionID)
+            case .pointerDown(let cg): self.radial.pointerDown(at: Self.appKitPoint(cg), sessionID: sessionID)
+            case .pointerUp(let cg): self.radial.pointerUp(at: Self.appKitPoint(cg), sessionID: sessionID)
+            case .pointerCancel: self.radial.pointerCancel(sessionID: sessionID)
             }
         }
         inputTap.onDismissControls = { [weak self] in self?.onDismissControls?() }
         inputTap.onControlStatusClick = { [weak self] in self?.onControlStatusClick?($0) }
         inputTap.onScreenLocked = { [weak self] in self?.stopForSystem("locked session input") }
+        radial.onOpenBrowser = { [weak self] restoration in
+            guard let self else { restoration?.restore(); return }
+            self.openPointerBrowser(restoration: restoration)
+        }
+        radial.onWillPerform = { [weak self] operation, bounds in
+            if operation == "clear" { self?.quickClearBounds = bounds }
+            if operation == "capture" { self?.quickCaptureRequested = true }
+        }
+        radial.onFailure = { [weak self] failure in self?.quickCaptureRequested = false; self?.commandError.show(failure) }
+        pointerBrowser.current = { [weak self] in self?.style ?? PointerStyle.saved }
+        pointerBrowser.choose = { [weak self] id in
+            let result = self?.radial.perform?(["version": 1, "operation": "style", "style": id])
+            if case .failure(let failure) = result { self?.commandError.show(failure) }
+            return result == .success
+        }
+        pointerBrowser.onVisibilityChanged = { [weak self] in self?.presentationContextChanged(); self?.syncInput() }
+        clearRecovery.currentRevision = { [weak self] in self?.armView.ink.document.revision ?? UUID() }
+        clearRecovery.onUndo = { [weak self] in self?.undo() }
+        radial.annotationUndo.onUndo = { [weak self] in self?.undo() }
+        radial.annotationUndo.onRedo = { [weak self] in self?.redo() }
+        radial.annotationUndo.canUndo = { [weak self] in self?.radial.session != nil && self?.canUndo == true }
+        radial.annotationUndo.canRedo = { [weak self] in self?.radial.session != nil && self?.canRedo == true }
+        radial.annotationUndo.focusRecovery = { [weak self] in
+            guard let self else { return false }
+            return self.radial.focusRecovery(self.clearRecovery)
+        }
+        radial.onFocusOwnershipChanged = { [weak self] in self?.inputTap.radial.setKeyboardFocus($0) }
+        clearRecovery.onContextChanged = { [weak self] in
+            guard let self else { return }
+            self.inputTap.radial.configureNativeSurface(region: self.clearRecovery.state.visible ? Self.cgRect(self.clearRecovery.window.frame) : nil, ownsFocus: self.clearRecovery.ownsKeyboardFocus)
+            self.radial.cancelIfFocusLost()
+            self.syncInput(); self.refreshShortcutContext()
+        }
         radial.onClose = { [weak self] sessionID in self?.inputTap.radial.end(sessionID: sessionID); self?.updateToolbarVisibility() }
+        radial.onVisibilityChanged = { [weak self] in
+            guard let self else { return }
+            self.inputTap.radial.setListMode(self.radial.session?.geometry.usesList ?? false)
+            self.armView.pointerHidden = self.radial.visible
+            if self.radial.usesSystemCursor || !self.isActive { CursorHider.show() }
+            else if self.radial.visible { CursorHider.hide() }
+            self.updateToolbarVisibility(); self.syncInput()
+        }
         inputTap.onMouseDown = { [weak self] button, feedback, point, flags in self?.pressed(button, feedback: feedback, at: point, flags: flags) }
         inputTap.onMouseUp = { [weak self] button, feedback in self?.released(button, feedback: feedback) }
         inputTap.onLeftDragged = { [weak self] point in self?.dragged(to: point) }
@@ -156,11 +244,14 @@ final class OverlayController {
             }
             self.wake()
         }
+        armView.annotations.onEdited = { [weak self] revision in self?.clearRecovery.documentChanged(to: revision) }
         armView.annotations.onChanged = { [weak self] in self?.annotationChanged() }
         displayLink.onFrame = { [weak self] in self?.tick() }
         toolbar.onPick = { [weak self] in self?.pick($0) }
         toolbar.onMode = { [weak self] in _ = self?.setMode($0) }
-        toolbar.onTool = { [weak self] in _ = self?.chooseTool($0) }
+        toolbar.onTool = { [weak self] in self?.chooseToolFromControls($0) }
+        toolbar.onAllPointers = { [weak self] in self?.showAllPointersFromControls() }
+        toolbar.onRedo = { [weak self] in self?.redo() }
         toolbar.onUndo = { [weak self] in self?.undo() }
         toolbar.onClear = { [weak self] in self?.clearInk() }
         toolbar.onCapture = { [weak self] in self?.captureScreenshot(fromToolbar: true) }
@@ -195,6 +286,7 @@ final class OverlayController {
     }
 
     deinit {
+        inputTap.stop()
         catalogTimer?.invalidate()
         if let preferencesObserver { NotificationCenter.default.removeObserver(preferencesObserver) }
     }
@@ -218,6 +310,7 @@ final class OverlayController {
         PointerStyle.saved = armView.style
         previousGestureSignature = HandGestureCatalog.signature(for: armView.style)
         toolbar.select(armView.style)
+        pointerBrowser.refreshCurrent()
         syncSound()
         onActiveChanged?()
         return true
@@ -240,6 +333,7 @@ final class OverlayController {
             onNeedsPermission?()
             return false
         }
+        pendingControlTool = false
         inputTap.setActive(false)
         cancelTapFeedback()
         cancelHandGestures()
@@ -264,7 +358,42 @@ final class OverlayController {
     func toggleMode() { _ = setMode(mode == .point ? .draw : .point) }
     func undo() { releaseDrawing(); armView.ink.undo() }
     func redo() { releaseDrawing(); armView.ink.redo() }
-    func clearInk() { releaseDrawing(); armView.ink.clear() }
+    func clearInk() {
+        let bounds = quickClearBounds; quickClearBounds = nil
+        releaseDrawing()
+        let before = armView.ink.document.revision
+        armView.ink.clear()
+        if let bounds, armView.ink.document.revision != before {
+            let owner = armView.ink
+            clearRecovery.currentRevision = { [weak owner] in owner?.document.revision ?? UUID() }
+            clearRecovery.onUndo = { [weak self, weak owner] in self?.releaseDrawing(); owner?.undo() }
+            clearRecovery.onRedo = { [weak self, weak owner] in self?.releaseDrawing(); owner?.redo() }
+            clearRecovery.canRedo = { [weak owner] in owner?.canRedo ?? false }
+            clearRecovery.show(revision: owner.document.revision, on: bounds)
+        }
+    }
+    func openPointerBrowser(editing: Bool = false, restoration: QuickControlsFocusRestoration? = nil) {
+        let restoration = restoration ?? radial.takeFocusRestoration()
+        radial.closeImmediately(); browserHandoff?.cancel()
+        // Pending replacements retain the first obligation, just like recovery.
+        if browserRestoration == nil { browserRestoration = restoration }
+        browserHandoff = Task { @MainActor [weak self] in
+            guard let self else { return }
+            while self.inputTap.radial.hasOwnedInput {
+                do { try await Task.sleep(nanoseconds: 20_000_000) } catch { return }
+            }
+            guard !Task.isCancelled else { return }
+            guard !self.isCapturing else { self.cancelBrowserHandoff(); return }
+            let restoration = self.browserRestoration
+            self.browserRestoration = nil; self.browserHandoff = nil
+            self.pointerBrowser.show(editing: editing, restoration: restoration)
+        }
+    }
+    private func cancelBrowserHandoff() {
+        browserHandoff?.cancel(); browserHandoff = nil
+        let restoration = browserRestoration; browserRestoration = nil
+        restoration?.restore()
+    }
     func toggleToolbar() { Preferences.showToolbar.toggle() }
     @discardableResult func beginGesture(_ slot: HandGestureSlot, owner: String, shortcut: Shortcut? = nil) -> Bool {
         guard canUseHandGestures,
@@ -350,7 +479,7 @@ final class OverlayController {
             cancelTapFeedback()
         }
         PointerCatalog.reconcile()
-        if radial.visible { radial.close() }
+        if radial.visible { radial.refresh(style: PointerStyle.saved, mode: mode) }
         previousCatalog = PointerCatalog.entries
         if previousShowToolbar != Preferences.showToolbar {
             previousShowToolbar = Preferences.showToolbar
@@ -360,9 +489,9 @@ final class OverlayController {
         armView.updateInkColor()
         if armView.style != PointerStyle.saved { cancelTapFeedback(); armView.setStyle(PointerStyle.saved) }
         toolbar.select(armView.style)
-        toolbar.setMode(mode)
+        toolbar.setMode(mode, pending: pendingControlTool)
         toolbar.setMagnifying(isMagnifying)
-        toolbar.setNeedsPermission(needsDrawingPermission)
+        toolbar.setNeedsPermission(needsDrawingPermission || pendingControlTool)
         syncSound()
         if isActive {
             if mode == .draw && !accessibility() {
@@ -387,15 +516,23 @@ final class OverlayController {
     }
     private func annotationChanged() {
         toolbar.setUndoEnabled(canUndo)
+        toolbar.setRedoEnabled(canRedo)
         toolbar.setClearEnabled(inkStrokes > 0)
         radial.updateHistory(canUndo: canUndo, canRedo: canRedo, hasInk: inkStrokes > 0)
         onActiveChanged?()
     }
     private var radialEligible: Bool {
         isActive && accessibility() && !ownMenuOpen && !textEditor.isShowing && !isCapturing
-            && NSApp.keyWindow == nil && Date() >= menuOpeningUntil && menuRects.isEmpty
+            && (NSApp.keyWindow == nil || NSApp.keyWindow === radial.window || (radial.visible && NSApp.keyWindow === clearRecovery.window)) && Date() >= menuOpeningUntil && menuRects.isEmpty
+    }
+    @discardableResult func openQuickControls() -> Bool {
+        guard accessibility() else { onNeedsPermission?(); return false }
+        guard radialEligible, !radial.visible else { return false }
+        inputTap.configureRadial(trigger: Preferences.radialTrigger, eligible: true)
+        return inputTap.openQuickControls(at: Self.cgPoint(NSEvent.mouseLocation), onConnectionFailure: { [weak self] in self?.onNeedsPermission?() }) != nil
     }
     private func syncInput() {
+        radial.cancelIfFocusLost()
         inputTap.configureRadial(trigger: Preferences.radialTrigger, eligible: radialEligible)
         let enabled = isActive && mode == .draw && !ownMenuOpen && !textEditor.isShowing && !isCapturing
             && NSApp.keyWindow == nil && Date() >= menuOpeningUntil
@@ -436,7 +573,7 @@ final class OverlayController {
         revealUntil = Date().addingTimeInterval(3)
         lastMotion = Date()
         tick()
-        toolbar.setNeedsPermission(needsDrawingPermission)
+        toolbar.setNeedsPermission(needsDrawingPermission || pendingControlTool)
         updateToolbarVisibility()
         scheduleMotion()
         refreshShortcutContext()
@@ -446,6 +583,9 @@ final class OverlayController {
     func toggle() { if isActive { deactivate() } else { _ = activate() } }
     func exit() { deactivate() }
     func deactivate() {
+        cancelBrowserHandoff()
+        if captureExclusion.phase == .hidden || captureExclusion.phase == .ready { finishCaptureExclusion() }
+        pointerBrowser.close()
         screenshotSelection.cancel()
         screenshotResult.close()
         guard isActive else { return }
@@ -483,6 +623,7 @@ final class OverlayController {
 
     func stopForSystem(_ reason: String) {
         Log.write("Presentation stopped: \(reason)")
+        radial.cancelForFocusLoss()
         onDismissControls?()
         deactivate()
         CursorHider.show()
@@ -494,7 +635,7 @@ final class OverlayController {
         guard isActive else { return }
         cancelTapFeedback()
         cancelHandGestures()
-        releaseDrawing(); radial.close(); onDismissControls?()
+        releaseDrawing(); radial.cancelForFocusLoss(); onDismissControls?()
         rejoinPresentationWindows()
         window.orderFrontRegardless()
         updateToolbarVisibility()
@@ -574,6 +715,7 @@ final class OverlayController {
     }
 
     func captureScreenshot(fromToolbar: Bool = false, region: CGRect? = nil, screen selectedScreen: NSScreen? = nil) {
+        let fromQuickControls = quickCaptureRequested; quickCaptureRequested = false
         guard !isCapturing, !screenshotSelection.isVisible else { return }
         screenshotResult.close()
         if !isActive { _ = activate() }
@@ -581,8 +723,8 @@ final class OverlayController {
         releaseDrawing()
         cancelTapFeedback()
         cancelHandGestures()
-        radial.close()
         isCapturing = true
+        beginCaptureExclusion()
         let captureID = UUID()
         self.captureID = captureID
         lastCaptureError = nil
@@ -599,6 +741,7 @@ final class OverlayController {
                 if self.captureID == captureID {
                     self.captureID = nil
                     self.isCapturing = false
+                    self.finishCaptureExclusion()
                     self.armView.pointerHidden = previousHidden
                     self.toolbar.setCapturing(false)
                     self.syncInput(); self.refreshShortcutContext()
@@ -606,8 +749,10 @@ final class OverlayController {
                 }
             }
             do {
-                try await Task.sleep(nanoseconds: 50_000_000)
-                let captured = try await ScreenCapture().screenshot(screen: screen, overlayID: CGWindowID(self.window.windowNumber))
+                try await Task.sleep(nanoseconds: 80_000_000)
+                self.captureExclusion.compositorDrained()
+                guard self.captureExclusion.canCapture else { throw ScreenshotError.encoding }
+                let captured = try await ScreenCapture().screenshot(screen: screen, overlayID: CGWindowID(self.window.windowNumber), excluding: self.captureExclusion.windowIDs)
                 let image: CGImage
                 if let region {
                     guard let pixels = ScreenshotRegion.pixels(for: region, on: screen.frame,
@@ -633,31 +778,37 @@ final class OverlayController {
                 return
             } catch {
                 self.lastCaptureError = error.localizedDescription
-                if ProcessInfo.processInfo.environment["TINYHAND_TEST_MODE"] == "1" {
-                    self.toolbar.showMessage(error.localizedDescription)
-                } else {
-                    let wasVisible = self.window.isVisible
-                    self.window.orderOut(nil)
-                    let alert = NSAlert()
-                    alert.messageText = "Screenshot could not be taken"
-                    alert.informativeText = error.localizedDescription
-                    let recovery = ScreenshotRecovery.action(for: error)
-                    alert.addButton(withTitle: recovery.title)
-                    alert.addButton(withTitle: "Cancel")
-                    let response = alert.runModal()
-                    if response == .alertFirstButtonReturn {
-                        if recovery == .permissionSettings { ScreenCapture.openPermissionSettings() }
-                        else {
-                            DispatchQueue.main.async { [weak self] in
-                                if region != nil { self?.captureRegion() }
-                                else { self?.captureScreenshot(fromToolbar: fromToolbar) }
-                            }
-                        }
-                    }
-                    if wasVisible && self.isActive { self.window.orderFrontRegardless() }
-                }
+                if fromQuickControls { self.commandError.show(.capture(error), on: screen.visibleFrame) }
+                else { self.screenshotResult.show(error: error, on: screen) { [weak self] in
+                    if ScreenshotRecovery.action(for: error) == .permissionSettings { ScreenCapture.openPermissionSettings() }
+                    else { self?.captureScreenshot(fromToolbar: fromToolbar, region: region, screen: screen) }
+                } }
             }
         }
+    }
+
+    func retryQuickControlsScreenshot() { quickCaptureRequested = true; captureScreenshot() }
+
+    func seedClearRecovery() {
+        armView.ink.addText("Quick controls recovery fixture", at: CGPoint(x: 100, y: 100), width: 4)
+        quickClearBounds = NSScreen.main?.visibleFrame ?? CGRect(x: 0, y: 0, width: 1200, height: 800)
+        clearInk()
+    }
+    func verificationDocumentEdit() { armView.ink.addText("Later edit", at: CGPoint(x: 120, y: 120), width: 4) }
+
+    func beginCaptureExclusion() {
+        toolbar.hide()
+        cancelBrowserHandoff()
+        inputTap.radial.setCaptureSuspended(true)
+        let windows = [radial.window, pointerBrowser.window, clearRecovery.window, commandError.window] + [screenshotResult.window].compactMap { $0 }
+        captureExclusion.begin(windowIDs: windows.map { CGWindowID($0.windowNumber) })
+        radial.closeImmediately(); pointerBrowser.close()
+        screenshotResult.close(); commandError.dismiss(); clearRecovery.hideForCapture(true)
+    }
+    func finishCaptureExclusion() {
+        captureExclusion.finish()
+        inputTap.radial.setCaptureSuspended(false)
+        clearRecovery.documentChanged(to: clearRecovery.currentRevision()); clearRecovery.hideForCapture(false)
     }
 
     private func installMonitors() {
@@ -775,9 +926,8 @@ final class OverlayController {
     }
 
     private func updateToolbarVisibility(mouse: CGPoint = NSEvent.mouseLocation) {
-        let near = toolbar.frame.insetBy(dx: -48, dy: -32).contains(mouse)
-        toolbar.setRevealed(isActive && Preferences.showToolbar && !radial.visible && !armView.ink.isDrawing
-                            && (near || Date() < revealUntil))
+        toolbar.setRevealed(isActive && Preferences.showToolbar && !isCapturing && !radial.visible && !armView.ink.isDrawing
+                            && toolbar.wantsReveal(mouse: mouse, deadline: revealUntil))
     }
 
     private func updateZones(mouse: CGPoint, screen: NSScreen) {
@@ -785,15 +935,15 @@ final class OverlayController {
         updateToolbarVisibility(mouse: mouse)
         if Date().timeIntervalSince(lastMenuScan) > (Date() < menuOpeningUntil ? 0.03 : 0.1) {
             lastMenuScan = Date()
-            menuRects = Self.openMenus()
+            menuRects = menuWindows()
         }
         let menuBar = Self.menuBarRect(screen)
         let overMenu = menuBar.contains(mouse) || menuRects.contains { $0.contains(Self.cgPoint(mouse)) } || ownMenuOpen
         let ownFrames = NSApp.windows.filter { $0.isVisible && $0 !== window && $0 !== radial.window && !toolbar.windows.contains($0) }.map(\.frame)
         let overOwnWindow = ownFrames.contains { $0.contains(mouse) }
         let pressing = (0..<32).contains { CGEventSource.buttonState(.hidSystemState, button: CGMouseButton(rawValue: UInt32($0))!) }
-        let normal = !radial.visible && (overMenu || overOwnWindow || textEditor.isShowing
-            || mode.hidesPointer(whilePressing: pressing, keepsHand: Preferences.interactKeepsHand))
+        let normal = radial.usesSystemCursor || (!radial.visible && (overMenu || overOwnWindow || textEditor.isShowing
+            || mode.hidesPointer(whilePressing: pressing, keepsHand: Preferences.interactKeepsHand)))
         if normal != normalCursor && !isCapturing {
             if normal {
                 if overMenu || overOwnWindow || textEditor.isShowing { cancelTapFeedback() }
@@ -801,7 +951,7 @@ final class OverlayController {
                 cancelHandGestures()
             }
             normalCursor = normal
-            armView.pointerHidden = normal
+            armView.pointerHidden = normal || radial.visible
             if normal { CursorHider.show() } else { CursorHider.hide() }
         }
         let overDock = DockArea.contains(Self.cgPoint(mouse))
@@ -829,7 +979,7 @@ final class OverlayController {
             releaseDrawing()
             Preferences.pointerMode = .point
             toolbar.setNeedsPermission(true)
-            toolbar.showMessage("Drawing access changed. Interact stays on so you can use apps normally.")
+            toolbar.showMessage("Drawing access changed. Cursor is selected so you can use apps normally.")
         } else if needsDrawingPermission && accessibility() {
             needsDrawingPermission = false
             toolbar.setNeedsPermission(false)

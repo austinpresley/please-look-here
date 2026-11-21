@@ -1,21 +1,40 @@
 import AppKit
 
 /// The existing InputTap calls this before drawing routing. No second tap.
-/// Flags and ordinary keyboard pairs always pass unchanged. Claimed mouse and
-/// Escape pairs drain after dismissal, deactivation, or an eligibility change.
+/// Flags and ordinary keyboard chords pass unchanged. Claimed navigation keys,
+/// mouse and Escape pairs drain after dismissal or an eligibility change.
 final class RadialInput {
     typealias HoldScheduler = (TimeInterval, @escaping () -> Void) -> Void
-    enum Event { case open(CGPoint), move(CGPoint), release, click(CGPoint), cancel }
+    enum Event {
+        case open(CGPoint), move(CGPoint), release, click(CGPoint), cancel, focusLost
+        case persistentOpen(CGPoint), pointerDown(CGPoint), pointerUp(CGPoint), pointerCancel
+        case key(RadialKey, RadialKeyModifiers)
+    }
     var onEvent: ((UInt, Event) -> Void)?
     private let lock = NSLock()
     private var trigger: RadialTrigger?
     private var eligible = false
     private var held = false
     private var open = false
+    private var persistent = false
+    private var listMode = false
+    private var keyboardFocus = false, nativeFocus = false
+    private var nativeRegion: CGRect?
+    func setKeyboardFocus(_ focused: Bool) { lock.withLock { keyboardFocus = focused } }
+    func configureNativeSurface(region: CGRect?, ownsFocus: Bool) { lock.withLock { nativeRegion = region; nativeFocus = ownsFocus } }
+    private var captureSuspended = false
+    func setCaptureSuspended(_ suspended: Bool) {
+        lock.withLock {
+            captureSuspended = suspended; pending = nil
+            if suspended { cancel(); sessionID = nil; held = false; listMode = false }
+        }
+    }
+    func setListMode(_ enabled: Bool) { lock.withLock { listMode = enabled } }
     static let holdDuration: TimeInterval = 0.180
     private struct Pending { let id: UInt; let deadline: TimeInterval; var point: CGPoint }
     private var pending: Pending?
     private var sequence: UInt = 0
+    private var ownershipGeneration: UInt = 0
     private var sessionID: UInt?
     private var reconciledReleases = 0
     private let clock: () -> TimeInterval
@@ -41,8 +60,8 @@ final class RadialInput {
             return !Self.modifierKeyCodes.contains(code) && nativeKeyState(code)
         }
     }
-    var needsTap: Bool { lock.withLock { (trigger != nil && eligible) || !buttons.isEmpty || !keys.isEmpty } }
-    var diagnostics: [String: Any] { lock.withLock { ["open": open, "held": held, "buttons": buttons.sorted(), "keys": keys.sorted(), "heldKeys": heldKeys.sorted(), "eligible": eligible, "pending": pending != nil, "reconciledReleases": reconciledReleases] } }
+    var needsTap: Bool { lock.withLock { (trigger != nil && eligible) || open || !buttons.isEmpty || !keys.isEmpty } }
+    var diagnostics: [String: Any] { lock.withLock { ["open": open, "persistent": persistent, "held": held, "buttons": buttons.sorted(), "keys": keys.sorted(), "heldKeys": heldKeys.sorted(), "eligible": eligible, "pending": pending != nil, "reconciledReleases": reconciledReleases] } }
     /// InputTap observes even keyboard pairs routed to another surface.
     func observeKeyboard(_ type: CGEventType, event: CGEvent) {
         guard type == .keyDown || type == .keyUp else { return }
@@ -71,6 +90,7 @@ final class RadialInput {
     }
     func configure(trigger: RadialTrigger?, eligible: Bool, flags: CGEventFlags = []) {
         lock.withLock {
+            if captureSuspended { self.trigger = trigger; self.eligible = eligible; return }
             if self.trigger != trigger || !eligible { cancel() }
             if self.trigger != trigger || (!self.eligible && eligible) {
                 held = trigger.map { flags.contains($0.flag) } ?? false
@@ -81,31 +101,64 @@ final class RadialInput {
             reconcileRelease(flags)
         }
     }
+    var hasOwnedInput: Bool { lock.withLock { !keys.isEmpty || !buttons.isEmpty } }
     var currentSessionID: UInt? { lock.withLock { sessionID } }
     /// A queued menu close may belong to a gesture older than the pending hold.
     func end(sessionID: UInt) {
         lock.withLock {
             guard self.sessionID == sessionID else { return }
-            pending = nil; open = false; self.sessionID = nil
+            ownershipGeneration &+= 1
+            pending = nil; open = false; persistent = false; listMode = false; keyboardFocus = false; self.sessionID = nil
+        }
+    }
+    /// Phase B can invoke this from its unassigned shortcut/menu command.
+    /// Never adopt an input pair that another surface already owns.
+    @discardableResult func openPersistent(at point: CGPoint) -> UInt? {
+        lock.withLock {
+            guard eligible, !open, buttons.isEmpty, keys.isEmpty else { return nil }
+            pending = nil; sequence &+= 1; sessionID = sequence
+            persistent = true; open = true
+            send(.persistentOpen(point))
+            return sessionID
+        }
+    }
+    /// Focus loss, lost pointer capture, or an invalid display cancels a hold.
+    func pointerCancelled() {
+        lock.withLock {
+            pending = nil
+            if persistent && open { send(.pointerCancel) } else { cancel() }
         }
     }
     func suspendForSystem(releasingButton: Int64?, key: Int64?) {
         lock.withLock {
-            cancel(); eligible = false; held = false
+            loseFocus(); eligible = false; held = false
             if let releasingButton { buttons.remove(releasingButton) }
             if let key { keys.remove(key) }
         }
     }
     private func send(_ event: Event) {
         guard let sessionID else { return }
-        DispatchQueue.main.async { [weak self] in self?.onEvent?(sessionID, event) }
+        let generation = ownershipGeneration
+        DispatchQueue.main.async { [weak self] in
+            guard let self, self.lock.withLock({ self.ownershipGeneration == generation }) else { return }
+            self.onEvent?(sessionID, event)
+        }
     }
-    private func cancel() { pending = nil; if open { open = false; send(.cancel) } }
+    /// Revoke queued activations synchronously, but retain every claimed pair
+    /// until its repeat/release drains. The terminal event names the old session.
+    private func loseFocus() {
+        let id = sessionID
+        ownershipGeneration &+= 1
+        pending = nil; open = false; persistent = false; listMode = false; keyboardFocus = false; sessionID = nil
+        if let id { DispatchQueue.main.async { [weak self] in self?.onEvent?(id, .focusLost) } }
+    }
+    private func cancel() { pending = nil; if open { open = false; send(.cancel) }; persistent = false; keyboardFocus = false }
     private func reconcileRelease(_ flags: CGEventFlags) {
+        if captureSuspended { return }
         if held, let trigger, !flags.contains(trigger.flag) {
             reconciledReleases += 1
             held = false
-            cancel() // A sampled release cancels rather than selecting a stale target.
+            if !persistent { cancel() } // A sampled held release never selects a stale target.
         }
     }
     /// Timer and deterministic tests share the same deadline/eligibility check.
@@ -119,7 +172,7 @@ final class RadialInput {
             self.pending = nil
             guard let trigger, held, eligible, !dragging, buttons.isEmpty, keys.isEmpty, !ordinaryKeyIsDown,
                   flags.intersection([.maskCommand, .maskControl, .maskAlternate, .maskShift]) == trigger.flag else { return }
-            open = true
+            persistent = false; open = true
             send(.open(pending.point))
         }
     }
@@ -139,15 +192,25 @@ final class RadialInput {
     func handle(_ type: CGEventType, event: CGEvent, dragging: Bool) -> Bool {
         lock.withLock {
             recordKeyboard(type, event: event)
+            if captureSuspended {
+                let key = event.getIntegerValueField(.keyboardEventKeycode)
+                if type == .keyUp { return keys.remove(key) != nil }
+                if type == .keyDown { return keys.contains(key) }
+                let button = type == .leftMouseUp || type == .leftMouseDragged ? Int64(0) : type == .rightMouseUp || type == .rightMouseDragged ? Int64(1) : event.getIntegerValueField(.mouseEventButtonNumber)
+                if [.leftMouseUp, .rightMouseUp, .otherMouseUp].contains(type) { return buttons.remove(button) != nil }
+                if [.leftMouseDragged, .rightMouseDragged, .otherMouseDragged].contains(type) { return buttons.contains(button) }
+                return false
+            }
             if type == .flagsChanged {
+                if persistent { return false }
                 guard let trigger else { held = false; return false }
                 let down = event.flags.contains(trigger.flag)
                 let exact = event.flags.intersection([.maskCommand, .maskControl, .maskAlternate, .maskShift]) == trigger.flag
-                if !down { pending = nil; if open { open = false; send(.release) }; held = false }
+                if !down { pending = nil; if nativeFocus { cancel() } else if open { open = false; send(.release) }; held = false }
                 else if !held {
                     held = true
                     if exact && eligible && !dragging && buttons.isEmpty && keys.isEmpty && !ordinaryKeyIsDown { beginHold(at: event.location) }
-                } else if !exact { cancel() }
+                } else if !exact && !keyboardFocus { cancel() }
                 return false
             }
             let key = event.getIntegerValueField(.keyboardEventKeycode)
@@ -155,8 +218,29 @@ final class RadialInput {
             if type == .keyDown {
                 // Ownership lasts through repeats until keyUp, even after closing.
                 if keys.contains(key) { return true }
-                if open && key == 53 { keys.insert(key); cancel(); return true }
-                cancel(); return false
+                if nativeFocus { return false }
+                if (persistent || keyboardFocus) && key == 48 && event.flags.contains(.maskCommand) {
+                    loseFocus(); return false // Command-Tab and its release belong to macOS.
+                }
+                if open && event.flags.contains([.maskControl, .maskAlternate]) { return false }
+                // Any key during the pending delay cancels it. Escape is ours
+                // through keyUp; ordinary keys/chords remain native pairs.
+                if pending != nil {
+                    if key == 53 { keys.insert(key); cancel(); return true }
+                    cancel(); return false
+                }
+                if open && key == 53 && !persistent { keys.insert(key); cancel(); return true }
+                if open, let radialKey = RadialKey.keyCode(key) {
+                    var flags = event.flags.intersection([.maskCommand, .maskControl, .maskAlternate, .maskShift])
+                    if !persistent, let trigger { flags.remove(trigger.flag) }
+                    if flags.intersection([.maskCommand, .maskControl, .maskAlternate]).isEmpty {
+                        keys.insert(key)
+                        send(.key(radialKey, flags.contains(.maskShift) ? .shift : []))
+                        return true
+                    }
+                }
+                if !persistent && !keyboardFocus { cancel() }
+                return false
             }
             let button: Int64
             switch type {
@@ -166,21 +250,32 @@ final class RadialInput {
             }
             switch type {
             case .leftMouseDown, .rightMouseDown, .otherMouseDown:
+                if !buttons.contains(button), nativeRegion?.contains(event.location) == true { return false }
                 if pending != nil { cancel(); return false }
                 if open || !buttons.isEmpty {
                     buttons.insert(button)
-                    if open { open = false; send(.click(event.location)) }
+                    if open {
+                        if persistent || listMode {
+                            if button == 0 { send(.pointerDown(event.location)) } else { cancel() }
+                        } else { open = false; send(.click(event.location)) }
+                    }
                     return true
                 }
             case .leftMouseUp, .rightMouseUp, .otherMouseUp:
-                if buttons.remove(button) != nil { return true }
+                if buttons.remove(button) != nil {
+                    if (persistent || listMode) && open && button == 0 { send(.pointerUp(event.location)) }
+                    return true
+                }
             case .leftMouseDragged, .rightMouseDragged, .otherMouseDragged:
-                if buttons.contains(button) { return true }
+                if buttons.contains(button) {
+                    if (persistent || listMode) && open { send(.move(event.location)) }
+                    return true
+                }
                 if open { send(.move(event.location)); return true }
             case .mouseMoved:
                 pending?.point = event.location
                 if open { send(.move(event.location)) }
-            case .scrollWheel: pending = nil; return open
+            case .scrollWheel: pending = nil; return open && !listMode
             default: break
             }
             return false
@@ -191,5 +286,9 @@ final class RadialInput {
 enum RadialTrigger: String, CaseIterable {
     case option, control, shift, command
     var title: String { switch self { case .option: return "Option ⌥"; case .control: return "Control ⌃"; case .shift: return "Shift ⇧"; case .command: return "Command ⌘" } }
+    var keyName: String { String(title.split(separator: " ")[0]) }
+    var keySymbol: String { String(title.suffix(1)) }
+    var holdInstruction: String { "Hold \(keySymbol)" }
+    var holdHelp: String { "Hold \(title) to open Quick controls. Move to a choice, then release." }
     var flag: CGEventFlags { switch self { case .option: return .maskAlternate; case .control: return .maskControl; case .shift: return .maskShift; case .command: return .maskCommand } }
 }

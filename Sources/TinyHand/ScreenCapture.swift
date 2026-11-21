@@ -33,12 +33,12 @@ final class ScreenCapture {
         return try await SingleScreenshotFrame().grab(filter: filter, configuration: config)
     }
 
-    @MainActor func screenshot(screen: NSScreen, overlayID: CGWindowID) async throws -> CGImage {
+    @MainActor func screenshot(screen: NSScreen, overlayID: CGWindowID, excluding windowIDs: [CGWindowID] = []) async throws -> CGImage {
         guard Self.hasPermission else { Self.requestPermission(); throw ScreenshotError.permission }
         let content = try await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: false)
         let id = screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID
         guard let display = content.displays.first(where: { $0.displayID == id }) else { throw ScreenshotError.display }
-        let excluded = content.windows.filter { $0.owningApplication?.processID == getpid() && $0.windowID != overlayID }
+        let excluded = content.windows.filter { ($0.owningApplication?.processID == getpid() && $0.windowID != overlayID) || windowIDs.contains($0.windowID) }
         let filter = SCContentFilter(display: display, excludingWindows: excluded)
         let config = SCStreamConfiguration()
         if #available(macOS 14, *) {

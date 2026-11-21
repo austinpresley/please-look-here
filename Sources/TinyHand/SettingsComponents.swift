@@ -45,6 +45,47 @@ struct Card<Content: View>: View {
     }
 }
 
+struct SettingsDisclosure<Content: View>: View {
+    let title: String
+    let summary: String
+    var symbol: String? = nil
+    var compact = false
+    var glyph: UsabilityGlyph? = nil
+    @Binding var isExpanded: Bool
+    @ViewBuilder let content: Content
+
+    var body: some View {
+        DisclosureGroup(isExpanded: $isExpanded) {
+            if isExpanded {
+                VStack(spacing: 0) { _VariadicView.Tree(Separated()) { content } }
+                    .padding(.top, Space.sm)
+            }
+        } label: {
+            HStack(spacing: Space.md) {
+                if let glyph { Image(nsImage: glyph.image).resizable().frame(width: 16, height: 16) }
+                else if let symbol { Image(systemName: symbol).foregroundStyle(.secondary).frame(width: 16) }
+                Text(title).font(.system(size: 13, weight: .semibold))
+                Spacer(minLength: Space.sm)
+                Text(summary).font(.system(size: 11)).foregroundStyle(.secondary)
+            }
+            .padding(.vertical, compact ? 0 : Space.xs)
+        }
+        .padding(.horizontal, compact ? Space.sm : Space.md)
+        .padding(.vertical, compact ? Space.sm : Space.md)
+        .background(RoundedRectangle(cornerRadius: Space.sm).fill(Color.primary.opacity(0.045)))
+        .accessibilityIdentifier("settings.disclosure.\(title)")
+    }
+}
+
+struct SettingsSubtitle: View {
+    let text: String
+    init(_ text: String) { self.text = text }
+    var body: some View {
+        Text(text).font(.system(size: 12)).foregroundStyle(.secondary)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+}
+
 
 struct Separated: _VariadicView_MultiViewRoot {
     func body(children: _VariadicView.Children) -> some View {
@@ -65,16 +106,19 @@ struct Separated: _VariadicView_MultiViewRoot {
 struct Row<Trailing: View>: View {
     let title: String
     let detail: String?
+    let symbol: String?
     @ViewBuilder let trailing: Trailing
 
-    init(_ title: String, detail: String? = nil, @ViewBuilder trailing: () -> Trailing) {
+    init(_ title: String, detail: String? = nil, symbol: String? = nil, @ViewBuilder trailing: () -> Trailing) {
         self.title = title
         self.detail = detail
+        self.symbol = symbol
         self.trailing = trailing()
     }
 
     var body: some View {
         HStack(spacing: 12) {
+            if let symbol { Image(systemName: symbol).foregroundStyle(.secondary).frame(width: 16).accessibilityHidden(true) }
             VStack(alignment: .leading, spacing: 2) {
                 Text(title).font(.system(size: 13))
                 if let detail = detail {
@@ -177,15 +221,16 @@ struct ShortcutField: View {
                     return accepted
                 }
                 .frame(width: 132, height: 32)
-                Button("Clear") {
+                if shortcut != nil { Button {
                     if apply(nil) {
                         model.shortcutError = nil
                         assignmentError = nil
                     }
                 }
-                .disabled(shortcut == nil)
+                label: { Image(systemName: "xmark.circle.fill").foregroundStyle(.secondary) }
+                .buttonStyle(.plain)
                 .help("Clear the shortcut for \(label)")
-                .accessibilityLabel("Clear \(label) shortcut")
+                .accessibilityLabel("Clear \(label) shortcut") }
             }
             if let error = assignmentError ?? command.flatMap({ model.shortcutConflicts[$0] }) {
                 Text(error).font(.callout).foregroundStyle(.red)
@@ -220,6 +265,15 @@ private struct ShortcutRecordingField: NSViewRepresentable {
     func updateNSView(_ nsView: ShortcutRecorder, context: Context) {
         nsView.setNavigationCommand(command)
         nsView.show(shortcut)
+    }
+
+    static func dismantleNSView(_ nsView: ShortcutRecorder, coordinator: ()) {
+        let recording = nsView.isRecording
+        let notify = nsView.onRecording
+        nsView.onRecording = nil
+        nsView.cancelRecording()
+        // Restore registration after SwiftUI has finished removing the field.
+        if recording { DispatchQueue.main.async { notify?(false) } }
     }
 }
 

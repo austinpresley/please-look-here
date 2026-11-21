@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pokey lessons for Look Here Please</title>
+<style>
+html,body{margin:0;background:transparent;color:var(--foreground,CanvasText);font-family:var(--font-sans,system-ui,sans-serif)}
+*{box-sizing:border-box}
+#pokey-comparison{width:100%}
+table{width:100%;border-collapse:collapse;table-layout:fixed}
+caption{text-align:left;font-weight:500;padding:0 0 16px}
+th,td{text-align:left;vertical-align:top;padding:16px 12px 16px 0;border-bottom:1px solid var(--border,GrayText);overflow-wrap:anywhere}
+thead th{padding-top:0;color:var(--muted-foreground,GrayText);font-weight:400}
+th:first-child,td:first-child{width:11%}
+th:nth-child(2),td:nth-child(2){width:30%}
+th:last-child,td:last-child{padding-right:0}
+tbody th{font-weight:500}
+.priority{color:var(--muted-foreground,GrayText)}
+a{color:inherit;text-underline-offset:3px}
+small{display:block;color:var(--muted-foreground,GrayText);margin-top:8px}
+.existing{margin:20px 0 0}
+.method{margin:16px 0 0;color:var(--muted-foreground,GrayText)}
+@media(max-width:520px){
+caption{display:block;width:100%}
+table,tbody,tr,td,tbody th{display:block;width:100%!important}
+thead{display:none}
+tr{padding:16px 0;border-bottom:1px solid var(--border,GrayText)}
+td,tbody th{border:0;padding:0}
+td.priority{margin-bottom:4px}
+tbody th{margin-bottom:8px}
+}
+@media print{a{text-decoration:none}}
+</style>
+</head>
+<body>
+<div id="pokey-comparison">
+<table aria-label="Prioritized lessons from Pokey for Look Here Please">
+<caption>Recommended order for Look Here Please</caption>
+<thead><tr><th scope="col">Order</th><th scope="col">Borrow</th><th scope="col">Apply to our app</th></tr></thead>
+<tbody>
+<tr>
+<td class="priority">1</td>
+<th scope="row">Point without changing anything</th>
+<td>Add a Point tool with Interact off. Taps animate, clicks cannot select or move content, and drags leave no ink. Reuse the existing input system.
+<small>New behavior. Inspired by <a href="https://pokeyapp.com/guides/highlight-cursor-figma-screen-share/">Pokey's Figma guide</a>.</small></td>
+</tr>
+<tr>
+<td class="priority">2</td>
+<th scope="row">Audience setup guidance</th>
+<td>Teach capture scope, computer-audio sharing and the way back to normal clicks. Verify each app's capture settings before publishing instructions.
+<small>New guidance. Pattern from the <a href="https://pokeyapp.com/guides/highlight-cursor-zoom-screen-share/">Zoom guide</a> and <a href="https://pokeyapp.com/guides/highlight-cursor-loom-recording/">Loom guide</a>.</small></td>
+</tr>
+<tr>
+<td class="priority">3</td>
+<th scope="row">Ready-made starting choices</th>
+<td>Offer Quiet, Teaching and Playful starter presets. Reuse our saved setups, previews and Undo. Keep user presets and shortcut assignments intact.
+<small>Existing machinery, new starting choices. Our proposal, inspired by <a href="https://pokeyapp.com/">Pokey's expression levels</a>.</small></td>
+</tr>
+<tr>
+<td class="priority">4</td>
+<th scope="row">Taps that respond to rhythm</th>
+<td>Prototype stronger visual emphasis during rapid clicks, then let it settle. Shorten the wind-up as speed rises. Preserve Reduce Motion and immediate drag contact.
+<small>New animation behavior. <a href="https://pokeyapp.com/">Advertised by Pokey</a>; prototype before production.</small></td>
+</tr>
+<tr>
+<td class="priority">5</td>
+<th scope="row">A clear first demonstration</th>
+<td>Record the actual app solving one audience problem in seconds. Follow with short examples of pointing, annotation and quick controls. Write task-specific guides.
+<small>For public presentation. Pattern from <a href="https://pokeyapp.com/">Pokey's demo entry point</a> and <a href="https://pokeyapp.com/guides/">guides</a>.</small></td>
+</tr>
+<tr>
+<td class="priority">Later</td>
+<th scope="row">Phone-to-Mac handoff</th>
+<td>At launch, let someone discovering the app on a phone keep the Mac link. Start with sharing or copying the link before building email infrastructure.
+<small>Launch idea. <a href="https://pokeyapp.com/privacy/">Pokey describes its single-email handoff</a>.</small></td>
+</tr>
+</tbody>
+</table>
+<p class="existing">Already ours: visible pointers during native interaction, tap sound controls, menu bar access, optional shortcuts, previews and saved presets. We also have annotations, magnification, screenshots, radial controls and Stream Deck support.</p>
+<p class="method"><small>Sol 6.1 review plus independent Opus 5.5 High. Pokey claims come from its website; its running app was not tested. Local capabilities were checked in source. Research only, 16 November 2026.</small></p>
+</div>
+<script>
+const comparison=document.getElementById('pokey-comparison');
+console.log(JSON.stringify({rows:comparison.querySelectorAll('tbody tr').length,links:comparison.querySelectorAll('a').length,width:document.documentElement.clientWidth,scrollWidth:document.documentElement.scrollWidth}));
+</script>
+</body>
+</html>

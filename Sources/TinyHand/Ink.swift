@@ -21,6 +21,7 @@ final class Ink {
         self.clock = clock; self.lifetimePolicy = lifetimePolicy
     }
     deinit { trailTimer?.invalidate() }
+    var onEdited: ((UUID) -> Void)?
     var onChanged: (() -> Void)?
     var color = Ink.purple
     var scale: CGFloat = 2 {
@@ -113,6 +114,7 @@ final class Ink {
     }
 
     func end() {
+        let revision = document.revision
         if eraserPress {
             refreshVisibility()
             let before = document.annotations
@@ -132,6 +134,7 @@ final class Ink {
         erasing = nil
         pressPoint = nil
         render()
+        if document.revision != revision { onEdited?(document.revision) }
         onChanged?()
     }
 
@@ -150,10 +153,11 @@ final class Ink {
     }
     private func edit(_ action: (inout AnnotationDocument) -> Void) {
         cancel()
-        let before = document.annotations
+        let before = document.annotations, revision = document.revision
         action(&document)
         visibility.reconcile(from: before, to: document.annotations, at: clock(), policy: lifetimePolicy())
         render()
+        if document.revision != revision { onEdited?(document.revision) }
         onChanged?()
     }
     func undo() { edit { $0.undo() } }

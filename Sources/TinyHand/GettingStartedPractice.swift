@@ -9,7 +9,7 @@ enum PracticeShortcutTarget: String, CaseIterable, Identifiable {
     var title: String {
         switch self {
         case .pointer: return "Turn pointer on or off"
-        case .interact: return "Toggle Interact"
+        case .interact: return "Cursor ↔ last tool"
         case .drawing: return "Pen Tool"
         case .radial: return "Hold to open"
         }
@@ -18,26 +18,32 @@ enum PracticeShortcutTarget: String, CaseIterable, Identifiable {
 
 struct ShortcutFocusRequest: Equatable {
     let target: PracticeShortcutTarget
+    var command: String? = nil
     let id = UUID()
+    var controlIdentifier: String { command.map { "settings.shortcut.\($0)" } ?? target.controlIdentifier }
 }
 
 enum PracticeLesson: Int, CaseIterable {
-    case pointer, interact, drawing, radial
+    case pointer, drawing, interact, radial
     var title: String {
         switch self {
-        case .pointer: return "Turn the pointer on"
-        case .interact: return "Use apps with Interact"
-        case .drawing: return "Draw with Interact off"
+        case .pointer: return "Click through with Cursor"
+        case .interact: return "Back to Cursor"
+        case .drawing: return "Pick the pen, then draw"
         case .radial: return "Hold, move, release"
         }
     }
+    var progressName: String { switch self { case .pointer: return "Cursor"; case .drawing: return "Drawing"; case .interact: return "Back to Cursor"; case .radial: return "Quick controls" } }
     var instruction: String {
         switch self {
-        case .pointer: return "Turn on the sample pointer, then move or click inside its preview. Pointer On controls visibility."
-        case .interact: return "With Interact on, clicks reach the app. Try the button, then turn Interact off and draw below."
-        case .drawing: return "Drag below to add a line. Undo and Clear affect only this practice ink. Turn Interact on to stop drawing."
-        case .radial: return "Hold the center, move right through Tools, then up to Pen. Release to choose. Return to the center or press Escape to cancel."
+        case .pointer: return "Click the sample button with Cursor selected."
+        case .interact: return "Choose Cursor, then click the sample button again."
+        case .drawing: return "Choose Pen and drag a line in the canvas."
+        case .radial: return "Hold the center, move through Draw to Pen, then release."
         }
+    }
+    var symbol: String {
+        switch self { case .pointer: return "cursorarrow.click"; case .drawing: return "pencil.tip"; case .interact: return "cursorarrow"; case .radial: return "scope" }
     }
     var shortcutTarget: PracticeShortcutTarget {
         switch self {
@@ -56,11 +62,11 @@ struct PracticeReadiness: Equatable {
     var capturing: Bool
     func message(for lesson: PracticeLesson) -> String {
         switch lesson {
-        case .pointer: return "On your desktop: Show Pointer turns on your current pointer. Interact works without drawing permission."
+        case .pointer: return "On your desktop: Show Pointer turns on your current pointer. Cursor works without drawing permission."
         case .interact, .drawing:
             if capturing { return "On your desktop: drawing waits until the screenshot finishes. You can keep practicing here." }
             if !drawingAllowed { return "On your desktop: drawing needs Accessibility in Settings > General. Local practice is ready without permission." }
-            return "On your desktop: turn Pointer On and Interact off to draw. Close practice first so clicks reach the desktop."
+            return "On your desktop: turn the pointer on and choose a drawing tool to draw. Close practice first so clicks reach the desktop."
         case .radial:
             var reasons: [String] = []
             if !radialAssigned { reasons.append("choose a Hold to open modifier in Shortcuts") }
@@ -75,8 +81,14 @@ struct PracticeReadiness: Equatable {
 /// All mutations stay in this disposable model and its independent drawing session.
 final class GettingStartedPracticeSession: ObservableObject {
     @Published private(set) var lesson: PracticeLesson = .pointer
+    @Published private(set) var completedSteps: Set<PracticeLesson> = []
+    var progressAnnouncement: String { "Step \(lesson.rawValue + 1) of \(PracticeLesson.allCases.count), \(lesson.progressName)" }
     @Published var pointerOn = false { didSet { reconcileMode() } }
     @Published var interactOn = true { didSet { reconcileMode() } }
+    @Published private(set) var radialSucceeded = false
+    var succeeded: Bool {
+        switch lesson { case .pointer, .interact: return clicks > 0; case .drawing: return annotationCount > 0; case .radial: return radialSucceeded }
+    }
     @Published private(set) var clicks = 0
     @Published private(set) var annotationCount = 0
     @Published private(set) var replay = 0
@@ -96,6 +108,7 @@ final class GettingStartedPracticeSession: ObservableObject {
         drawingChanges = drawing.objectWillChange.sink { [weak self] in
             guard let self else { return }
             self.annotationCount = self.drawing.ink.document.annotations.count
+            if self.lesson == .drawing && self.annotationCount > 0 { self.completedSteps.insert(.drawing) }
         }
     }
     private func reconcileMode() {
@@ -106,51 +119,54 @@ final class GettingStartedPracticeSession: ObservableObject {
         cancel()
         drawing.clear()
         self.lesson = lesson
-        clicks = 0
+        clicks = 0; radialSucceeded = false
         pointerOn = lesson != .pointer
-        interactOn = lesson != .drawing
+        interactOn = lesson != .drawing && lesson != .interact
         radialFeedback = "Hold the center to begin."
         replay += 1
     }
     func replayStep() { select(lesson) }
-    func replayAll() { select(.pointer) }
-    func clickPracticeButton() { if pointerOn && interactOn { clicks += 1 } }
+    func replayAll() { completedSteps = []; select(.pointer) }
+    func clickPracticeButton() { if pointerOn && interactOn { clicks += 1; completedSteps.insert(lesson) } }
     func cancel() { drawing.cancel(); cancelRadial() }
     func stop() { cancel(); drawing.clear() }
 
-    static let radialBounds = CGRect(x: 0, y: 0, width: RadialGeometry.size, height: RadialGeometry.size)
+    static let radialBounds = CGRect(x: 0, y: 0, width: 1000, height: 1000)
     static var radialTemplate: RadialSession {
         // Keep the real Tools direction and real gesture thresholds. Only this
         // category is taught; these payloads are local IDs, never app commands.
-        let empty = RadialItem(id: "empty", title: "", symbol: "", enabled: false)
-        let tools = [DrawingTool.pen, .rectangle, .arrow].map {
-            RadialItem(id: $0.rawValue, title: $0.title, symbol: $0.symbol, request: ["practiceTool": $0.rawValue])
+        let empty = RadialItem(id: "empty", role: .placeholder, title: "", symbol: "", enabled: false)
+        let tools = [DrawingTool.pen, .highlighter, .rectangle, .arrow, .text, .number, .eraser].map {
+            RadialItem(id: $0.rawValue, role: .tool($0), title: $0.title, symbol: $0.symbol, request: ["practiceTool": $0.rawValue])
         }
         return RadialSession(geometry: RadialGeometry(cursor: CGPoint(x: 296, y: 296), bounds: radialBounds),
-                             root: [empty, empty, RadialItem(id: "tools", title: "Tools", symbol: "pencil.tip", group: "tools")],
+                             root: [empty, empty, RadialItem(id: "tools", role: .root(.draw), title: "Draw", symbol: "pencil.tip", group: "tools"), empty, empty, empty, empty, empty],
                              groups: ["tools": tools])
     }
     func beginRadial() {
         guard lesson == .radial else { return }
         drawing.cancel()
         radial = Self.radialTemplate
-        radialFeedback = "Keep holding. Move right through Tools."
+        radialFeedback = "Keep holding. Move right through Draw."
     }
     func moveRadial(to point: CGPoint) {
         guard radial != nil else { return }
         radial?.move(point)
         if let title = radial?.candidate?.title { radialFeedback = "Release to choose \(title) locally." }
-        else if radial?.group != nil { radialFeedback = "Move up to Pen. Move inward to go back." }
-        else { radialFeedback = "Keep holding. Move right through Tools, or release at the center to cancel." }
+        else if radial?.group != nil { radialFeedback = "Move to Pen. Choose Back to return, then visit the parent center before choosing again." }
+        else { radialFeedback = "Keep holding. Move right through Draw, or release at the center to cancel." }
     }
     func moveRadialToTools() {
         moveRadial(to: RadialGeometry.point(slot: 2, radius: RadialGeometry.rootRadius, center: Self.radialTemplate.geometry.center))
     }
     func moveRadialToPen() {
-        moveRadial(to: RadialGeometry.point(slot: 0, radius: RadialGeometry.childRadius, center: Self.radialTemplate.geometry.center))
+        guard let radial, let index = radial.items.firstIndex(where: { $0.role == .tool(.pen) }) else { return }
+        moveRadial(to: RadialGeometry.point(angle: radial.angle(for: index), radius: RadialGeometry.childRadius, center: radial.geometry.center))
     }
     func releaseRadial() {
         guard let radial else { return }
+        radialSucceeded = radial.candidate != nil
+        if radialSucceeded { completedSteps.insert(.radial) }
         radialFeedback = radial.candidate.map { "\($0.title) selected in practice. Desktop tool and ink are unchanged." }
             ?? "Cancelled. Hold the center to try again."
         self.radial = nil
